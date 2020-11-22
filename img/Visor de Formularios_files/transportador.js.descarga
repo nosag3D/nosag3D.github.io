@@ -1,0 +1,99 @@
+/**
+ * Clase helper encargada del transporte de mensajes via XMLHttpRequest
+ */
+function DTransportadorJS() {
+    /**
+     * Esta es la firma para el caso de la respuesta basica, se pasa simplemente
+     * el texto de la respuesta al invocador que tiene que saber que hacer con ella
+     */
+    this.manejarRespuesta = function(responseText, invocador) {
+        invocador.manejarRespuesta(responseText);
+    }
+
+    /**
+     * Envia una solicitud de request usando para ello el bojeto XMLHttpRequest
+     * de javascript
+     * @param method el metodo de peticion (GET, POST)
+     * @param url La url a la cual vamos a solicitar los datos
+     * @param async La solicitud es asincrona o no (si no es el browser
+     *      se congela hasta que hay respuesta de parte del servidor, no recomendado)
+     * @param params Los parametros correctamente codificados que se envian con
+     *      la peticion.
+     * @param invocador El invocador debe implementar el metodo manejarRespuesta(respuesta)
+     * donde sabra que hacer con la respuesta, este se sobreescribe en el caso de la implementacion para wddx
+     * para de-serializar desde aqui y devolverle directamente un objeto JS al manejarRespuesta
+     */
+    this.enviarMensaje = function(method, url, async, params, invocador) {
+        var req = null;
+        if (window.XMLHttpRequest) {
+            req = new XMLHttpRequest();
+        } else if (window.ActiveXObject) {
+            req = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        if (req) {
+            req.open(method, url, async);
+            req.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+            /**
+             * Este metodo maneja la respuesta de javascript, si es correcta
+             * asigna el manejador adecuado a partir del que le invoco IoC a la javascript
+             * de lo contrario saca una alerta.
+             */
+            req.onreadystatechange = function (aEvt) {
+                //Si el request fue cargado
+
+                if (async) {
+                   if (req.readyState == 4) {
+                      //Si el resultado del request fue OK
+                      if(req.status == 200) {
+                         //Deserializar el xml a un DMensajeJS
+                         //Aqui se le asigna un manejador a la respuesta
+                          this.manejarRespuesta(req.responseText, invocador);
+                      } else {
+                          alert("Error de conexion con el servidor");
+                      }
+                   }
+                }
+            }
+
+            req.send(params);
+            //Si es sincrono se maneja la respuesta de una, de lo contrario la
+            // maneja el metodo onreadystatechange arriba
+            if (!async) {
+                if (invocador) {
+                    this.manejarRespuesta(req.responseText, invocador);
+                }
+            }
+        }
+    }
+}
+
+
+DTransportadorWddxJS.prototype = new DTransportadorJS();
+DTransportadorWddxJS.prototype.constructor = DTransportadorWddxJS;
+function DTransportadorWddxJS() {
+    this.deserializer = new WddxDeserializer();
+    /**
+     * Maneja la respuesta producida por la ejecucion
+     */
+    this.manejarRespuesta = function(responseText, invocador) {
+        var wddxRespuesta = unescapePlus(responseText);
+        var respuesta = this.deserializer.deserialize(wddxRespuesta);
+        var mensajeRespuesta = this.construirMensajeRespuesta(respuesta);
+        invocador.manejarRespuesta(mensajeRespuesta);
+    }
+
+    /**
+     * A partir de la respuesta construye un DMensajeJS, asume que
+     * en respuesta viene un parametro NOMBRE_PARAMETRO_ID con el id
+     * del mensaje de respuesta
+     * @param respuesta
+     * @return una instancia de DMensajeJS o null si no viene el id
+     */
+    this.construirMensajeRespuesta = function(respuesta) {
+        var mensajeRespuesta = new DMensajeJS("EjecAccionGenerico");
+        for (var params in respuesta) {
+            mensajeRespuesta.addParametro(params, respuesta[params]);
+        }
+        return mensajeRespuesta;
+    }
+}

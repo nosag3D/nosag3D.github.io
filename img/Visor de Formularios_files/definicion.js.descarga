@@ -1,0 +1,178 @@
+Import("modelo.formato.ftoDocumentos");
+
+var NUMERO_FORMULARIO = '1';
+var VERSION_FORMULARIO = '4';
+var NOMBRE_FORMULARIO = 'RUT';
+
+var Definicion = new Object();
+Definicion.getFormatoDocumento = function () {
+formatoDocumento = new DFormatoDocumentoJS(NUMERO_FORMULARIO, VERSION_FORMULARIO, NOMBRE_FORMULARIO);
+var ftoGrupo_1 = new DFormatoGrupoJS(1);
+
+formatoDocumento.addGrupo(ftoGrupo_1);
+
+var ftoSeccion_1 = new DFormatoSeccionJS(1, "Identificación","CU");
+var ftoSeccion_2 = new DFormatoSeccionJS(2, "Ubicación","CU");
+var ftoSeccion_3 = new DFormatoSeccionJS(3, "Clasificación","CU");
+
+ftoGrupo_1.addSeccion(ftoSeccion_1);
+ftoGrupo_1.addSeccion(ftoSeccion_2);
+ftoGrupo_1.addSeccion(ftoSeccion_3);
+
+var casillaTmp;
+
+ftoGrupo_1.irASeccion(1)
+casillaTmp=new DFormatoCasillaJS(24,"Tipo Contribuyente","CA",true,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(25,"Tipo Documento","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(26,"Número de Identificación","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(27,"Fecha Expedicion","FE",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(28,"Lugar Expedicion","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(29,"Departamento","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(30,"CiudadMunicipio","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(31,"Primer Apellido","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(32,"Segundo Apellido","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(34,"Otros Nombres","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(35,"Razón Social","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(36,"Nombre Comercial","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(37,"Sigla","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+ftoGrupo_1.irASeccion(2)
+casillaTmp=new DFormatoCasillaJS(38,"País","CA",true,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(39,"Departamento","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(40,"Ciudad/Municio","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(42,"Correo Electronico","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(43,"Apartado aereo","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(44,"Tel 1","EN",true,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(45,"Tel 2","EN",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+ftoGrupo_1.irASeccion(3)
+casillaTmp=new DFormatoCasillaJS(46,"Código Actividad Principal","CA",true,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(47,"Inicio Actividad Principal","FE",true,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(48,"Cód Actividad Secundaria","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(49,"Inicio Actividad secundaria","FE",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaColumnaJS(50,"Codigo Actividad Económica","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(51,"Código Ocupación","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(52,"Numero establecimientos","EN",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaColumnaJS(53,"Código Responsabilidades","CA",true,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaColumnaJS(54,"Código Usuarios Aduaneros","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(55,"Forma","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(56,"Tipo","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaColumnaJS(57,"Modo Servicio","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaColumnaJS(58,"CPC Servicio","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+
+ftoGrupo_1.sinSeccion()
+casillaTmp=new DFormatoCasillaJS(2,"Concepto","CA",true,true);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(4,"Número de formulario","EN",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(5,"NIT","EN",false,true);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(6,"DV NIT","EN",false,true);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(12,"Administración","CA",true,true);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(14,"Dirección Fiscal Electrónica","CA",false,true);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(21,"Hoja N","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(22,"Página","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(23,"de","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(33,"Primer Nombre","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(41,"Dirección ","CA",true,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaColumnaJS(59,"Anexos","BO",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(60,"Número de Folios","EN",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(61,"Fecha de Recepción","FE",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(984,"Nombre funcionario autorizado","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+casillaTmp=new DFormatoCasillaJS(985,"Cargo funcionario autorizado","CA",false,false);
+ftoGrupo_1.addCasilla(casillaTmp)
+
+
+ return formatoDocumento;
+}

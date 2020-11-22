@@ -1,0 +1,115 @@
+//<<documento.grupos.js>>
+Import("modelo.documento.ocurrencias");
+
+DGrupoJS = function DGrupoJS(idGrupo){
+//	alert ("Constructor >> DGrupoJS")
+   this.id;
+   this.ocurrencias = new Array();
+   //-- Parte del Constructor
+   if (idGrupo>=0)
+      this.id = idGrupo;
+
+  this.getId = function(){
+    return this.id;
+  }
+
+  /*Agrega una Ocurrencia.
+     -Si recibe como parametro un objeto DOcurrencia lo adiciona.
+
+     -Si no recibe nada como parametro, entonces adiciona por defecto
+        una ocurrencia cuyo ID sera el numero de ocurrencias +1
+  */
+  this.addOcurrencia = function(){
+     //si recibe 1 o mas ocurrencias recorren el arreglo de
+     //argumentos e introduce cada ocurrencia en el array
+     if(arguments.length > 0){
+        for(var i=0; i< arguments.length; i++){
+           this.ocurrencias.push(arguments[i]);
+        }
+     }else{
+        //si no recibe ningun parametro(comportamiento por defecto),
+        //debe crear una ocurrencia y agregarla al grupo
+        var idOcurrencia = this.ocurrencias.length+1;
+        var ocurrenciaNva = new DOcurrenciaJS(idOcurrencia);
+        this.ocurrencias.push(ocurrenciaNva);
+     }
+  }//-- addOcurrencia()
+
+  /**Obtiene una ocurrencia segn su Id*/
+  this.getOcurrencia = function(idOcurrencia){
+  	var ocurrencia = null;
+        for(var i=0; i < this.ocurrencias.length; i++){
+           if(this.ocurrencias[i].getId() == idOcurrencia)
+              ocurrencia=this.ocurrencias[i];
+        }
+        return ocurrencia;
+  }//-- getOcurrencia()
+
+  /**Retorna el nmero de ocurrencias actual*/
+  this.getNumeroOcurrencias = function(){
+    return this.ocurrencias.length;
+  }
+
+  //Remueve una ocurrencia segun su ID
+  this.removeOcurrencia = function(idOcurrencia){
+     for(var i=0; i < this.ocurrencias.length; i++){
+        if(this.ocurrencias[i].getId() == idOcurrencia)
+           this.ocurrencias.splice(i,1);
+     }
+     this.refactorOcurrenciasID();
+     return this.ocurrencias.length;
+  }
+
+  this.refactorOcurrenciasID = function(){
+     for(var i=0; i < this.ocurrencias.length; i++){
+        this.ocurrencias[i].refactorId(i+1);
+     }
+  }
+
+  //retorna un arreglo que contiene las identificaciones
+  //de las ocurrencias del grupo
+  this.getIdOcurrencias = function(){
+     var idocurrencias = new Array();
+     for(var i=0; i < this.ocurrencias.length; i++){
+        idocurrencias.push(this.ocurrencias[i].getId());
+     }
+     return idocurrencias;
+  }
+
+    /**
+     * Retorna el arreglo de las ocurrencias
+     */
+    this.getOcurrencias = function() {
+        return this.ocurrencias;
+    }
+
+}//-- DGrupoJS
+
+DGrupoJS.prototype.className = "DGrupoJS";
+
+DGrupoJS.prototype.toString=function(){
+  return this.toXml();
+/*
+  var strOcurrencias = "{GRUPO id = "+this.id+" [";
+  for (var prop in this.ocurrencias){
+    	strOcurrencias += this.ocurrencias[prop] + ", ";
+  }
+  strOcurrencias += "]}"
+  return strOcurrencias;
+*/
+}//-- toString()
+
+/**
+ * Convierte el contenido del grupo en un flujo Xml
+ */
+DGrupoJS.prototype.toXml=function(){
+    var xmlGrupo = "";
+    if (this.ocurrencias.length > 0) {
+        var xmlGrupo = "<gr id=\""+this.id+"\">\r\n";
+        for (var i=0; i < this.ocurrencias.length;i++){
+            xmlGrupo += this.ocurrencias[i].toXml();
+        }
+        xmlGrupo += "</gr>\r\n";
+        return xmlGrupo;
+    }
+}

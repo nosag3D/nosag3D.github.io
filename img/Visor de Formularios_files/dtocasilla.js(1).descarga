@@ -1,0 +1,35 @@
+
+DDTOCasillaJS = function DDTOCasillaJS(grupo, ocurrencia, casilla, casillacolumna, iteracion, valor){
+
+   this.grupo=grupo;
+   this.ocurrencia=ocurrencia;
+   this.casilla=casilla;
+   this.casillaColumna=casillacolumna;
+   this.iteracion=iteracion;
+   this.valor=valor;
+  
+   
+   this.getGrupo = function(){
+      return this.grupo;
+   }  
+   
+   this.getOcurrencia = function(){
+      return this.ocurrencia;
+   }
+      
+   this.getCasilla = function(){
+      return this.casilla;
+   }
+   
+   this.getCasillaColumna = function(){
+      return this.casillaColumna;
+   }
+   
+   this.getIteracion = function(){
+      return this.iteracion;
+   }
+   
+   this.getValor = function(){
+      return this.valor;
+   }   
+} 

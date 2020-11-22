@@ -1,0 +1,52 @@
+HojaFormulario = function HojaFormulario(nombre, copiable) {
+    this.nombre = nombre;
+    this.copiable = copiable;
+    this.copias = new Array();
+    //Se crea la copia inicial de cada hoja
+    this.copias.push("copia");
+    this.secciones = new Array();
+}
+
+HojaFormulario.prototype.getNombre = function() {
+    return this.nombre;
+}
+
+HojaFormulario.prototype.isCopiable = function() {
+    return this.copiable;
+}
+
+HojaFormulario.prototype.addCopia = function() {
+    if (this.copiable) {
+        this.copias.push("copia");
+    }
+}
+
+HojaFormulario.prototype.delCopia = function(idCopia) {
+    if (this.isEliminable()) {
+        this.copias.splice(idCopia,1);
+        return true;
+    }
+    return false;
+}
+
+HojaFormulario.prototype.getNumCopias = function() {
+    return this.copias.length;
+}
+
+HojaFormulario.prototype.getCopias = function() {
+    return this.copias;
+}
+
+HojaFormulario.prototype.isEliminable = function() {
+    return (this.copias.length > 1);
+}
+
+HojaFormulario.prototype.addSeccion = function(nombre, ancla) {
+    if (nombre && ancla) {
+        this.secciones.push(new Seccion(nombre,ancla));
+    }
+}
+
+HojaFormulario.prototype.getSecciones = function() {
+    return this.secciones;
+}

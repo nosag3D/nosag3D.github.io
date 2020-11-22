@@ -1,0 +1,179 @@
+//<<documento.documentos.js>>
+Import("modelo.documento.grupos");
+
+DDocumentoJS = function DDocumentoJS(idFormato, idVersion){
+   //alert ("Constructor >> DDocumentoJS")
+   this.id;
+   this.idFormato;
+   this.version;
+   this.grupos = new Array();
+//   this.tipo = TIPO_DOC_CASILLAS;
+
+   //-- Parte del Constructor
+   if (idFormato)
+      this.idFormato = idFormato;
+   if (idVersion)
+      this.version = idVersion;
+
+   /***************************/
+   this.getIdFormato = function() {
+     return this.idFormato;
+   }
+
+   this.getVersionFormato = function(){
+      return this.version;
+   }
+
+   this.setId = function(idDocumento){
+      if (idDocumento)
+         this.id = idDocumento;
+   }
+
+   this.getId = function(){
+      return this.id;
+   }
+
+   /**Agrega un grupo. Recibe como parmetro un objeto JS_DGrupo*/
+   this.addGrupo = function(grupo) {
+      if (grupo){
+         this.grupos.push(grupo);
+//         this.notify();
+      }
+   }//-- addGrupo()
+
+   /**Obtiene un grupo segn su Id*/
+   this.getGrupo = function(idGrupo){
+      var grupo = null;
+      for (var g = 0; g < this.grupos.length; g++){
+         if (this.grupos[g].getId() == idGrupo)
+            grupo = this.grupos[g];
+      }
+      return grupo;
+      //return this.grupos["gr_" + idGrupo];
+   }//-- getGrupo()
+
+   this.getGrupos = function(){
+      return this.grupos;
+   }
+
+   /**Retorna un arreglo con los Ids de los grupos que contiene el documento*/
+   this.getIdGrupos = function(){
+      var idGrupos = new Array();
+      for (var g = 0; g < this.grupos.length; g++){
+         idGrupos.push(this.grupos[g].getId());
+      }
+
+      return idGrupos;
+   }//-- getIdGrupos()
+
+   this.removeGrupo = function(idGrupo){
+      for(var i=0; i<this.grupos.length; i++){
+         if(this.grupos[i].getId()==idGrupo){
+            this.grupos.splice(i,1);
+         }
+      }
+   }
+
+   this.getGrupoByID = function(idgrupo){
+      for(var i=0; i< this.grupos.length; i++){
+         if(this.grupos[i].getId() == idgrupo){
+            return this.grupos[i];
+         }
+      }
+      return null;
+   }
+
+   /*
+      Esta funcion tiene por objetivo brindar una interfaz para recuperar casillas directamente del documento
+   */
+   this.getCasilla = function(idgrupo, idocurrencia, idcasilla) {
+      var grp = this.getGrupoByID(idgrupo);
+      var ocu = grp.getOcurrencia(idocurrencia);
+      var casilla = ocu.getCasilla(idcasilla);
+      return casilla;
+   }
+
+   this.cloneDocument = function(){
+      var grupo = null;
+      var idocurrencias = null;
+      var ocurrencia = null;
+      var idcasillas = null;
+      var casilla = null;
+
+      var nuevoGrp = null;
+      var nuevaOc = null;
+      var nuevaCas = null;
+
+
+      var clon = new DDocumentoJS(this.getIdFormato(), this.getVersionFormato());
+      clon.setId(this.id);
+
+      for(var i=0; i<this.grupos.length; i++){
+
+         grupo = this.grupos[i];
+         nuevoGrp = new DGrupoJS(grupo.getId());
+         clon.addGrupo(nuevoGrp);
+
+         idocurrencias = grupo.getIdOcurrencias();
+
+         for(var j=0; j<idocurrencias.length; j++){
+
+            ocurrencia = grupo.getOcurrencia(idocurrencias[j]);
+            nuevaOc = new DOcurrenciaJS(ocurrencia.getId());
+            idcasillas  = ocurrencia.getIdCasillas();
+
+            nuevoGrp.addOcurrencia(nuevaOc);
+
+            var idGrupo = grupo.getId();
+            var idOcurrencia = ocurrencia.getId();
+
+            for(var k=0; k<idcasillas.length; k++){
+               casilla = ocurrencia.getCasilla(idcasillas[k]);
+               if(casilla.className == 'DCasillaJS'){
+                  nuevaCas = new DCasillaJS(idGrupo, idOcurrencia, casilla.getId(), casilla.getValor());
+               }else{
+                  valorescas = casilla.getValoresCasilla();
+                  nuevaCas = new DCasillaColumnaJS(idGrupo, idOcurrencia, casilla.getId());
+
+                  for (var m=0; m < valorescas.length; m++){
+                     nuevaCas.addFila(); //traer el numfilas de la columna y luego recorrer con ir a
+                     nuevaCas.setValor(valorescas[m]);
+                  }
+               }
+               nuevaOc.addCasilla(nuevaCas);
+            }
+         }
+      }
+      return clon;
+   }
+}
+
+DDocumentoJS.prototype.className = "DDocumentoJS";
+
+DDocumentoJS.prototype.toString=function(){
+  return this.toXml();
+}
+
+DDocumentoJS.prototype.TIPO_DOC_CASILLAS = 1;
+DDocumentoJS.prototype.TIPO_DOC_RESUMEN = 2;
+
+/**
+ * Convierte el contenido del documento en un flujo Xml
+ */
+DDocumentoJS.prototype.toXml=function(){
+   //Cabecera del Documento
+   var xmlDocumento = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+    //Este es una validacion para que el valor del id no llegue en undefined
+    //al servidor, sino con valor vacio
+    var id = "";
+    if (this.id) {
+        id = this.id;
+    }
+   xmlDocumento += "<doc xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" id=\"" +
+   id + "\" cf=\"" + this.idFormato+ "\" vf=\""+ this.version + "\" > \n";
+   for (var i=0; i < this.grupos.length; i++){
+      xmlDocumento += this.grupos[i].toXml();
+   }
+   xmlDocumento += "\n</doc>";
+   return xmlDocumento;
+}

@@ -1,0 +1,1044 @@
+/**
+ * En este Archivo se incluye la clase base para los manejadores
+ * y los manejadores que son propios del visor, estos no se asignan con la
+ * cadena de manejadores pues no estan a nivel de la hoja, por lo tanto
+ * no se agregan de la misma manera y no se incluyen en el arreglo de manejadores.
+ *
+ */
+
+/**
+ * Manejador para guardar, valida si se debe enviar a guardar,
+ * o sea si ha habido cambios y si se tiene un id de documento valido
+ * si no lo tiene lo obtiene usando el manejador DObtenerIdDocumentoJS
+ *hacam
+ * Esta clase es abstracta ya que no implementa manejar, debe usarse
+ * DGuardarDocTemporalJS, DGuardarDocDefinitivoJS ó una implementación propia.
+ */
+DGuardarDocumentoJS.prototype = new DManejadorJS();
+DGuardarDocumentoJS.prototype.constructor = DGuardarDocumentoJS;
+function DGuardarDocumentoJS(manejador) {
+    var objCas = null;
+    var DVisor = parent.DVisor;
+    //Indica si el documento actual se ha guardado por lo menos una vez durante la sesión.
+    var guardado = null;
+
+    /**
+     * Valida si esta bien diligenciado, si las casillas obligatorias estan
+     * diligenciadas en el documento
+     * @return
+     */
+    this.estaBienDiligenciado = function() {
+        var formato = DVisor.formato;
+        var documento = DVisor.docCopia;
+        var isValido = DVisor.isDocumentoValido(documento, formato);
+        return isValido;
+    }
+
+    /**
+     * Detecta y sincroniza los cambios que ha habido en el documento
+     * @return
+     */
+    this.haCambiado = function() {
+        var cambio = false;
+//        var xmlDocCambios = null;
+        var idformato = DVisor.docOriginal.getIdFormato();
+        var idversion = DVisor.docOriginal.getVersionFormato();
+        var controlcambios = new DControlCambiosJS();
+        controlcambios.inicializar(idformato, idversion);
+        controlcambios.sincronizaCambios(DVisor.docOriginal, DVisor.docCopia);
+        //Si se agregaron pues cambio
+        if(controlcambios.hasChanged()) {
+            cambio = true;
+//            xmlDocCambios = controlcambios.getDocCambios().toString();
+        }
+        return cambio;
+    }
+
+
+    /**
+     * Valida las precondiciones para guardar un documento
+     */
+    this.validar = function(verificarCambios) {
+        var logErrores = DVisor.validadorDocumentoFin.getLogErrores();
+        var valido = true;
+        // Se ejecutan validaciones finales
+        DVisor.validarFinDoc();
+        if (!DVisor.validadorDocumentoFin.validacionExitosa()) {
+                        valido = false;
+        }
+        // Miramos si ha habido cambios.
+        if (verificarCambios  && !this.haCambiado()) {
+            logErrores.addLogErrorDocumento('No ha habido cambios desde el guardar anterior.');
+            valido = false;
+        }
+        // Miramos si estan diligenciadas las casillas obligatorias.
+        if (!this.estaBienDiligenciado()) {
+            valido = false;
+        }
+        if (valido) {
+            return true;
+        } else {
+            var mensajeError = DVisor.validadorDocumentoFin.getTextoLogErrores();
+            DVisor.dialogomensaje.showModal('Error', escape(mensajeError), 3);
+            return false;
+        }
+    }
+
+    this.manejarRespuesta = function(msjRespuesta) {
+        var DMensajeJS = parent.DMensajeJS;
+        var arrRespuesta = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+        guardado = DVisor.controlador.getIsDocGuardado();
+        var numPC=DVisor.contexto.getParametro('NUMERO_PC')+"";
+
+        if (msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO)) {
+            if (!guardado) {
+                DVisor.controlador.setIsDocGuardado(true);
+                //arrRespuesta[0] -> Número del documento
+                var numDocumento=0;
+                if(numPC=="0"){
+                   numDocumento=arrRespuesta[0];
+                }/*fin de if*/
+                else{
+                   numDocumento=numPC;  
+                }/*fin de else*/
+                this.asignarIdDocumento(numDocumento);
+                DVisor.controlador.setId(numDocumento);
+                //arrRespuesta[1] -> Número de repetición
+                DVisor.controlador.setNumRepeticionDoc(arrRespuesta[1]);
+                //arrRespuesta[2] -> Id del estado del documento
+                DVisor.controlador.setEstadoActualDoc(arrRespuesta[2]);
+                // Se llama esto para evitar el doble guardado
+            } else {
+                /**Como el documento esta guardado solo se invoca el getter getIdEstado() de la
+                 * acción, entonces:
+                 * arrRespuesta[0] -> Id del estado del documento
+                 */
+                DVisor.controlador.setEstadoActualDoc(arrRespuesta[0]);
+            }
+            DVisor.docOriginal = DVisor.docCopia.cloneDocument();
+            //miGestorMensajes.cerrarlayer('divMensaje');
+            //cerrarMensajeEspera();
+            var idFormato = DVisor.contexto.getIdFormato();
+            if(idFormato != 1 && (idFormato < 10  && idFormato >19)){
+              if (arrRespuesta[0] != ESTADO_DOC_PROCESO_FIRMA) {
+                DVisor.dialogomensaje.showModal('OK', 'EL DOCUMENTO SE HA DILIGENCIADO Y GUARDADO CORRECTAMENTE.', 1);
+              }
+              else {
+                DVisor.dialogomensaje.showModal('Error', 'EL DOCUMENTO ESTA EN ESTADO DE FIRMA Y NO PUEDE SER MODIFICADO.', 3);
+              }
+            }
+            else if (arrRespuesta[0] == ESTADO_DOC_PROCESO_FIRMA){
+              DVisor.dialogomensaje.showModal('Error', 'EL DOCUMENTO ESTA EN ESTADO DE FIRMA Y NO PUEDE SER MODIFICADO.', 3);
+            }
+           /* else if (arrRespuesta[0] == ESTADO_ENVIADO){
+              DVisor.dialogomensaje.showModal('Error', 'EL DOCUMENTO ESTA EN ESTADO ENVIADO Y NO PUEDE SER MODIFICADO.', 3);
+            }*/
+            else {
+               var numForm = DVisor.getValorCasilla(4,-1);
+              if((arrRespuesta[0] == ESTADO_DOC_RECIBIDO || arrRespuesta[0] == ESTADO_DOC_HOMOLOGADO) && idFormato == 532){
+                 mostrarOk("El documento ha sido guardado como definitivo con el número "+numForm+"\n\n");
+              }else{
+                  mostrarOk("El documento ha sido generado con el número "+numForm+"\n\n");
+               }
+            }
+        } else {
+            //cerrarMensajeEspera();
+            var mensajeError = msjRespuesta.getParametro(DMensajeJS.MENSAJE_ERROR) != null?
+                               escape(msjRespuesta.getParametro(DMensajeJS.MENSAJE_ERROR)):"";
+            var mensajeDetallado = msjRespuesta.getParametro(DMensajeJS.MENSAJE_DETALLADO) != null?
+                                   escape(msjRespuesta.getParametro(DMensajeJS.MENSAJE_DETALLADO))://.slice(0,1000):
+                                   'HA OCURRIDO UN ERROR, EL DOCUMENTO NO SE HA PODIDO GUARDAR, INTENTELO NUEVAMENTE Ó CONTACTENOS.';
+            DVisor.dialogomensaje.showModal("Error", mensajeError + " " + mensajeDetallado, 3);
+        }
+    }
+
+    /**
+     * Indica si el documento puede ser guardado.
+     */
+    this.guardarPermitido = function() {
+      return (DVisor.controlador.getEstadoActualDoc() != parent.ESTADO_DOC_RECIBIDO &&
+              DVisor.controlador.getEstadoActualDoc() != parent.ESTADO_DOC_VALIDADO &&
+              DVisor.controlador.getEstadoActualDoc() != parent.ESTADO_DOC_HOMOLOGADO &&
+              DVisor.controlador.getEstadoActualDoc() != parent.ESTADO_DOC_PROCESO_FIRMA &&
+              DVisor.controlador.getEstadoActualDoc() != parent.ESTADO_DOC_PRESENTADO &&
+              DVisor.controlador.getEstadoActualDoc() != parent.ESTADO_DOC_RECIBIDO_CAMARA);
+    }
+
+    /**
+     * Asigna el id del documento generado a la casilla 4 en todos los grupos, ocurrencias.
+     */
+    this.asignarIdDocumento = function(idDocumento) {
+
+      var arrGrupos = DVisor.controlador.getDocumento().getGrupos();
+      for (var i=0; i < arrGrupos.length; i++){
+        var arrOcurrenciasGrupo = arrGrupos[i].getOcurrencias();
+        for (var j=0; j < arrOcurrenciasGrupo.length; j++) {
+          DVisor.controlador.setCasilla(arrGrupos[i].getId(), arrOcurrenciasGrupo[j].getId(), 4, -1, idDocumento);
+        }
+      }
+    }
+
+}
+
+/**
+ * Esta clase permite guardar el documento en edición temporalmente, el estado del documento
+ * es verificado para no sobre escribir documentos definitivos.
+ */
+DGuardarDocTemporalJS.prototype = new DGuardarDocumentoJS();
+DGuardarDocTemporalJS.prototype.constructor = DGuardarDocTemporalJS;
+function DGuardarDocTemporalJS(manejador) {
+
+    var DVisor = parent.DVisor;
+    var guardado = DVisor.controlador.getIsDocGuardado();
+    //Indica si es posible guardar el documento.
+    var unaFabricaMensajes = new DFabricaMensajes();
+
+    this.manejar = function(objCas) {
+        this.objCas = objCas;
+
+
+        if (!this.guardarPermitido()) {
+             //cerrarMensajeEspera();
+             var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GUARDAR DOCUMENTO","El documento ya ha sido guardado como definitivo, no puede ser guardado como temporal nuevamente. ","","");
+             miGestorMensajes.limpiarMensajes();
+             miGestorMensajes.agregarMensaje(unMensaje);
+             miGestorMensajes.mostrarMensaje();
+        }else if (this.validar(true)) {
+            /* Asigna el valor por defecto para la casilla 986
+            if (DVisor.controlador.getValorCasilla(986) != null) {
+              DVisor.controlador.setValorCasilla(986, -1, '1');
+            }*/
+            // Modo diligenciamiento
+            var modoNegocio = DVisor.contexto.getParametro('MODO_DILIGENCIAMIENTO_NEGOCIO');
+
+            //Define el método inicializar y los getters a invocar
+            var fraccion = DVisor.contexto.getParametro(DContextoJS.FRACCION_ANNO);
+            var numUnicObli = DVisor.contexto.getParametro(DContextoJS.NUM_UNICO_OBLIGACION)+"";
+            var tipoEntrada = getAsString(DVisor.contexto.getTipoEntrada())+"";
+            var xmlDoc = escape(DVisor.docCopia.toXml());
+            var actConsIntegral = (fraccion && numUnicObli)?false:true;
+            var numPC=DVisor.contexto.getParametro('NUMERO_PC')+"";
+
+            var metodoInicializar = guardado?"inicializarActualizar": numPC=="0" ? "inicializarGuardarSinId" : "inicializarGuardarConId"
+            var arrGetters = guardado?new Array("getIdEstado"):new Array("getIdDocumento","getNumRepeticion","getIdEstado");
+            var arrTipParamsIni = guardado?
+                                     new Array("long","int","xmlString","int","int") :
+                                     numPC!="0" ? 
+                                        new Array("xmlString","int","int","int") : 
+                                        (actConsIntegral)?
+                                           new Array("xmlString","int","int") : 
+                                           new Array("xmlString", "int", "int", "long", "int");
+            var arrValParamsIni = guardado?
+                                         new Array(getAsString(DVisor.getValorCasilla(4,-1)), getAsString(DVisor.controlador.getNumRepeticionDoc()), xmlDoc, tipoEntrada, modoNegocio) :
+                                         numPC!="0" ?
+                                            new Array(xmlDoc,tipoEntrada,modoNegocio,getAsString(DVisor.contexto.getIdFormato())) :              
+                                        (actConsIntegral)?
+                                           new Array(xmlDoc, tipoEntrada, modoNegocio) :
+                                           new Array(xmlDoc, tipoEntrada, modoNegocio, numUnicObli, fraccion);
+            var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+            msjInvAcc.addInvocacion("entradasalida.DCmdAccCrearDocumentoESTemporal",
+                                    metodoInicializar,
+                                    arrTipParamsIni,
+                                    arrValParamsIni,
+                                    arrGetters);
+
+            DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+        }
+        if(manejador) manejador.manejar(objCas);
+    }
+}
+
+/**
+ * Esta clase permite guardar un documento como definitivo, sea por primera vez ó un
+ * documento temporal.
+ *
+ * Ya que este manejador interactua con el usuario a través de un mensaje de confirmación,
+ * es asignado como objeto listener para el manejador de mensajes "miGestorMensajes".
+ */
+DGuardarDocDefinitivoJS.prototype = new DGuardarDocumentoJS();
+DGuardarDocDefinitivoJS.prototype.constructor = DGuardarDocDefinitivoJS;
+function DGuardarDocDefinitivoJS(manejador) {
+    var DVisor = parent.DVisor;
+    var guardado = DVisor.controlador.getIsDocGuardado();
+    //Indica si es posible guardar el documento.
+    var unaFabricaMensajes = new DFabricaMensajes();
+
+    this.manejar = function(objCas) {
+
+      var idFormato = getAsString(DVisor.contexto.getIdFormato());
+
+      //if (idFormato == "532") {
+
+        this.objCas = objCas;
+
+        if (!this.guardarPermitido()) {
+             var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GUARDAR DOCUMENTO","El documento ya ha sido guardado como definitivo, no puede ser guardado nuevamente. ","","");
+             miGestorMensajes.limpiarMensajes();
+             miGestorMensajes.agregarMensaje(unMensaje);
+             miGestorMensajes.mostrarMensaje();
+        }else if (this.validar(false)) {
+          if(DVisor.docCopia.getId()) {
+            /* Asigna el valor por defecto para la casilla 986
+            if (DVisor.controlador.getValorCasilla(986) != null) {
+              DVisor.controlador.setValorCasilla(986, -1, '1');
+            }*/
+            miGestorMensajes.setObjEventoListener('onClickBtnSI', this);
+
+            var unMensaje;
+            if (idFormato == "532") {
+                unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_CONFIRMACION, "GUARDAR DOCUMENTO DEFINITIVO","Recuerde que una vez guardado el documento como definitivo <b>NO</b> podra ser modificado.","","");
+            }
+            else {
+                unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_CONFIRMACION, "GUARDAR DOCUMENTO DEFINITIVO","Debe tener en cuenta que este documento aun <b>NO</b> ha sido presentado a la DIAN. Debe imprimirlo, firmarlo autografamente y llevarlo al banco para dar por presentada su declaración. Cuando diligencie valores a pagar en la declaración no se requiere la generación e impresión del recibo de pago. Al Banco presente únicamente la declaración con su respectiva copia.","","");
+            }
+            miGestorMensajes.limpiarMensajes();
+            miGestorMensajes.agregarMensaje(unMensaje);
+            miGestorMensajes.mostrarMensaje();
+          } else {
+            var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_INFO, "GUARDAR DOCUMENTO DEFINITIVO","No ha guardado previamente el documento, guarde temporalmente primero.","","");
+            miGestorMensajes.limpiarMensajes();
+            miGestorMensajes.agregarMensaje(unMensaje);
+            miGestorMensajes.mostrarMensaje();
+          }
+        }
+      /*}
+      else {
+        var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GUARDAR DOCUMENTO","Esta opción no se encuentra disponible, se debe firmar y presentar con certificado digital!. ","","");
+         miGestorMensajes.limpiarMensajes();
+         miGestorMensajes.agregarMensaje(unMensaje);
+         miGestorMensajes.mostrarMensaje();
+      }*/
+    }
+
+    /**
+     * Este método es ejecutado cuando se hace click en el botón SI del mensaje de confirmación.
+     */
+    this.confirmarSI = function() {
+        miGestorMensajes.cerrarlayer('divMensaje');
+        var modoNegocio = DVisor.contexto.getParametro('MODO_DILIGENCIAMIENTO_NEGOCIO');
+        //Define el método inicializar y los getters a invocar
+        var metodoInicializar = guardado?"inicializarRecibir":"inicializarGuardarSinId";
+        var arrGetters = guardado?new Array("getIdEstado"):new Array("getIdDocumento","getNumRepeticion","getIdEstado");
+        var arrTipParamsIni = guardado?
+                              new Array("long","int","xmlString","int","int"):
+                              new Array("xmlString","int","int");
+        var arrValParamsIni = guardado?
+                              new Array(getAsString(DVisor.getValorCasilla(4,-1)), getAsString(DVisor.controlador.getNumRepeticionDoc()), escape(DVisor.docCopia.toXml()), getAsString(DVisor.contexto.getTipoEntrada()), modoNegocio):
+                              new Array(escape(DVisor.docCopia.toXml()), getAsString(DVisor.contexto.getTipoEntrada()), modoNegocio);
+
+        var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+        msjInvAcc.addInvocacion("entradasalida.DCmdAccCrearDocumentoESTemporal",
+                                metodoInicializar,
+                                arrTipParamsIni,
+                                arrValParamsIni,
+                                arrGetters);
+        DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+        // Se actualiza el mensaje de estado en la barra de: Definitivo
+        fachadaVisor.setEstadoDoc('Definitivo');
+        buildBarraNavegacion();
+        
+    }
+}
+
+/**
+ * Manejador que obtiene el estado actual del documento en base de datos.
+ */
+DObtenerEstadoDocumentoJS.prototype = new DManejadorJS();
+DObtenerEstadoDocumentoJS.prototype.constructor = DObtenerEstadoDocumentoJS;
+function DObtenerEstadoDocumentoJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+
+     var idDocumento = DVisor.controlador.getId()+"";
+     var numRepeticion = DVisor.controlador.getNumRepeticionDoc()+"";
+     var numFormato = DVisor.controlador.getFormato()+"";
+     
+
+     var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+     msjInvAcc.addInvocacion("entradasalida.DCmdAccConsIdentificadorDoc",
+             "inicializarConsPorId",
+             new Array("long","int","boolean","int"),
+             new Array(idDocumento, numRepeticion,false,numFormato),
+             new Array("getEstadoIdentificadorDoc"));
+     var msjResp = parent.DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+     if(manejador)manejador.manejar(objCas);
+   }
+
+   this.manejarRespuesta = function(msjRespuesta) {
+     var DMensajeJS = parent.DMensajeJS;
+     var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+     if (execState) {
+       var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+       DVisor.controlador.setEstadoActualDoc(respuestas[0]);
+     }
+   }
+}
+
+/**
+ * Manejador abstracto del que heredan los manejadores que ejecutan comandos de bsqueda en el servidor
+ * @param manejador
+ * @param DBusquedaJS Objeto tooltip para la bsqueda
+ * @param tablaHTML, la tabla HTML donde se van mostrar los resultados
+ */
+DEjecutarBusquedaAbstractoJS.prototype = new DManejadorJS();
+DEjecutarBusquedaAbstractoJS.prototype.constructor = DEjecutarBusquedaAbstractoJS;
+function DEjecutarBusquedaAbstractoJS(manejador, busqueda, tablaHTML) {
+    // Ejecuta la bsqueda utilizando AJAX
+    this.manejar = function(objCas) {
+        this.objCas = objCas;
+        var visor = parent.DVisor;
+
+        //Esta es la url de la acordeon de busquedas
+        //document.getElementById('frameAyuda').contentDocument.getElementById('lista').contentDocument.location.href
+        this.limpiarTBody(this.tablaHTML.tBodies[0]);
+        this.mostrarCargando(this.tablaHTML.tBodies[0]);
+        var msjInvAcc = visor.obtenerDMensajeEjecAccion();
+        msjInvAcc.addInvocacion("entradasalida.busquedavisor.DCmdAccEjecBusquedaVisor",
+                                "inicializar",
+                                new Array("string","Hashtable", "int"),
+                                new Array(this.busqueda.idComandoBusqueda, this.busqueda.parametrosBusqueda, getAsString(this.busqueda.paginaActual)),
+                                new Array("getResultado", "getNumPaginas", "getPaginaActual"));
+        var msjResp = parent.DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+        if(manejador) manejador.manejar(objCas);
+    }
+
+    // Maneja la respuesta dada por el servidor despu\uFFFD de la ejecuci\uFFFD AJAX
+    this.manejarRespuesta = function(msjRespuesta) {
+        var visor = parent.DVisor;
+        var DMensajeJS = parent.DMensajeJS;
+        var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+        // Si la ejecuci\uFFFD fue exitosa agrega una fila en la tabla HTML por cada resultado encontrado
+        if (execState) {
+            var resultados = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+            // En el primer campo del arreglo vienen los resultados
+            var listaResultados = resultados[0];
+            var tbody = this.tablaHTML.tBodies[0];
+            this.crearCabeceraTabla(this.tablaHTML);
+            this.limpiarTBody(tbody);
+
+            // Cargamos los resultados
+            var registrosCargados = this.cargarResultados(tbody, listaResultados);
+            if (!registrosCargados || registrosCargados <= 0) {
+                this.mostrarSinResultados(tbody);
+            }
+
+            // Cargamos la paginación cuando se encuentran muchos registros
+            var numPaginas = resultados[1];
+            var paginaActual = resultados[2];
+            this.crearPaginacion(this.tablaHTML, numPaginas, paginaActual);
+
+        } else {
+            this.limpiarTBody(this.tablaHTML.tBodies[0]);
+            this.mostrarError(this.tablaHTML.tBodies[0]);
+        }
+    }
+
+    this.cargarResultados = function (tbody, listaResultados) {
+        var i=0;
+        var keys = new Array();
+
+        for (key in listaResultados) {
+            keys[i] = key;
+            i++;
+        }
+
+/*
+en ie, ocurre un error al intentar ordenar codigos alfanumericos
+*/
+
+        var orderedKeys = keys.sort(compare);
+        if (orderedKeys) {
+          for (var k =0; k < orderedKeys.length; k++) {
+              var key = orderedKeys[k];
+              if (key) {
+                  this.adicionarFila(tbody, key, listaResultados[key]);
+                  i++;
+              }
+          }
+        }
+        return i;
+    }
+
+    // Este método es abstracto, debe ser implementado para adicionar cada fila y manejar la actualización de
+    // las casillas en las hojas del formulario, mapeando las casillas y los resultados en un cadena con el formato
+    // idGrupo_idOcurrencia_idCasilla:valorCasilla|idGrupo_idOcurrencia_idOtraCasilla:valorOtraCasilla
+    // Si la casilla es de la misma hoja, el formato es: idCasilla:valorCasilla|idOtraCasilla:valorOtraCasilla
+    this.adicionarFila = function(tbody, textoCelda1, textoCelda2) {
+    }
+
+    /**
+     * Este método muestra un mensaje mientras se ejecuta la bsqueda
+     */
+    this.mostrarCargando = function(tbody) {
+        this.mostrarMensajeBusqueda(tbody, "Por favor espere un momento, estamos cargando la información...");
+    }
+
+    /**
+     * Este método muestra un error si se presenta algn error en la ejecución de la bsqueda
+     */
+    this.mostrarError = function(tbody) {
+        this.mostrarMensajeBusqueda(tbody, "Se ha presentado un error cargando la información, por favor intente en un momento.");
+    }
+
+    /**
+     * Este método muestra un error si se presenta algn error en la ejecución de la bsqueda
+     */
+    this.mostrarSinResultados = function(tbody) {
+        this.mostrarMensajeBusqueda(tbody, "No hay resultados para la búsqueda solicitada.");
+    }
+
+    /**
+     * Muestra un mensaje en la tablaHTML
+     */
+    this.mostrarMensajeBusqueda = function(tbody, msj) {
+        var row = tbody.insertRow(-1);
+        var celda1 = row.insertCell(-1);
+        celda1.colSpan = 2;
+        celda1.innerHTML = "<p>" + msj + "</p>";
+    }
+
+    /**
+     * Limpia el cuerpo de la tabla
+     */
+    this.limpiarTBody = function(tbody) {
+        for (var i = 0; i < tbody.rows.length; i++) {
+            tbody.deleteRow(i);
+            i--;
+        }
+    }
+
+    /**
+     * Crea la cabecera para la tabla de respuesta, este método debe ser sobreescrito
+     */
+     this.crearCabeceraTabla = function(tablaHTML) {
+        // Utilizar el método tablaHTML.createTHead();
+     }
+
+    /**
+     * Crea el componente de paginación que muestra la pagina actual y la cantidad de páginas
+     */
+     this.crearPaginacion = function(tablaHTML, numPaginas, paginaActual) {
+        tablaHTML.deleteTFoot();
+        if (numPaginas > 1) {
+            var pie = tablaHTML.createTFoot();
+            pie.style.fontSize = "10px";
+
+            var enlacesPagina = pie.insertRow(-1);
+            var celdaEnlacesPagina = enlacesPagina.insertCell(-1);
+            var numCols = this.getNumCols(tablaHTML);
+            // Se coloca el colspan igual al número de columnas de la tabla, además se coloca el estilo
+            // para el componente
+            celdaEnlacesPagina.colSpan = numCols;
+            celdaEnlacesPagina.align = "center";
+            celdaEnlacesPagina.innerHTML = "<hr>\n";
+
+            // Creamos los enlaces para las páginas
+            for (var i=1; i <= numPaginas; i++) {
+                // Truco sucio, se ejecuta la búsqueda, el truco sucio es la forma en que se coloca
+                // la página actual.   Se debe recordar que como estamos en escribiendo el HTML de
+                // la tabla es como si estuvieramos en "buscar.html" o en "lista.html"
+                var enlace = '<a href="" onclick="parent.parent.busqueda.setPaginaActual(' + i;
+                enlace += ');parent.ejecutarBusqueda();return false;">' + i + '</a>&nbsp;';
+                // Creamos enlaces para la paginación de la consulta, separados por espacio
+                celdaEnlacesPagina.innerHTML += (i == paginaActual) ? i + "&nbsp;" : enlace;
+            }
+
+            var totalPaginas = pie.insertRow(-1);
+            var celdaTotalPaginas = totalPaginas.insertCell(-1);
+            celdaTotalPaginas.colSpan = numCols;
+            celdaTotalPaginas.align = "center";
+            celdaTotalPaginas.innerHTML = "Página " + paginaActual + " de " + numPaginas;
+        }
+     }
+
+    /**
+     * Devuelve el número de columnas de una tabla
+     */
+    this.getNumCols = function(tablaHTML) {
+        var rows = tablaHTML.rows;
+        var cols = 0;
+
+        for (var i = 0; i < rows.length; i++) {
+            var colsRow = rows[i].cells.length;
+            if (colsRow > cols) {
+                cols = colsRow;
+            }
+        }
+
+        return cols;
+    }
+}
+
+/**
+ * Manejador que ejecuta un comando de bsqueda en el servidor
+ */
+DEjecutarBusquedaJS.prototype = new DEjecutarBusquedaAbstractoJS();
+DEjecutarBusquedaJS.prototype.constructor = DEjecutarBusquedaJS;
+function DEjecutarBusquedaJS(manejador, busqueda, tablaHTML) {
+    this.manejador = manejador;
+    this.busqueda = busqueda;
+    this.tablaHTML = tablaHTML;
+
+    this.adicionarFila = function(tbody, codigo, resultado) {
+        var row = tbody.insertRow(-1);
+        var celda1 = row.insertCell(-1);
+        var celda2 = row.insertCell(-1);
+
+        // Mapa de resultados con las casillas a actualizar y el valor
+        // Las casillas a actualizar deben tener la forma: grupo_ocurrencia_casilla:valorCasilla|grupo_ocurrencia_casilla:valorCasillas
+        // Si la casilla esta sola se asume el grupo y ocurrencia actual
+        var item = parent.getItem(busqueda.objCas);
+        var cadItem = (item != -1)? "_" + item : "";
+        var casillas = "des" + parent.getNumber(this.busqueda.objCas) + cadItem + ":" + resultado;
+        casillas += "|" + this.busqueda.objCas.id + ":" + codigo;
+        resultado = cambiarCaracteresAXml(resultado);
+
+        // Al dar click sobre la celda se actualiza el resultado de la casilla.
+        // Ver busqueda.js#actualizarCasillasBusqueda
+        celda1.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + codigo + "</a>";
+        celda2.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + resultado + "</a>";
+    }
+}
+
+/**
+ * Manejador que ejecuta un comando de búsqueda en el servidor y retorna un resultado con códigos repetidos
+ */
+DEjecutarBusquedaCodigoRepetidoJS.prototype = new DEjecutarBusquedaAbstractoJS();
+DEjecutarBusquedaCodigoRepetidoJS.prototype.constructor = DEjecutarBusquedaCodigoRepetidoJS;
+function DEjecutarBusquedaCodigoRepetidoJS(manejador, busqueda, tablaHTML) {
+    this.manejador = manejador;
+    this.busqueda = busqueda;
+    this.tablaHTML = tablaHTML;
+
+    // Ejecuta la búsqueda utilizando AJAX
+    this.manejar = function(objCas) {
+        this.objCas = objCas;
+        var visor = parent.DVisor;
+
+        //Esta es la url de la acordeon de busquedas
+        //document.getElementById('frameAyuda').contentDocument.getElementById('lista').contentDocument.location.href
+        this.limpiarTBody(this.tablaHTML.tBodies[0]);
+        this.mostrarCargando(this.tablaHTML.tBodies[0]);
+        var msjInvAcc = visor.obtenerDMensajeEjecAccion();
+        // En este caso cambia la cadena de invocación en los getters traemos una lista
+        msjInvAcc.addInvocacion("entradasalida.busquedavisor.DCmdAccEjecBusquedaVisor",
+                                "inicializar",
+                                new Array("string","Hashtable", "int"),
+                                new Array(this.busqueda.idComandoBusqueda, this.busqueda.parametrosBusqueda, getAsString(this.busqueda.paginaActual)),
+                                new Array("getListaResultados", "getNumPaginas", "getPaginaActual"));
+        var msjResp = parent.DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+        if(manejador) manejador.manejar(objCas);
+    }
+
+    // Carga los resultados de la búsqueda en la tabla HTML
+    this.cargarResultados = function (tbody, listaResultados) {
+        var i;
+        for (i=0; i < listaResultados.length; i++) {
+            var resultadoArray = listaResultados[i].split('-');
+            var key = resultadoArray[0];
+            var resultado = resultadoArray[1];
+            this.adicionarFila(tbody, key, resultado);
+        }
+
+        return i;
+    }
+
+    this.adicionarFila = function(tbody, codigo, resultado) {
+        var row = tbody.insertRow(-1);
+        var celda1 = row.insertCell(-1);
+        var celda2 = row.insertCell(-1);
+
+        // Mapa de resultados con las casillas a actualizar y el valor
+        // Las casillas a actualizar deben tener la forma: grupo_ocurrencia_casilla:valorCasilla|grupo_ocurrencia_casilla:valorCasillas
+        // Si la casilla esta sola se asume el grupo y ocurrencia actual
+        var item = parent.getItem(busqueda.objCas);
+        var cadItem = (item != -1)? "_" + item : "";
+        var casillas = "des" + parent.getNumber(this.busqueda.objCas) + cadItem + ":" + resultado;
+        casillas += "|" + this.busqueda.objCas.id + ":" + codigo;
+        resultado = cambiarCaracteresAXml(resultado);
+
+        // Al dar click sobre la celda se actualiza el resultado de la casilla.
+        // Ver busqueda.js#actualizarCasillasBusqueda
+        celda1.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + codigo + "</a>";
+        celda2.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + resultado + "</a>";
+    }
+}
+
+
+/**
+ * Manejador que ejecuta un comando de búsqueda en el servidor y retorna un resultado con códigos repetidos y agrega descripción
+ */
+DEjecutarBusquedaCodigoRepetidoConDescripcionJS.prototype = new DEjecutarBusquedaCodigoRepetidoJS();
+DEjecutarBusquedaCodigoRepetidoConDescripcionJS.prototype.constructor = DEjecutarBusquedaCodigoRepetidoConDescripcionJS;
+function DEjecutarBusquedaCodigoRepetidoConDescripcionJS(manejador, busqueda, tablaHTML) {
+    this.manejador = manejador;
+    this.busqueda = busqueda;
+    this.tablaHTML = tablaHTML;
+
+     this.adicionarFila = function(tbody, codigo, resultado) {
+        var row = tbody.insertRow(-1);
+        var celdaCodigo = row.insertCell(-1);
+        var celdaNombre = row.insertCell(-1);
+
+        // Mapa de resultados con las casillas a actualizar y el valor
+        // Las casillas a actualizar deben tener la forma: grupo_ocurrencia_casilla:valorCasilla|grupo_ocurrencia_casilla:valorCasillas
+        // Si la casilla esta sola se asume el grupo y ocurrencia actual
+        var item = parent.getItem(busqueda.objCas);
+        var cadItem = (item != -1)? "_" + item : "";
+
+        var resultadoArray = resultado.split("_");
+        // Obtenemos el nombre y la descripción
+        var nombre = cambiarCaracteresAXml(resultadoArray[0]);
+        var descripcion = cambiarCaracteresAXml(resultadoArray[1]);
+
+        var casillas = "des" + parent.getNumber(this.busqueda.objCas) + cadItem + ":" + nombre;
+        casillas += "|" + this.busqueda.objCas.id + ":" + codigo;
+
+        // Al dar click sobre la celda se actualiza el resultado de la casilla.
+        // Ver busqueda.js#actualizarCasillasBusqueda
+        var codigoHtml = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\"";
+        codigoHtml += " onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + codigo + "</a>";
+        var nombreHtml = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\"";
+        nombreHtml += " onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');parent.mostrarDescripcion();\""
+        // Colocamos un tooltip cuando el mouse se encuentre sobre el enlace con la descripción del resultado
+        nombreHtml += " onmouseover=\"parent.mostrarDescripcion('" + descripcion + "');\">" + nombre + "</a>";
+
+        celdaCodigo.innerHTML = codigoHtml;
+        celdaNombre.innerHTML = nombreHtml;
+    }
+}
+/**
+ * Manejador que ejecuta un comando de bsqueda en el servidor y recibe varias columnas de resultado
+ */
+DEjecutarBusquedaVariosJS.prototype = new DEjecutarBusquedaAbstractoJS();
+DEjecutarBusquedaVariosJS.prototype.constructor = DEjecutarBusquedaVariosJS;
+function DEjecutarBusquedaVariosJS(manejador, busqueda, tablaHTML) {
+    this.manejador = manejador;
+    this.busqueda = busqueda;
+    this.tablaHTML = tablaHTML;
+    this.mapaResultados = new Hashtable();
+
+    this.crearCabeceraTabla = function(tablaHTML) {
+        tablaHTML.deleteTHead();
+        var cabecera = tablaHTML.createTHead();
+        var filaCabecera = cabecera.insertRow(-1);
+        var cabeceraCodigo = filaCabecera.insertCell(-1);
+        cabeceraCodigo.innerHTML = "<b>Cóigo</b>";
+        var cabeceraNombre = filaCabecera.insertCell(-1);
+        cabeceraNombre.innerHTML = "<b>Nombre</b>";
+        var cabeceraPepito = filaCabecera.insertCell(-1);
+        cabeceraPepito.innerHTML = "<b>Pepito</b>";
+        var cabeceraJuanito = filaCabecera.insertCell(-1);
+        cabeceraJuanito.innerHTML = "<b>Juanito</b>";
+        var cabeceraCoquito = filaCabecera.insertCell(-1);
+        cabeceraCoquito.innerHTML = "<b>Coquito</b>";
+    }
+
+    this.adicionarFila = function(tbody, codigo, resultado) {
+        var row = tbody.insertRow(-1);
+        var celdaCodigo = row.insertCell(-1);
+        var celdaNombre = row.insertCell(-1);
+        var celdaPepito = row.insertCell(-1);
+        var celdaJuanito = row.insertCell(-1);
+        var celdaCoquito = row.insertCell(-1);
+
+        // Mapa de resultados con las casillas a actualizar y el valor
+        // Las casillas a actualizar deben tener la forma: grupo_ocurrencia_casilla:valorCasilla|grupo_ocurrencia_casilla:valorCasillas
+        // Si la casilla esta sola se asume el grupo y ocurrencia actual
+        var resultadoArray = resultado.split("_");
+        var nombre = resultadoArray[0];
+        var pepito = resultadoArray[1];
+        var juanito = resultadoArray[2];
+        var coquito = resultadoArray[3];
+
+        var casillas = "" + this.busqueda.objCas.id + ":" + codigo;
+        casillas += "|cas30:" + nombre + "|cas31:" + pepito + "|cas32:" + juanito;
+        casillas += "|cas33:" + coquito;
+
+        // Al dar click sobre la celda se actualiza el resultado de la casilla.
+        // Ver busqueda.js#actualizarCasillasBusqueda
+        celdaCodigo.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + codigo + "</a>";
+        celdaNombre.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + nombre + "</a>";
+        celdaPepito.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + pepito + "</a>";
+        celdaJuanito.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + juanito + "</a>";
+        celdaCoquito.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + coquito + "</a>";
+    }
+}
+
+/**
+ * Manejador que ejecuta un comando de bússqueda en el servidor y recibe la descripción
+ */
+DEjecutarBusquedaDescripcionPopupJS.prototype = new DEjecutarBusquedaAbstractoJS();
+DEjecutarBusquedaDescripcionPopupJS.prototype.constructor = DEjecutarBusquedaDescripcionPopupJS;
+function DEjecutarBusquedaDescripcionPopupJS(manejador, busqueda, tablaHTML) {
+    this.manejador = manejador;
+    this.busqueda = busqueda;
+    this.tablaHTML = tablaHTML;
+    this.mapaResultados = new Hashtable();
+
+    this.adicionarFila = function(tbody, codigo, resultado) {
+        var row = tbody.insertRow(-1);
+        var celdaCodigo = row.insertCell(-1);
+        var celdaNombre = row.insertCell(-1);
+
+        // Mapa de resultados con las casillas a actualizar y el valor
+        // Las casillas a actualizar deben tener la forma: grupo_ocurrencia_casilla:valorCasilla|grupo_ocurrencia_casilla:valorCasillas
+        // Si la casilla esta sola se asume el grupo y ocurrencia actual
+        var item = parent.getItem(busqueda.objCas);
+        var cadItem = (item != -1)? "_" + item : "";
+
+        var resultadoArray = resultado.split("_");
+        // Obtenemos el nombre y la descripción
+        var nombre = cambiarCaracteresAXml(resultadoArray[0]);
+        var descripcion = cambiarCaracteresAXml(resultadoArray[1]);
+
+        var casillas = "des" + parent.getNumber(this.busqueda.objCas) + cadItem + ":" + nombre;
+        casillas += "|" + this.busqueda.objCas.id + ":" + codigo;
+
+        // Al dar click sobre la celda se actualiza el resultado de la casilla.
+        // Ver busqueda.js#actualizarCasillasBusqueda
+        var codigoHtml = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\"";
+        codigoHtml += " onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + codigo + "</a>";
+        var nombreHtml = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\"";
+        nombreHtml += " onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');parent.mostrarDescripcion();\""
+        // Colocamos un tooltip cuando el mouse se encuentre sobre el enlace con la descripción del resultado
+        nombreHtml += " onmouseover=\"parent.mostrarDescripcion('" + descripcion + "');\">" + nombre + "</a>";
+
+        celdaCodigo.innerHTML = codigoHtml;
+        celdaNombre.innerHTML = nombreHtml;
+    }
+}
+
+/**
+ * Resalta la casilla actual con color amarillo, este manejador es adicinado por defecto a
+ * todas las casillas cuando se carga la hoja.
+ */
+DResaltarCasillaActualJS.prototype = new DManejadorJS();
+DResaltarCasillaActualJS.prototype.constructor = DResaltarCasillaActualJS;
+function DResaltarCasillaActualJS(manejador,tipo) {
+    var DVisor = parent.DVisor;
+
+    this.manejar = function(objCas) {
+      if (tipo == 'in') {
+
+        objCas.setAttribute('style', objCas.getAttribute('style') + 'background-color:#FFF7DE');
+      }else if (tipo == 'out') {
+        objCas.setAttribute('style', objCas.getAttribute('style') + 'background-color:#FFFFFF');
+      }
+      if(manejador) manejador.manejar(objCas);
+    }
+}
+
+/**
+ * Manejador para validación del documento completo.
+ */
+DValidarDocumentoJS.prototype = new DManejadorJS();
+DValidarDocumentoJS.prototype.constructor = DValidarDocumentoJS;
+function DValidarDocumentoJS(manejador) {
+    this.manejador = manejador;
+    this.defValidacion = new Hashtable();
+    this.ftoDocumento = Definicion.getFormatoDocumento();
+    this.documento = DVisor.docCopia;
+    this.logErrores = new DLogErrorValidacionDoc();
+
+    this.manejar = function(objCas) {
+        this.manejarValidaciones(this.defValidacion.keys());
+    }
+
+    this.manejarPorHoja = function (idHoja) {
+        var arrGrupos = new Array();
+        arrGrupos[0] = idHoja;
+        this.manejarValidaciones(arrGrupos);
+    }
+
+    this.manejarValidaciones = function (arrGrupos) {
+
+        this.getLogErrores().clearLogErrores();
+        for (var i=0; i<arrGrupos.length; i++) {
+            var arrEvCas = this.defValidacion.get(arrGrupos[i]);
+            if (this.documento.getGrupo(arrGrupos[i])) {
+                var arrOcurrencias = this.documento.getGrupo(arrGrupos[i]).getOcurrencias();
+                for (var j=0; j<arrOcurrencias.length; j++) {
+                    for (var k=0; k<arrEvCas.length; k++) {
+                        var evCas = new DEventoCasilla(arrEvCas[k].getNumCasilla(),arrEvCas[k].getNumEvento(),
+                        arrEvCas[k].getManejadores());
+                        // Restablece eventos y manejadores del iframe.
+                        evCas.setEventos(window.frames['Iframe1'].EVENTOS);
+                        evCas.setManejadores(window.frames['Iframe1'].MANEJADORES);
+                        // Obtiene la cadena de ejecución
+                        var cadEjecucion = evCas.getCadenaDecoradores();
+                        //Adapta la cadena de ejecución para acceder a las clases del HTML
+                        while (cadEjecucion.indexOf("new D") != -1) {
+                          cadEjecucion = cadEjecucion.replace("new D", "new window.frames['Iframe1'].D");
+                        }
+                        //Obtine el nombre del objeto validador
+                        var idxIniNomVal = cadEjecucion.indexOf(' ') + 1;
+                        var idxFinNomVal = cadEjecucion.indexOf(' =');
+                        var nomObjetoValidador = cadEjecucion.substring(idxIniNomVal, idxFinNomVal);
+                        //Completa la cadena de ejecución para ejecutar el validador
+                        /**Identifica si se esta ejecutando una validacion inicial o final,
+                         * y registra el nombre del manejador.
+                         */
+                        var nomManejadorVal = "";
+                        if (this == DVisor.validadorDocumentoIni) {
+                            nomManejadorVal = "DVisor.validadorDocumentoIni";
+                        }else if (this == DVisor.validadorDocumentoFin) {
+                            nomManejadorVal = "DVisor.validadorDocumentoFin";
+                        }
+                        //Genera código para que el validador reciba el manejador de validacion
+                        cadEjecucion += nomObjetoValidador + '.setManejadorVal(' + nomManejadorVal + ');';
+                        //Genera código para que el validador se ejecute
+                        cadEjecucion += nomObjetoValidador + '.validar(DVisor.docCopia.getCasilla(' +
+                        arrGrupos[i] + ', ' + arrOcurrencias[j].getId() +', ' +
+                        evCas.getNumCasilla() + '));';
+                        eval(cadEjecucion);
+                    }
+                }
+            }
+        }
+        if(manejador) manejador.manejar(objCas);
+    }
+
+    this.esValidadorInicial = function() {
+        return this.esInicial;
+    }
+
+    this.addValidacionesGrupo = function(idGrupo, arrEventosCasillas) {
+        if (!this.defValidacion.containsKey(idGrupo)) {
+            this.defValidacion.put(idGrupo, arrEventosCasillas);
+        }
+    }
+
+    this.getLogErrores = function() {
+        return this.logErrores;
+    }
+
+    this.validacionExitosa = function() {
+      return this.logErrores.getLogErrores() == null?true:false;
+    }
+
+
+    this.getTextoLogErrores = function() {
+        var mensaje = 'Se han detectado los siguientes errores:\r\n\r\n';
+        var valido = true;
+                var titEGeneral = false;
+                var titECasilla = false;
+
+        var arrErrores = this.logErrores.getLogErrores();
+        if (arrErrores) {
+            for (var i=0;i<arrErrores.length;i++) {
+                if (arrErrores[i].className == 'DErrorValidacionDocumento') {
+                                        if (!titEGeneral) {
+                                                mensaje += "Errores generales:\r\n\r\n";
+                                                titEGeneral=true;
+                                        }
+                                        mensaje += '-' + arrErrores[i].getMsjError() + '\r\n';
+                                }
+            }
+            for (var i=0;i<arrErrores.length;i++) {
+                if (arrErrores[i].className == 'DErrorValidacionCasilla') {
+                                        if (!titECasilla) {
+                                                mensaje += "Errores en casillas:\r\n";
+                                                titECasilla=true;
+                                        }
+                                        // Si hay casilla entonces se muestra la hoja y la copia
+                                        if (arrErrores[i].getIdCasilla() != 0) {
+                                          mensaje += '-En la casilla ' + arrErrores[i].getIdCasilla() +
+                                          ' de la hoja ' + arrErrores[i].getIdGrupo() + ', copia ' +
+                                          arrErrores[i].getIdOcurrencia() + ': \r\n' + arrErrores[i].getMsjError() + "\r\n";
+                                        // Sino mostrámos sólo el mensaje
+                                        } else {
+                                          mensaje += arrErrores[i].getMsjError();
+                                        }
+                                }
+            }
+        }
+        return mensaje;
+    }
+
+}
+
+
+/**
+ * Almacena los errores producidos durante la validacion de un documento.
+ */
+DLogErrorValidacionDoc = function() {
+    this.logErrores = null;
+
+    //Adiciona un log de error
+    this.addLogError = function(objCasillaJS, msjError) {
+        if (!this.logErrores)this.logErrores = new Array();
+        this.logErrores.push(new DErrorValidacionCasilla(objCasillaJS.getIdGrupo(),
+                                                    objCasillaJS.getIdOcurrencia(),
+                                                    objCasillaJS.getId(),
+                                                    msjError));
+    }
+
+    // Adiciona un mensaje de error sin la información de la casilla
+    // Es decir en el mensaje de error solámente se muestra el mensaje específicado
+    this.addMensajeError = function(msjError) {
+    if (!this.logErrores)this.logErrores = new Array();
+        this.logErrores.push(new DErrorValidacionCasilla(0, 0, 0, msjError));
+    }
+
+    //Adiciona un log de error cuando la casilla no existe
+    this.addLogErrorSinCasilla = function(idGrupo, idOcurrencia, idCasilla, msjError) {
+        if (!this.logErrores)this.logErrores = new Array();
+        this.logErrores.push(new DErrorValidacionCasilla(idGrupo,
+                                                    idOcurrencia,
+                                                    idCasilla,
+                                                    msjError));
+    }
+
+    //Adiciona un log de error cuando la casilla no existe
+    this.addLogErrorDocumento = function(msjError) {
+        if (!this.logErrores)this.logErrores = new Array();
+        this.logErrores.push(new DErrorValidacionDocumento(msjError));
+    }
+
+    //Retorna un array con el log de errores
+    this.getLogErrores = function () {
+        return this.logErrores;
+    }
+
+    this.clearLogErrores = function () {
+        this.logErrores = null;
+    }
+}
+
+//TO para regsitrar un error de validación de una casilla
+DErrorValidacionCasilla = function(idGrupo, idOcurrencia, idCasilla, msjError) {
+    this.idGrupo = idGrupo;
+    this.idOcurrencia = idOcurrencia;
+    this.idCasilla = idCasilla;
+    this.msjError = msjError;
+
+    this.getIdGrupo = function() {
+        return this.idGrupo;
+    }
+
+    this.getIdOcurrencia = function() {
+        return this.idOcurrencia;
+    }
+
+    this.getIdCasilla = function() {
+        return this.idCasilla;
+    }
+
+    this.getMsjError = function() {
+        return this.msjError;
+    }
+}
+DErrorValidacionCasilla.prototype.className = 'DErrorValidacionCasilla';
+
+//TO para regsitrar un error de validación del documento
+DErrorValidacionDocumento = function(msjError) {
+    this.msjError = msjError;
+
+    this.getMsjError = function() {
+        return this.msjError;
+    }
+}
+DErrorValidacionDocumento.prototype.className = 'DErrorValidacionDocumento';

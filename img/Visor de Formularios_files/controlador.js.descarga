@@ -1,0 +1,287 @@
+DControladorDocumento = function DControladorDocumento(doc) {
+
+  this.documento = doc;
+  /** inicializado se usa para evitar la recarga y reparseo del documento,
+  * este indica que el documento ya fue cargado a travaes de un arreglo de
+  * casillas, que probablemente proviene de un parsing de un documento xml */
+  this.iniFromXml = false;
+
+  this.estadoActualDoc = null;      //Estado actual del documento.
+  this.numRepeticionDoc = null;     //El número de repetición del documento.
+  this.isDocGuardado = false;       //Indica si el documento actual existe en la base de datos
+
+  this.setIsDocGuardado = function(isGuardado) {
+      this.isDocGuardado = isGuardado;
+  }
+
+  this.getIsDocGuardado = function() {
+      return this.isDocGuardado;
+  }
+
+  this.setNumRepeticionDoc = function(numRepeticionDoc) {
+      this.numRepeticiondoc = numRepeticionDoc;
+  }
+
+  this.getNumRepeticionDoc = function() {
+      return this.numRepeticiondoc;
+  }
+
+  this.setEstadoActualDoc = function(estadoActualDoc) {
+      this.estadoActualDoc = estadoActualDoc;
+  }
+
+  this.getEstadoActualDoc = function() {
+      return this.estadoActualDoc;
+  }
+
+  this.setId = function(idDocumento) {
+    this.documento.setId(idDocumento);
+  }
+
+  this.getId = function() {
+    return this.documento.getId();
+  }
+
+  this.isIniFromXml = function() {
+    return this.iniFromXml;
+  }
+
+  this.getDocumento = function() {
+    return this.documento;
+  }
+
+  this.getFormato = function(){
+      return this.documento.getIdFormato();
+  }
+
+  this.getVersion = function(){
+      return this.documento.getVersionFormato();
+  }
+
+  this.observadores = new Array();
+
+  this.addObserver = function(observer){
+    this.observadores.push(observer);
+  }
+
+  this.clearObservadores = function(){
+    this.observadores = new Array();
+  }
+
+  this.notify = function(){
+    for(var i=0; i < this.observadores.length; i++){
+       this.observadores[i].update(this);
+    }
+  }
+
+  this.tipo = 'cas';
+
+  this.setTipo = function(tipo) {
+    this.tipo = tipo;
+  }
+
+  this.getTipo = function() {
+    return this.tipo;
+  }
+
+  // Este es el prefijo para la deteccion de casillas en la vista
+  this.TIPO_DOC_CASILLAS = 'cas';
+  this.TIPO_DOC_RESUMEN = 'des';
+
+  /**
+   * A partir de un arreglo de casillas (Objetos DCasillaJS) va construyendo
+   * el objeto en el documento controlado por este controlador
+   * @param arrayCasillas
+   */
+  this.setCasillasFromArray = function(arrayCasillas) {
+    for(var i=0; i<arrayCasillas.length; i++){
+        var casilla = arrayCasillas[i];
+        var idGrupo = casilla.getGrupo();
+        var idOcurrencia = casilla.getOcurrencia();
+        var idCasilla = casilla.getCasilla();
+        var numItem = casilla.getIteracion();
+        var valor = casilla.getValor();
+        this.setCasilla(idGrupo, idOcurrencia, idCasilla, numItem, valor);
+    }
+  }
+
+  /**
+   * Deduce del objCas el numero de la casilla y el item de la misma,
+   * el numero de grupo y de ocurrencia los deduce automaticamente segun la hoja-copia
+   * en la que este.
+   * @param objCas El objeto DOM que equivale a una casilla, un input casXX o un checkbox casXX
+   */
+  this.setCasillaFromObjCas = function(objCas) {
+    //--this.setValorCasilla(getNumber(objCas), getItem(objCas), objCas.value);
+    this.setValorCasilla(getNumber(objCas), getItem(objCas), objCas.getValor());
+  }
+
+  /**
+   * Coloca el valor en la casilla correspondiente a la hoja y copia actual (grupo-ocurrencia)
+   * la ocurrencia en la que este parado el visor
+   */
+  this.setValorCasilla = function(numCasilla, numItem, valor) {
+    // Se aumenta 1 pues fachadaVisor trabaja desde 0 y setCasilla desde 1
+    var hojaActual = fachadaVisor.getHojaActual() + 1;
+    var copiaActual = fachadaVisor.getCopiaActual() + 1;
+    this.setCasilla(hojaActual, copiaActual, numCasilla, numItem, valor);
+  }
+
+  /**
+   * Metodo para poner valores de casillas al documento, automaticamente construye
+   * grupos ocurrencias y demas segun demanda
+   *
+   * @param idGrupo
+   * @param idOcurrencia
+   * @param idCasilla
+   * @param idIteracion -> es el mismo numItem
+   * @param valor
+   */
+  this.setCasilla = function(idGrupo, idOcurrencia, idCasilla, idIteracion, valor) {
+    var grupo = this.documento.getGrupo(idGrupo);
+    if (!grupo) {
+       grupo = new DGrupoJS(idGrupo);
+       this.documento.addGrupo(grupo);
+    }
+    var ocurrencia = grupo.getOcurrencia(idOcurrencia);
+    if(!ocurrencia) {
+       grupo.addOcurrencia();
+       ocurrencia = grupo.getOcurrencia(idOcurrencia);
+    }
+    var isCasillaColumna = (idIteracion != -1);
+    var casilla = ocurrencia.getCasilla(idCasilla);
+    if (!casilla) {
+       // Si es casilla columna
+       if (isCasillaColumna) {
+           casilla = new DCasillaColumnaJS(idGrupo, idOcurrencia, idCasilla);
+       } else {
+           casilla = new DCasillaJS(idGrupo, idOcurrencia, idCasilla);
+       }
+       ocurrencia.addCasilla(casilla);
+    }
+    //-- Si la Casilla es Columna hay que agregar el Valor en la Iteracion Correspondiente
+    if (isCasillaColumna){
+        if (!casilla.irA(idIteracion)) {
+            var numFilas = casilla.getNumFilas();
+            for (var i=numFilas;i<idIteracion;i++) {
+                casilla.addFila();
+            }
+        }
+        casilla.irA(idIteracion);
+    }
+    casilla.setValor(valor);
+    //    this.documento.notify();
+    this.notify();
+  }
+
+  /**
+   * Obtiene el valor de la casilla a partir del grupo y
+   * la ocurrencia en la que este parado el visor
+   */
+  this.getValorCasilla = function(numCasilla, numItem) {
+    // Se aumenta 1 pues fachadaVisor trabaja desde 0 y setCasilla desde 1
+    var hojaActual = fachadaVisor.getHojaActual() + 1;
+    var copiaActual = fachadaVisor.getCopiaActual() + 1;
+    return this.getValorCasillaAbsoluto(hojaActual, copiaActual,numCasilla, numItem);
+  }
+
+  /**
+   * Obtiene el valor de la casilla de acuerdo al grupo
+   * y ocurrencia recibidos como parámetros
+   */
+  this.getValorCasillaAbsoluto = function(numGrupo, numOcurrencia, numCasilla, numItem){
+    var ocu = null;
+    var cas = null;
+    var val = null;
+    var gr = this.documento.getGrupo(numGrupo);
+    if (gr != null) {
+      ocu = gr.getOcurrencia(numOcurrencia);
+      if (ocu != null) {
+       cas = ocu.getCasilla(numCasilla);
+      }
+    }
+    if (cas != null) {
+      if (cas.className == "DCasillaColumnaJS") {
+        //Es una casilla columna
+        if(numItem != -1) {
+          cas.irA(numItem);
+        } else {
+          alert("Error en configuracion de la casilla " + numCasilla + " es compuesta pero no tiene numItem = " + numItem);
+        }
+      }
+      val = cas.getValor();
+    }
+    return val;
+  }
+
+  /**
+   * Retorna el número de items de una casilla columna
+   * o -1 si es una casilla simple para la hoja actual
+   */
+  this.getNumItemsFromCas = function(numCasilla) {
+    var hojaActual = fachadaVisor.getHojaActual() + 1;
+    var copiaActual = fachadaVisor.getCopiaActual() + 1;
+    return this.getNumItemsFromCasAbsoluto(hojaActual, copiaActual, numCasilla);
+  }
+
+  /**
+   * Retorna el numero de items de una casilla columna
+   * o -1 si es una casilla simple
+   */
+  this.getNumItemsFromCasAbsoluto = function(numGrupo, numOcurrencia, numCasilla) {
+    var gr = this.documento.getGrupo(numGrupo);
+    if (gr != null) {
+      var ocu = gr.getOcurrencia(numOcurrencia);
+      if (ocu != null) {
+        var cas = ocu.getCasilla(numCasilla);
+        if(cas != null){
+          if (cas.className == "DCasillaColumnaJS") {
+	    return cas.getNumFilas();
+          }
+        }
+      }
+    }
+    return -1;
+  }
+
+  /**
+   * Actualiza el documento a partir del xml ingresado
+   * @param el documento como xml
+   */
+  this.updateFromXml = function(xml) {
+    var parser = new DXMLParserJS(xml);
+    var casillas = new Array();
+    casillas = parser.parseDoc();
+    this.setNumRepeticionDoc(parser.getNumRepeticion());
+    this.setCasillasFromArray(casillas);
+    this.iniFromXml = true;
+  }
+
+  /**
+   * Funcion que permite eliminar una casilla del modelo
+   */
+  this.removeCasilla = function(idGrupo, idOcurrencia, idCasilla) {
+     var grupo = this.documento.getGrupo(idGrupo);
+     if(grupo){
+         var ocurrencia = grupo.getOcurrencia(idOcurrencia);
+         if(ocurrencia) {
+            var numcasillas = ocurrencia.removeCasilla(idCasilla);
+            if(numcasillas == 0){
+               var numocurrencias = grupo.removeOcurrencia(idOcurrencia);
+               if(numocurrencias == 0){
+                  this.documento.removeGrupo(idGrupo);
+               }
+            }
+         }
+     }
+  }
+
+  /**
+   * Remueve la casilla que reciba del objeto objCas, asume que se esta en
+   * la hoja-pagina que indique FachadaVisor
+   */
+  this.removeCasillaFromObjCas = function (objCas) {
+    this.removeCasilla(fachadaVisor.getHojaActual()+1, fachadaVisor.getCopiaActual()+1,
+      getNumber(objCas));
+  }
+}

@@ -1,0 +1,487 @@
+/**
+ * Funciones y objetos utilizados por el manejador para bsquedas
+ * Existen dos tipos de bsquedas:
+ * - Tablas param\uFFFDricas = 1
+ * - Bsquedas = 2
+ *
+ * Las tablas param\uFFFDricas son listados con la informaci\uFFFD de una tabla
+ * Las bsquedas presentan la opci\uFFFD de buscar por c\uFFFDigo o nombre
+ */
+var busqueda = 0;
+
+/**
+ * Objeto DBusquedaJS.  Este objeto crea el tooltip para la bsqueda
+ * Par\uFFFDetros:
+ * - Casilla
+ * - Tipo de bsqueda (tabla param\uFFFDrica = 1, bsqueda = 2, busqueda por nombre = 3)
+ * - idComandoBusqueda es el nombre del comando (ej: departamento, municipio, actividadEconomica)
+ * - parametrosBusqueda (parametros de bsqueda: si tiene un padre ("padre"), si la bsqueda es por c\uFFFDigo ("codigo")
+ *                       y si la bsqueda es por nombre ("nombre"))
+ */
+function DBusquedaJS() {}
+DBusquedaJS.prototype = {
+    inicializar : function(objCas, tipoBusqueda, idComandoBusqueda, aliasBusqueda, parametrosBusqueda, layout, ejecutor) {
+        this.objCas = objCas;
+        this.tipoBusqueda = tipoBusqueda;
+        this.idComandoBusqueda = idComandoBusqueda;
+        this.parametrosBusqueda = parametrosBusqueda;
+        this.aliasBusqueda = aliasBusqueda;
+        this.layout = layout;
+        this.ejecutor = ejecutor;
+        this.paginaActual = 1;
+
+        // Texto t\uFFFDulo del tooltip
+         var textoCasilla = "Encuentre aqu&iacute; informaci&oacute;n acerca de la <b><i>casilla " + getNumber(objCas) + "</i></b>";
+        if (this.tipoBusqueda && this.idComandoBusqueda && this.aliasBusqueda) {
+          textoCasilla += ", llene esta casilla seleccionando un valor para <b><i>" + this.aliasBusqueda + "</i></b>.";
+        }
+
+
+        //Define la p\uFFFDina que se debe mostrar en el tooltip
+        var paginaLayout = null;
+        //Define el boton de Ayuda
+        var imagen = "botayuda_visor.gif";
+        switch (this.layout) {
+          case '1':
+            paginaLayout = "tooltip.html\"";
+            break;
+          case '2':
+            paginaLayout = "tooltip_fijo.html\"";
+            break;
+          case '3':
+            paginaLayout = "tooltip_ayuda.html\"";
+            break;
+          case '4': //muestra solo lista sin texto de ayuda
+            paginaLayout = "tooltip_busqueda.html\"";
+            break;
+        }
+
+        if(this.idComandoBusqueda == 'actividadesEconomicasEquiv'){ //Caso especial para Rut Actividades economica equivalentes
+          imagen = "botbusqueda.gif";
+        }
+
+        // Div que contiene el iframe con la informaci\uFFFD de ayuda y la bsqueda
+        this.textoTooltip =
+        "<div id=\"headerToolTip\" >" +
+        "    <div id=\"botonAyuda\" style=\"display:inline;\" >" +
+        "      <input type=\"button\" style=\"width:38px;height:17px;background-color:#FFF7DE;border-color:#FFF7DE;background-image:url('" + parent.PATH_IMAGENES_VISOR + "/"+imagen+"')\"  onclick=\"javascript:mostrarFrame()\"/>" +
+        "    </div>" +
+        "    <div id=\"textoTooltip\" style=\"display:none;\">" +
+        "      <table border=\"0\" cellspacing=\"3\" cellpadding=\"2\" width=\"100%\" height=\"100%\" >" +
+        "        <tr>" +
+        "          <td><p style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt; background-color: #FFF7DE; border-color:#FFF7DE; \"><span id=\"marco1\" dir=\"ltr\" style=\"float: right; width: 0.5cm; height: 0.5cm; padding: 0cm; border: 0; \"></span>" + textoCasilla + "</p></td>" +
+		"          <td  align=\"right\" ><input type=\"button\" style=\"width:24px;height:24px;background-color:#FFF7DE;border-color:#FFF7DE;background-image:url('" + parent.PATH_IMAGENES_VISOR + "/botctrolcerrar_visor.gif')\"  onclick=\"javascript:toolTip();javascript:ocultarDescripcion();\"/></td>" +
+        "        </tr>" +
+        "        <tr>";
+
+        var mostrarLimpiar = this.parametrosBusqueda.get(DBusquedaJS.PARAM_BUSQUEDA_MOSTRAR_LIMPIAR);
+        if (mostrarLimpiar) {
+            this.textoTooltip += "         <td><input type=\"button\" style=\"width:65px;height:25pxbackground-color:#FFF7DE;border-color:#FFF7DE;background-image:url('" + parent.PATH_IMAGENES_VISOR + "/botlimpiar_visor.gif')\"  onclick=\"javascript:limpiarCasilla()\"/></td>";
+        // Si la casilla tiene valor, entonces se agrega el botón de limpiar
+        } else if (this.objCas.value != '' && this.layout != '3') {
+            var numCasilla = getNumber(this.objCas);
+            var item = parent.getItem(this.objCas)*1;
+            var numItems = parent.DVisor.controlador.getNumItemsFromCas(numCasilla)*1;
+            // Si el item que se intenta borrar no es el último item diligenciado de la casilla columna
+            if (item != -1) {
+                var siguienteItem = item + 1;
+                // Si es el último item, entonces se evalua que el item tenga un valor diferente de vacío
+                if (siguienteItem > numItems) {
+		   var cadItem = "cas" + numCasilla + "_" + item;
+           	   var casSiguienteItem = document.getElementById(cadItem);
+           	   if (casSiguienteItem.value != '') {
+               	      this.textoTooltip += "         <td><input type=\"button\" style=\"width:65px;height:25px;background-color:#FFF7DE;border-color:#FFF7DE;background-image:url('" + parent.PATH_IMAGENES_VISOR + "/botlimpiar_visor.gif')\"  onclick=\"javascript:limpiarCasilla()\"/></td>";
+           	   }
+                   // Si no es el último item, entonces se evalua que el siguiente no tenga un valor
+                } else {
+		   var cadItem = "cas" + numCasilla + "_" + siguienteItem;
+           	   var casSiguienteItem = document.getElementById(cadItem);
+           	   if (casSiguienteItem.value == '') {
+               	      this.textoTooltip += "         <td><input type=\"button\" style=\"width:65px;height:25px;background-color:#FFF7DE;border-color:#FFF7DE;background-image:url('" + parent.PATH_IMAGENES_VISOR + "/botlimpiar_visor.gif')\"  onclick=\"javascript:limpiarCasilla()\"/></td>";
+           	   }
+           	}
+            } else  {
+                this.textoTooltip += "         <td><input type=\"button\" style=\"width:65px;height:25px;background-color:#FFF7DE;border-color:#FFF7DE;background-image:url('" + parent.PATH_IMAGENES_VISOR + "/botlimpiar_visor.gif')\"  onclick=\"javascript:limpiarCasilla()\"/></td>";
+            }
+        }
+
+
+        if(this.idComandoBusqueda == 'actividadesEconomicasEquiv'){ //Caso especial para Rut Actividades economica equivalentes
+          this.textoTooltip += "   <td><input type=\"button\" style=\"width:65px;height:25px;background-color:#FFF7DE;border-color:#FFF7DE;background-image:url('" + parent.PATH_IMAGENES_VISOR + "/bot_nuevactividad.gif')\"  onclick=\"javascript:mostrarBusqueda()\"/></td>";
+        }
+
+        this.textoTooltip += "        </tr>" +
+          "      </table>" +
+          "      <iframe id=\"frameAyuda\" name=\"frameAyuda\" frameborder=0 scrolling=no src=\"" + parent.PATH_ENTRADASALIDA_VISOR + "/busqueda/" + paginaLayout + " width=\"350px\" height=\"300px\"></iframe>" +
+          "    </div>" +
+          "</div>\n";
+
+
+    },
+
+    // Coloca la pagina actual
+    setPaginaActual : function(paginaActual) {
+        this.paginaActual = paginaActual;
+    },
+
+    // Muestra el tooltip
+    mostrarTooltip : function() {
+        busqueda = new DBusquedaJS();
+        busqueda.inicializar(this.objCas, this.tipoBusqueda, this.idComandoBusqueda, this.aliasBusqueda, this.parametrosBusqueda, this.layout, this.ejecutor);
+        this.tooltip = toolTip(this.objCas, this.textoTooltip, null);
+    }
+};
+
+/**
+ * Tipos de bsqueda
+ */
+DBusquedaJS.TIPO_BUSQUEDA_TABLA = '1';
+DBusquedaJS.TIPO_BUSQUEDA_BUSCAR = '2';
+DBusquedaJS.TIPO_BUSQUEDA_NOMBRE = '3';
+
+/**
+ * Par\uFFFDetros de bsqueda
+ */
+DBusquedaJS.PARAM_BUSQUEDA_PADRE = "padre";
+DBusquedaJS.PARAM_BUSQUEDA_CODIGO = "codigo";
+DBusquedaJS.PARAM_BUSQUEDA_NOMBRE = "nombre";
+DBusquedaJS.PARAM_BUSQUEDA_MOSTRAR_LIMPIAR = "mostrarLimpiar";
+
+
+/**
+ * Muestra el frame que contiene la informaci\uFFFD de ayuda y bsqueda
+ */
+mostrarFrame = function() {
+    var textoTooltip = document.getElementById("textoTooltip");
+    textoTooltip.style.display = "";
+    var botonAyuda = document.getElementById("botonAyuda");
+    botonAyuda.style.display = "none";
+    var toolTip = document.getElementById('ToolTip');
+    var toolTipLeft = valorSinPX(toolTip.style.left);
+    var objCas = busqueda.objCas;
+    var toolTipWidth = valorSinPX(document.getElementById('frameAyuda').width);
+    var objCasRight = valorSinPX(objCas.parentNode.style.left) + valorSinPX(objCas.style.width);
+    var objCasWidth = valorSinPX(objCas.style.width);
+    toolTip.style.top = objCas.parentNode.style.top;
+    if (objCasRight - toolTipWidth > 0) {
+      if (objCasWidth < 70) {
+	toolTip.style.left = objCasRight - toolTipWidth + 40;
+      } else {
+	toolTip.style.left = objCasRight - toolTipWidth;
+      }
+    } else {
+      toolTip.style.left = objCas.parentNode.style.left;
+    }
+}
+
+/**
+ * Crea el div de la descripcion
+ */
+var descripcionTooltip =
+"<div id=\"descripcionTooltip\" style=\"display:none; position:absolute; z-index:99; background-color:#FFF7DE; border:1px solid #2D5544;\">" +
+"    <table border=\"0\" cellspacing=\"2\" cellpadding=\"2\" width=\"100%\">" +
+"      <tr align=\"right\">" +
+"        <td><input type=\"button\" style=\"width:24px;height:24px;background-color:#FFF7DE;border-color:#FFF7DE;background-image:url('" + parent.PATH_IMAGENES_VISOR + "/botctrolcerrar_visor.gif')\"  onclick=\"javascript:ocultarDescripcion();\"/></td>" +
+"      </tr>" +
+"      <tr id=\"encabezadoDescripcion\" style=\"background-color:#FFEBAD;color:#CE9400;font-family: Arial, Helvetica, sans-serif;font-size:12px\">" +
+"        <td><b>Descripción</b></td>" +
+"      </tr>" +
+
+"      <tr><td height=\"100%\">" +
+"        <div id=\"contenidoDescripcion\" style=\"height:100%;\">" +
+"          <textarea id=\"textoDescripcion\" style=\"overflow: auto; width:100%;height:300px; border: 0px; background-color:#FFF7DE;font-family: Arial, Helvetica, sans-serif;font-size:8pt\" readonly></textarea>" +
+"        </div>" +
+"      </td></tr>" +
+"    </table>" +
+"</div>";
+document.write(descripcionTooltip);
+
+/**
+ * Muestra la descripción para el elemento seleccionado
+ */
+this.mostrarDescripcion = function(descripcion) {
+    var descripcionTooltip = parent.document.getElementById("descripcionTooltip");
+    var descripcionTexto = parent.document.getElementById("textoDescripcion");
+
+    if (descripcion != null || descripcion == "") {
+      var toolTip = parent.document.getElementById('ToolTip');
+      var toolTipLeft = parent.valorSinPX(toolTip.style.left);
+      var toolTipTop = parent.valorSinPX(toolTip.style.top);
+      var toolTipWidth = parent.valorSinPX(parent.document.getElementById('frameAyuda').width)*1;
+
+      descripcionTooltip.style.left = toolTipLeft + toolTipWidth + 5;
+      descripcionTooltip.style.top = toolTipTop;
+      descripcionTooltip.style.width = toolTipWidth;
+      descripcionTexto.value = descripcion;
+      descripcionTooltip.style.display = "";
+    } else {
+      descripcionTooltip.style.display = "none";
+    }
+}
+
+/**
+ * Oculta la descripción para el elemento seleccionado
+ */
+this.ocultarDescripcion = function() {
+    var descripcionTooltip = document.getElementById("descripcionTooltip");
+    descripcionTooltip.style.display = "none";
+}
+
+ /**
+ * Funcionalidad especial para RUT: Abre pantalla normal de Activiades economicas
+ */
+this.mostrarBusqueda = function() {
+
+  if(document.getElementById("hddIndBorrarCasillaSig")){
+
+    document.getElementById("hddIndBorrarCasillaSig").value='SI';
+  }
+  toolTip(); //Cierra la ayuda
+
+  ocultarDescripcion();
+
+  var objCas = busqueda.objCas;
+  //objCas.select();
+  //crea el evento para refrescar el valor y lo dispara.
+  if (objCas.dispatchEvent){
+     //Codigo para mozilla.
+      var evento = document.createEvent("Events");
+      evento.initEvent(EVENTOS.get('19'), true, true);
+      objCas.dispatchEvent(evento);
+   }else if(objCas.fireEvent){
+      //Codigo para IE
+       objCas.fireEvent("on" + EVENTOS.get('19'));
+   }
+
+  mostrarFrame();
+
+}
+
+
+/**
+ * Limpia el valor de la casilla actual.
+ */
+
+limpiarCasilla = function() {
+  var DVisor = parent.DVisor;
+  var fachadaVisor = parent.fachadaVisor;
+  busqueda.objCas.value = '';
+  DVisor.controlador.setCasillaFromObjCas(busqueda.objCas);
+  evaluate(busqueda.objCas);
+  DVisor.controladorDescripciones.removeCasilla(ID_GRUPO,fachadaVisor.getHojaActual(),fachadaVisor.getCopiaActual());
+  var numCasilla = getNumber(busqueda.objCas);
+  var item = parent.getItem(busqueda.objCas);
+  var cadItem = (item != -1)? "_" + item : "";
+  var cadDes = numCasilla + cadItem;
+  var desCas = document.getElementById('des' + cadDes);
+
+  if (desCas) {
+     desCas.value = '';
+    // DVisor.controladorDescripciones.setValorCasilla(cadDes, -1, "");
+     DVisor.controladorDescripciones.setValorCasilla(numCasilla, item, "");
+  }
+
+  // Oculta el tooltip de búsqueda
+  toolTip();
+}
+
+/**
+ * Marca la casilla actual para que no muestre la ayuda en el futuro.
+ */
+desactivarAyudaCasilla = function() {
+    var busqueda = parent.document.getElementById('Iframe1').contentWindow.busqueda;
+
+    if (busqueda) {
+        busqueda.objCas.ayuda = false;
+        toolTip();
+    }
+}
+
+
+
+/**
+ * Carga el texto del encabezado de la secci\uFFFD de bsqueda y carga el html para tablas param\uFFFDricas (visor/busqueda/lista.html)
+ * o el html para bsquedas (visor/busqueda/buscar.html)
+ */
+cargarAyuda = function() {
+    var busqueda = parent.busqueda;
+
+    if (busqueda) {
+        if (busqueda.tipoBusqueda && busqueda.idComandoBusqueda && busqueda.aliasBusqueda) {
+          var encabezadoLista = document.getElementById("encabezadoLista");
+          var tituloLista = "<b>" + "Elija un valor para " + busqueda.aliasBusqueda + "</b>";
+
+          if(busqueda.layout == '4'){ //Caso especial para Actividades economicas Rut
+            tituloLista = '<a href="#" onclick="cargarLista_1();return false;">' + "Elija la actividad que corresponde según la " + busqueda.aliasBusqueda + '</a>';
+          }
+          encabezadoLista.innerHTML = tituloLista;
+
+          if (busqueda.tipoBusqueda == DBusquedaJS.TIPO_BUSQUEDA_TABLA) {
+              frames["lista"].location.href = "lista.html";
+          } else if (busqueda.tipoBusqueda == DBusquedaJS.TIPO_BUSQUEDA_BUSCAR) {
+              frames["lista"].location.href = "buscar.html";
+          } else {
+              frames["lista"].location.href = "buscarNombre.html";
+          }
+
+        }
+
+        //var contenidoAyuda = document.getElementById("contenidoAyuda");
+        var contenidoAyuda = document.getElementById("textoAyuda");
+        var pnlBoton = document.getElementById("panelBoton");
+
+        var objCasId = busqueda.objCas.id;
+
+        /*contenidoAyuda.innerHTML = "<textarea style=\"width:100%;height:95%;background-color:#FFF7DE;\" readonly>" + eval("parent." +
+        ( objCasId.indexOf('_') == -1?objCasId:objCasId.substring(0,objCasId.indexOf('_')) ) +
+        "Ayuda") + "</textarea>";*/
+
+        // Se utiliza para pantalla que muestre unicamente la lista sin ayuda.
+        if(busqueda.layout != '4'){
+          contenidoAyuda.value = eval("parent." + (objCasId.indexOf('_') == -1?objCasId:objCasId.substring(0,objCasId.indexOf('_')) ) + "Ayuda");
+        }
+    }
+}
+
+/**
+ * cargarLista es ejecutado al elegir uno de los tabs del tooltip desplegado, si se elige la bsqueda y el tipo de bsqueda
+ * es tabla param\uFFFDrica se cargan toda la informaci\uFFFD de la tabla
+ */
+cargarLista = function(tab) {
+    var busqueda = parent.busqueda;
+    var titleBar = tab.titleBar?tab.titleBar.id:tab.id;
+
+    if (titleBar == "encabezadoLista" && busqueda.tipoBusqueda == DBusquedaJS.TIPO_BUSQUEDA_TABLA) {
+        busqueda.setPaginaActual(1);
+        ejecutarBusqueda();
+    }
+}
+
+/**
+ * cargarLista es ejecutado desde la pantalla de busqueda que no muestra ayuda
+ */
+cargarLista_1 = function() {
+
+    var casActividadesEco=new Array('46','48','50_1','50_2','161_1','161_2','161_3');
+    for(i=0;i<casActividadesEco.length;i++){
+        if(parent.busqueda.objCas.id=='cas'+casActividadesEco[i]){
+            parent.busqueda.parametrosBusqueda.table.padre=parent.document.getElementById('cashdd'+casActividadesEco[i]).value;
+        }
+    }
+
+
+    var busqueda = parent.busqueda;
+    busqueda.setPaginaActual(1);
+    ejecutarBusqueda();
+}
+
+
+
+/**
+ * Crea el manejador de búsqueda que ejecuta el comando de bsqueda del lado del servidor
+ */
+ejecutarBusqueda = function() {
+    var tablaLista = frames["lista"].document.getElementById("tablaLista");
+    var busqueda = parent.busqueda;
+    var parametroBusqueda = frames["lista"].document.getElementById("selParamBusqueda");
+    var textoBusqueda = frames["lista"].document.getElementById("txtBusqueda");
+
+    /**
+     * Si es una búsqueda se cargan los parámetros de búsqueda
+     */
+    if (parametroBusqueda && textoBusqueda) {
+        // Ahora el código también puede ser alfanumérico
+        if (parametroBusqueda.value == DBusquedaJS.PARAM_BUSQUEDA_CODIGO) {
+            busqueda.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_CODIGO, textoBusqueda.value);
+            busqueda.parametrosBusqueda.remove(DBusquedaJS.PARAM_BUSQUEDA_NOMBRE);
+        } else if (parametroBusqueda.value == DBusquedaJS.PARAM_BUSQUEDA_NOMBRE) {
+            busqueda.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_NOMBRE, textoBusqueda.value);
+            busqueda.parametrosBusqueda.remove(DBusquedaJS.PARAM_BUSQUEDA_CODIGO);
+        }
+    }
+
+    // Se crea el manejador
+    // Ver visor/js/controlador/eventos/manejadores/manejadoresvisor.js#DEjecutarBusquedaAbstractoJS
+    if (tablaLista) {
+        var manejador;
+
+        if (busqueda.ejecutor && busqueda.ejecutor != "") {
+            manejador = eval("new parent." + busqueda.ejecutor + "(null, busqueda, tablaLista)");
+        } else {
+            manejador = new parent.DEjecutarBusquedaJS(null, busqueda, tablaLista);
+        }
+        manejador.manejar(busqueda.objCas);
+    }
+}
+
+/**
+ * Actualiza el valor de la casilla con el valor seleccionado despu\uFFFD de la ejecuci\uFFFD de la bsqueda y
+ * oculta el tooltip
+ */
+actualizarCasillasBusqueda = function(casillas) {
+    /**
+     * Actualiza las casillas necesarias
+     */
+    var DVisor = parent.DVisor;
+    // Se dividen los resultados, quedando de la siguiente manera: casilla:valor
+    var casillasArray = casillas.split('|');
+
+    for (i = 0; i < casillasArray.length; i++) {
+        var casillaArray = casillasArray[i].split(':');
+        var infoCasilla = casillaArray[0];
+        var valorCasilla = casillaArray[1];
+        // Escapamos las comillas sencillas y dobles
+        valorCasilla = valorCasilla.replace(new RegExp('["\']', 'g'), '');
+
+        if (!infoCasilla.indexOf("cas") == 0  && infoCasilla.indexOf("_") > -1 && infoCasilla.indexOf("des") == -1) {
+            var posCasilla = infoCasilla.split("_");
+
+            var idGrupo = posCasilla[0];
+            var idOcurrencia = posCasilla[1];
+            // Nombre de la casilla
+            var nombreCasilla = posCasilla[2];
+
+            if (idGrupo && idOcurrencia && nombreCasilla) {
+                if (nombreCasilla.indexOf(DVisor.controlador.TIPO_DOC_CASILLAS) > -1) {
+                    DVisor.controlador.setCasilla(idGrupo, idOcurrencia, parent.getNumber(nombreCasilla), -1, valorCasilla);
+                } else {
+                    DVisor.controladorDescripciones.setCasilla(idGrupo, idOcurrencia, parent.getNumber(nombreCasilla), -1, valorCasilla);
+                }
+            }
+
+            // Sino la clave es el nombre de la casilla
+        } else {
+            this.actualizarCasillaHojaActual(infoCasilla, valorCasilla);
+        }
+    }
+
+    parent.toolTip();
+}
+
+/**
+ * Actualiza las casillas para la hoja actual
+ */
+this.actualizarCasillaHojaActual = function(nombreCasilla, valor) {
+    var DVisor = parent.parent.DVisor;
+    var objCas = parent.document.getElementById(nombreCasilla);
+
+    if (objCas) {
+        objCas.value = "" + valor;
+        if (nombreCasilla.indexOf(DVisor.controlador.TIPO_DOC_CASILLAS) > -1) {
+            DVisor.controlador.setCasillaFromObjCas(objCas);
+            parent.evaluate(objCas);
+        } else {
+            DVisor.controladorDescripciones.setCasillaFromObjCas(objCas);
+        }
+    }
+}
+
+
+//prueba activar valores
+
+
+activarValores = function(expresion){
+  parent.a(expresion);
+  parent.toolTip();
+}
+

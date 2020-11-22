@@ -1,0 +1,153 @@
+
+DControlCambiosJS = function DControlCambiosJS(){
+
+   this.elemborrados = new Array();
+   this.doccambios=null;
+
+   this.flagcambios = false;
+
+   this.hasChanged = function(){
+      return this.flagcambios;
+   }
+
+   this.inicializar = function(idformato, idversion){
+      this.doccambios = new DDocumentoJS(idformato, idversion);
+   }
+
+   this.getElementosBorrados = function(){
+      return this.elemborrados;
+   }
+
+   this.getDocCambios = function(){
+      return this.doccambios;
+   }
+
+   this.sincronizaCambios = function(docoriginal, doccopia){
+      this.sincronizaGrupos(docoriginal, doccopia);
+   }
+
+   //Metodos auxiliares para buscar grupos, ocurrencias y casillas.
+   this.sincronizaGrupos = function(original, copia){
+      //arreglo que contiene la id de los grupos de el doc original y la copia.
+      var idgruposoriginal = original.getIdGrupos();
+      var idgruposcopia = copia.getIdGrupos();
+
+      //recorremos las id de los grupos en la copia y los enfrentamos con el original.
+      for(var i=0; i < idgruposcopia.length; i++){
+         //evalua si se encontro un grupo nuevo, de ser asi, lo adicina.
+         //en caso contrario, envia los dos grupos iguales para avaluar si se adiciono una ocurrencia
+         if(!idgruposoriginal.hasElement(idgruposcopia[i])){
+            this.doccambios.addGrupo(copia.getGrupo(idgruposcopia[i]));
+            this.flagcambios = true;
+         }else{
+            gruposoriginal=original.getGrupoByID(idgruposcopia[i]);
+            gruposcopia=copia.getGrupoByID(idgruposcopia[i]);
+
+            this.sincronizaOcurrencias(gruposoriginal, gruposcopia);
+         }
+      }
+
+      //recorremos las id de los grupos del original y los enfrentamos a la copia
+      for(var i=0; i < idgruposoriginal.length; i++){
+         if(!idgruposcopia.hasElement(idgruposoriginal[i])){
+            this.elemborrados.push(idgruposoriginal[i] + '.0.0');
+         }
+      }
+   }
+
+   this.sincronizaOcurrencias = function(gr_original, gr_copia){
+      var idocuoriginal = gr_original.getIdOcurrencias();
+      var idocucopia = gr_copia.getIdOcurrencias();
+
+      var nuevoGrupo = new DGrupoJS(gr_original.getId());
+
+      for(var i=0; i < idocucopia.length; i++){
+         if(!idocuoriginal.hasElement(idocucopia[i])){
+            nuevoGrupo.addOcurrencia(gr_copia.getOcurrencia(idocucopia[i]));
+            this.flagcambios = true;
+         }else{
+            oc_original=gr_original.getOcurrencia(idocucopia[i]);
+            oc_copia=gr_copia.getOcurrencia(idocucopia[i]);
+
+            this.sincronizaCasillas(oc_original, oc_copia, gr_original.getId());
+         }
+      }
+
+      if(nuevoGrupo.getNumeroOcurrencias()>0)
+         this.doccambios.addGrupo(nuevoGrupo);
+
+      for(var i=0; i < idocuoriginal.length; i++){
+         if(!idocucopia.hasElement(idocuoriginal[i])){
+            ocuelim=gr_original.getId()+'.'+idocuoriginal[i];
+            this.elemborrados.push(ocuelim + '.0');
+         }
+      }
+   }
+
+   this.sincronizaCasillas = function(oc_original, oc_copia, idgrupo){
+      idcasoriginal = oc_original.getIdCasillas();
+      idcascopia = oc_copia.getIdCasillas();
+
+      var tipo = 'DCasillaColumnaJS';
+
+      var nuevogrupo=null;
+      var nuevaCasillaColumna=null;
+      var nuevaocurrencia = new DOcurrenciaJS(oc_original.getId());
+
+      if(!this.doccambios.getGrupo(idgrupo))
+         nuevogrupo = new DGrupoJS(idgrupo);
+      else
+         nuevogrupo = this.doccambios.getGrupo(idgrupo);
+      //agregar comparacion de tipos de casillas
+      for(i=0; i < idcascopia.length; i++){
+         if(!idcasoriginal.hasElement(idcascopia[i])){
+            nuevaocurrencia.addCasilla(oc_copia.getCasilla(idcascopia[i]));
+            this.flagcambios = true;
+         }else{
+            casoriginal = oc_original.getCasilla(idcascopia[i]);
+            cascopia = oc_copia.getCasilla(idcascopia[i]);
+            if(oc_copia.getCasilla(idcascopia[i]).className != tipo){
+               if(casoriginal.getValor() != cascopia.getValor()){
+                  nuevaocurrencia.addCasilla(cascopia);
+                  this.flagcambios = true;
+               }
+            }
+            else{
+               var filasCopia = cascopia.getNumFilas();
+               var filasOriginal = casoriginal.getNumFilas();
+               if(filasCopia != filasOriginal){
+                  this.flagcambios = true;
+                  nuevaocurrencia.addCasilla(cascopia);
+               }
+               else{
+                  for(fila=1;fila<=filasCopia;fila++){
+                     cascopia.irA(fila);
+                     if(!casoriginal.irA(fila)){
+                        this.flagcambios = true;
+                        nuevaocurrencia.addCasilla(cascopia);
+                        break;
+                     }
+                     if(casoriginal.getValor() != cascopia.getValor()){
+                       nuevaocurrencia.addCasilla(cascopia);
+                       this.flagcambios = true;
+                       break;
+                     }
+                 }
+               }
+            }
+         }
+      }
+
+      if(nuevaocurrencia.getNumCasillas() > 0){
+         nuevogrupo.addOcurrencia(nuevaocurrencia);
+         this.doccambios.addGrupo(nuevogrupo);
+      }
+
+      for(var j=0; j < idcasoriginal.length; j++){
+         if(!idcascopia.hasElement(idcasoriginal[j])){
+            caselim=idgrupo+'.'+oc_original.getId()+'.'+idcasoriginal[j];
+            this.elemborrados.push(caselim);
+         }
+      }
+   }
+}

@@ -1,0 +1,584 @@
+//Configuración de botones para este formulario/modo
+
+var botonEnviar = new Array('enviar2','botenviar_visor.gif','Envia','botrenviar_visor.gif','DEnviarJS');
+var botonPDF = new Array('generarPdf2-2','botpdf_visor.gif','Documento para Impresión.','botrpdf_visor.gif','DGenerarPDFRUTJS');
+var botonGuardarTMP = new Array('GuardarTMP','botguardartemporal_visor.gif','Guardar temporalmente','botrguardartemporal_visor.gif','DGuardarDocumentoTemporalRutJS');
+var botonSalir = new Array('Salir','bot-salir.gif','Salir a pantalla Inicial','bot-saliroll.gif','DVolverMenuRutJS');
+var botonIrFormalizar = new Array('FormalizarIr','bot_formalizar.gif','Ir Formalizar','bot_formalizar.gif','DFormalizarJS');
+
+
+//Adiciona la configuración de botones para la barra del visor
+CONFIGURACION_BARRA.unshift(botonSalir);
+CONFIGURACION_BARRA.unshift(botonPDF);
+CONFIGURACION_BARRA.unshift(botonEnviar);
+CONFIGURACION_BARRA.unshift(botonGuardarTMP);
+
+
+
+
+//Configuración para la generación del archivo PDF
+var GENERAR_PDF_CRC32 = true;
+var CONF_GENERACION_PDF = new Hashtable();
+CONF_GENERACION_PDF.put('crc32', true);
+CONF_GENERACION_PDF.put('num_copias',2);
+CONF_GENERACION_PDF.put('tipoPdf', 1);
+//CONF_GENERACION_PDF.put(ARCHIVO_PDF.get('etiqueta_copias'), new Array("Copia uno","Copia dos","Copia tres"));
+
+
+
+var formalizar = (DVisor.contexto.getParametro("FORMALIZACION") == 'true')?true:false;
+var logeo = (DVisor.contexto.getParametro("CTX_SEG_CERTIFICADO") == 'true')?true:false;
+
+
+/**
+ * IMPLEMENTACION DE LOS BOTONES PARA LA BARRA
+ */
+/*if (logeo && !formalizar) {
+    CONFIGURACION_BARRA.unshift(botonIrFormalizar);
+} */
+/**
+ * Boton  para salir del visor.
+ */
+
+DVolverMenuRutJS.prototype = new DBotonJS();
+DVolverMenuRutJS.prototype.constructor=DVolverMenuRutJS;
+function DVolverMenuRutJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar=function(){
+        var auxBotCon = (formalizar?new DAuxBotonContinuar("/WebRutMuisca/DefInscripcionRutSeg.faces"):new DAuxBotonContinuar("/WebRutMuisca/DefInscripcionRutPortal.faces"));
+        auxBotCon.ir();
+        return false;
+    }
+}
+
+DFormalizarJS.prototype = new DBotonJS();
+DFormalizarJS.prototype.constructor=DFormalizarJS;
+function DFormalizarJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar=function(){
+      if (isEnviado == true ){
+           var auxBotCon = new DAuxBotonContinuar("/WebRutMuisca/DefFormalizarRut.faces");
+            auxBotCon.adicionarParametro("numDocumento", getAsString(DVisor.getValorCasilla(4,-1)));// Casilla 4 de Numero de Formulario
+            auxBotCon.ir();
+            return false;
+      }else{
+          var unaFabricaMensajes = new DFabricaMensajes();
+            var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "DOCUMENTO NO ENVIADO","Debe enviar el documento","","");
+            miGestorMensajes.limpiarMensajes();
+            miGestorMensajes.agregarMensaje(unMensaje);
+            miGestorMensajes.mostrarMensaje();
+      }
+    }
+}
+
+DGuardarDocumentoTemporalRutJS.prototype = new DBotonJS();
+DGuardarDocumentoTemporalRutJS.prototype.constructor=DGuardarDocumentoTemporalRutJS;
+function DGuardarDocumentoTemporalRutJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar=function(){
+        var nit = DVisor.getValorCasilla(5,-1);
+       if (isEnviado != true ){
+
+              var guardarDocumentoRut = new DGuardarDocumentoRutJS(null);
+              guardarDocumentoRut.manejar(null);
+
+        }else {
+            DVisor.dialogomensaje.showModal('Error', 'EL DOCUMENTO ESTA ENVIADO Y NO PUEDE SER MODIFICADO.', 3);
+        }
+    }
+}
+
+
+
+DGuardarDocRutSinIDJS.prototype = new DGuardarDocumentoJS();
+DGuardarDocRutSinIDJS.prototype.constructor = DGuardarDocRutSinIDJS;
+function DGuardarDocRutSinIDJS(manejador) {
+
+    var DVisor = parent.DVisor;
+    var guardado = DVisor.controlador.getIsDocGuardado();
+    //Indica si es posible guardar el documento.
+    var unaFabricaMensajes = new DFabricaMensajes();
+
+    this.manejar = function(objCas) {
+        this.objCas = objCas;
+
+        if (!this.guardarPermitido()) {
+             //cerrarMensajeEspera();
+	     var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GUARDAR DOCUMENTO","El documento ya ha sido guardado como definitivo, no puede ser guardado como temporal nuevamente. ","","");
+	     miGestorMensajes.limpiarMensajes();
+             miGestorMensajes.agregarMensaje(unMensaje);
+	     miGestorMensajes.mostrarMensaje();
+        }else if (this.validar(true)) {
+            //Define el método inicializar y los getters a invocar
+            var modoNegocio = DVisor.contexto.getParametro('MODO_DILIGENCIAMIENTO_NEGOCIO');
+            var numRepeticion = DVisor.contexto.getParametro('NUM_REPETICION_DOC');
+            var tipoEntrada = getAsString(DVisor.contexto.getTipoEntrada())+"";
+            var xmlDoc = escape(DVisor.docCopia.toXml());
+
+
+            var metodoInicializar = guardado?"inicializarActualizar":"inicializarGuardarSinId";
+            var arrGetters = guardado?new Array("getEstado"):new Array("getIdDocumento","getNumRepeticion");//"getIdEstado"
+            var arrTipParamsIni = guardado?
+                                  new Array("long","int","xmlString","int","int"):new Array("xmlString","int", "int");
+            var arrValParamsIni = guardado?
+                                  new Array(getAsString(DVisor.getValorCasilla(4,-1)), numRepeticion, xmlDoc, tipoEntrada, modoNegocio):
+                                  new Array(escape(DVisor.docCopia.toXml()), getAsString(DVisor.contexto.getTipoEntrada()), modoNegocio);
+           var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+               msjInvAcc.addInvocacion("rut.documentos.DCmdAccCrearDocumentoESRut",
+               metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+              DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+      }
+        if(manejador) manejador.manejar(objCas);
+    }
+}
+
+
+Dguardar2JS.prototype = new DBotonJS();
+Dguardar2JS.prototype.constructor=Dguardar2JS;
+//function Dguardar2JS(nombre,imagen1,titulo,imagen2){
+function Dguardar2JS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+/*    this.nombre  = nombre;
+    this.imagen1 = imagen1;
+    this.titulo  = titulo;
+    this.imagen2 = imagen2;*/
+
+    this.getHtml=function(){
+
+        //this.html=  this.setHtml.call(this,this.nombre,this.imagen1,this.titulo, this.imagen2 );
+        this.html=  this.setHtml.call(this,arrAttBoton);
+        return this.html;
+    }
+
+    this.setControl=function(numeroPagina,totalPaginas,copiable){
+        this.numeroPagina = numeroPagina;
+        this.totalPaginas = totalPaginas;
+        this.copiable = copiable;
+    }
+    this.manejar=function(){
+        guardar();
+    }
+}
+
+
+Denviar2JS.prototype = new DBotonJS();
+Denviar2JS.prototype.constructor=Denviar2JS;
+function Denviar2JS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+        this.html=  this.setHtml.call(this,arrAttBoton);
+        return this.html;
+    }
+
+    this.manejar=function(){
+        enviar();
+    }
+
+}
+
+var estadoDoc = "";
+var isEnviado = false;
+
+
+DEnviarJS.prototype = new DBotonJS();
+DEnviarJS.prototype.constructor=DEnviarJS;
+function DEnviarJS(arrAttboton) {
+    var arrAttBoton = arrAttboton;
+    var DVisor = parent.DVisor;
+    var docXMLFirmadoContrib = '';
+    var docXMLFirmadoRevisor = '';
+    var isAutoadhesivo = false;
+    var operacion = "";
+    var isFirmaRevisor = null;
+    var unaFabricaMensajes = new DFabricaMensajes();
+    var ventanaLogueo = null;
+    var ventanaFirma = null;
+
+
+
+   this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar = function () {
+     var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+     var idDoc= DVisor.docCopia.getId();
+     if(idDoc > 0) {
+        if(isEnviado == false){
+             var haCambiado = new DGuardarDocumentoJS().haCambiado();
+            if (haCambiado) {
+                   DVisor.dialogomensaje.showModal('ENVIAR', 'Ha habido cambios, para evitar inconsistencias debe antes guardar el documento.', 2);
+
+               }else if (new DGuardarDocumentoJS().validar(false)) {
+                         miGestorMensajes.setObjEventoListener('onClickBtnSI', this);
+                         var unaFabricaMensajes = new DFabricaMensajes();
+                         var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_CONFIRMACION, "ENVIAR","Recuerde que despues de enviar no puede realizar ninguna modificación.\n\n\n\n "+
+                          "Esta seguro que desea ENVIAR?","","");
+                          miGestorMensajes.limpiarMensajes();
+                          miGestorMensajes.agregarMensaje(unMensaje);
+                          miGestorMensajes.mostrarMensaje();
+
+             }
+        }else{
+            var unaFabricaMensajes = new DFabricaMensajes();
+            var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_CORRECTO, "DOCUMENTO ENVIADO","El documento generado con el número: \n"+idDoc +"\n ya fue enviado","","");
+            miGestorMensajes.limpiarMensajes();
+            miGestorMensajes.agregarMensaje(unMensaje);
+            miGestorMensajes.mostrarMensaje();
+
+        }
+    }else{
+         var unaFabricaMensajes = new DFabricaMensajes();
+         var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "ENVIAR","Debe antes guardar el documento","","");
+      }
+      if(unMensaje != ""){
+         miGestorMensajes.limpiarMensajes();
+         miGestorMensajes.agregarMensaje(unMensaje);
+         miGestorMensajes.mostrarMensaje();
+      }
+
+    }
+
+   this.confirmarSI = function() {
+       var xmlDoc = escape(DVisor.docCopia.toXml());
+
+       miGestorMensajes.cerrarlayer('divMensaje');
+      var metodoInicializar = "inicializarDocCC";//inicializarDocCC
+      var arrGetters = new Array("getValorMarcaHomonimia");
+      var arrTipParamsIni = new Array("long","int");
+      var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                                      getAsString(DVisor.controlador.getNumRepeticionDoc()));
+
+      var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+      msjInvAcc.addInvocacion("rut.inscripcion.DCmdAccEnviarInscripcionDocumentoRut",
+                              metodoInicializar,
+                              arrTipParamsIni,
+                              arrValParamsIni,
+                              arrGetters);
+
+          if( isEnviado == false) DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+    }
+
+
+
+    this.manejarRespuesta = function(msjRespuesta) {
+        respuestaMensaje = true;
+        var DMensajeJS = parent.DMensajeJS;
+        var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+        if (execState) {
+            var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+            var marcaHomonimia = respuestas[0];
+
+            if(marcaHomonimia != null || marcaHomonimia != ""){
+               if(marcaHomonimia == 24){
+                  mostrarError("Persona consistente con nombres, pero el NIT digitado no le corresponde");
+               }else if(marcaHomonimia == 22){
+                 //mostrarError("Persona consistente con nombres y nit pero no digito el NIT.");
+                 mostrarError("Esta identificación tienen asignado un NIT.Por favor verifique");
+               }else if(marcaHomonimia == 23){
+                 mostrarError("Persona con NIT cancelado.");
+               }else if(marcaHomonimia == 4){
+                  mostrarError("Persona existente en Registraduría y con NIT asignado, pero presenta cambio de nombre.");
+              }
+
+               if(marcaHomonimia == 3 || marcaHomonimia == 1 || marcaHomonimia == 4|| marcaHomonimia == 5){
+                  isEnviado = true;
+                 var idDocumento = DVisor.getValorCasilla(4,-1);
+                // DVisor.dialogomensaje.showModal('', 'El documento \n' +idDocumento +'\n fué enviado con exito.', 1);
+                var unaFabricaMensajes = new DFabricaMensajes();
+                var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_CORRECTO, "DOCUMENTO ENVIADO","El documento \n" +idDocumento +"\n fué enviado con exito","","");
+                miGestorMensajes.limpiarMensajes();
+                miGestorMensajes.agregarMensaje(unMensaje);
+                miGestorMensajes.mostrarMensaje();
+              }
+           }
+
+        }else {
+            //cerrarMensajeEspera();
+
+            var mensajeError = msjRespuesta.getParametro(DMensajeJS.MENSAJE_ERROR) != null?
+                               escape(msjRespuesta.getParametro(DMensajeJS.MENSAJE_ERROR)):"";
+            var mensajeDetallado = msjRespuesta.getParametro(DMensajeJS.MENSAJE_DETALLADO) != null?
+                                   escape(msjRespuesta.getParametro(DMensajeJS.MENSAJE_DETALLADO)).slice(0,1500):
+                                   'HA OCURRIDO UN ERROR, EL DOCUMENTO NO SE HA PODIDO ENVIAR, INTENTELO NUEVAMENTE Ó CONTACTENOS.';
+            DVisor.dialogomensaje.showModal("Error", mensajeError + " " + mensajeDetallado, 3);
+
+            //DVisor.dialogomensaje.showModal('Error', 'HA OCURRIDO UN ERROR, EL DOCUMENTO NO SE HA PODIDO ENVIAR, INTENTELO NUEVAMENTE Ó CONTACTENOS.', 3);
+        }
+    }
+
+}
+
+/**
+ *
+ */
+
+DGuardarDocumentoRutJS.prototype = new DGuardarDocumentoJS();
+DGuardarDocumentoRutJS.prototype.constructor = DGuardarDocumentoRutJS;
+function DGuardarDocumentoRutJS(manejador) {
+
+    var DVisor = parent.DVisor;
+    var guardado = DVisor.controlador.getIsDocGuardado();
+    //Indica si es posible guardar el documento.
+    var unaFabricaMensajes = new DFabricaMensajes();
+
+    this.manejar = function(objCas) {
+        this.objCas = objCas;
+         DVisor.validadorDocumentoFin.getLogErrores().clearLogErrores();
+
+      if (!this.guardarPermitido()) {
+            //cerrarMensajeEspera();
+	     var unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GUARDAR DOCUMENTO","El documento ya ha sido guardado como definitivo, no puede ser guardado como temporal nuevamente. ","","");
+	     miGestorMensajes.limpiarMensajes();
+             miGestorMensajes.agregarMensaje(unMensaje);
+	     miGestorMensajes.mostrarMensaje();
+        }else if (this.validar(true)) {
+
+            //Define el método inicializar y los getters a invocar
+            var modoNegocio = DVisor.contexto.getParametro('MODO_DILIGENCIAMIENTO_NEGOCIO');
+            var numRepeticion = DVisor.contexto.getParametro('NUM_REPETICION_DOC');
+            var tipoEntrada = getAsString(DVisor.contexto.getTipoEntrada())+"";
+            var xmlDoc = escape(DVisor.docCopia.toXml());
+            var hojaActualizada = DVisor.contexto.getParametro('CTX_HOJA_ACTUALIZADA');
+            var numDocumentoAnterior = DVisor.contexto.getParametro('CTX_NUM_DOCUMENTO_ANTERIOR');
+            var concepto = getAsString(DVisor.getValorCasilla(2,-1))
+
+
+            var metodoInicializar = guardado?"inicializarActualizarTrans":"inicializarGuardarSinIdInsc";
+            var arrGetters = guardado?new Array("getEstado"):new Array("getIdDocumento","getNumRepeticion");//"getIdEstado"
+            var arrTipParamsIni = guardado?
+                                  new Array("long","int","xmlString","int","int","int","String"):new Array("xmlString","int", "int","int","String");
+            var arrValParamsIni = guardado?
+                                  new Array(getAsString(DVisor.getValorCasilla(4,-1)), numRepeticion, xmlDoc, tipoEntrada, modoNegocio,hojaActualizada,concepto):
+                                  new Array(escape(DVisor.docCopia.toXml()), getAsString(DVisor.contexto.getTipoEntrada()), modoNegocio,hojaActualizada,concepto);
+           var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+               msjInvAcc.addInvocacion("rut.documentos.DCmdAccCrearDocumentoESRut",
+               metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+              DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+
+      }else{
+
+         var mensajeError = DVisor.validadorDocumentoFin.getTextoLogErrores();
+            DVisor.dialogomensaje.showModal('Error', escape(mensajeError), 3);
+            return false;
+
+         }
+        if(manejador) manejador.manejar(objCas);
+    }
+}
+
+
+/**
+ * Botón para la generación de PDF
+ */
+DGenerarPDFRUTJS.prototype = new DBotonJS();
+DGenerarPDFRUTJS.prototype.constructor=DGenerarPDFRUTJS;
+function DGenerarPDFRUTJS(arrAttboton){
+  var arrAttBoton = arrAttboton;
+  var configuracionGenPdf = new Hashtable();
+
+  /**
+   *
+   */
+  this.getHtml=function(){
+    this.html=  this.setHtml.call(this,arrAttBoton);
+    return this.html;
+  }
+
+  /**
+   *
+   */
+  this.defaultConfig = function() {
+    var config = new Hashtable();
+    config.put(DGenerarPDFRUTJS.reqCrc32, true);
+    var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+    config.put('estado', estadoActualDoc);
+    return config;
+  }
+
+  /**
+   * Esta es un metodo abstracto para configurar la generacion de pdfs
+   * @return Un Hashtable con los parametros de configuracion del pdf
+   */
+  this.configurarPdf = function() {
+    return this.defaultConfig();
+  }
+
+//---------------------------------------------------    
+//	CRUT15 - Incidente en botón guardar
+//2013-10-02	LAGH
+//Modificación Completa de la funcion  manejar  
+//---------------------------------------------------    
+
+this.manejar=function() {
+var unaFabricaMensajes = new DFabricaMensajes();
+var unMensaje = null;
+
+if (isEnviado == true)
+{
+//---------------------------------------------------    
+//	Si Ya se envió, ya existe un GetId
+//		Se remueve validación    	
+//---------------------------------------------------    
+//	if(DVisor.docCopia.getId()) 
+//	{
+		var mensajePdf = "GENERACION ARCHIVO PDF";
+		unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_PASSWORD, mensajePdf, "Debe digitar una clave para acceder al archivo PDF:","","");
+	//este es el truco para que llame la funcion de abajo
+		miGestorMensajes.setObjEventoListener('onClickBtnSI', this);
+//	} 
+}
+else
+{	
+//---------------------------------------------------    
+//	Si no existe un GetId, el documento no ha sido guardado
+//---------------------------------------------------    
+	if(!DVisor.docCopia.getId()) 
+	{
+		unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GENERACION ARCHIVO PDF","Debe antes guardar el documento","","");
+	}
+	else
+	{
+//---------------------------------------------------    
+//   	Ya existe un GetId, hay que validar si ha cambiado
+//---------------------------------------------------    
+	    if ((new DGuardarDocumentoJS().haCambiado())) 
+	    {
+	      unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GENERACION ARCHIVO PDF","Ha habido cambios, para evitar inconsistencias debe antes guardar el documento","","");
+	    } 
+	    else
+	    {
+	    	if(DVisor.docCopia.getId()) 
+	    	{
+	    		var mensajePdf = "GENERACION ARCHIVO PDF";
+	  			unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_PASSWORD, mensajePdf, "Debe digitar una clave para acceder al archivo PDF:","","");
+		//este es el truco para que llame la funcion de abajo
+	  			miGestorMensajes.setObjEventoListener('onClickBtnSI', this);
+	    	}   	    	
+	    }
+	}
+}
+miGestorMensajes.limpiarMensajes();
+miGestorMensajes.agregarMensaje(unMensaje);
+miGestorMensajes.mostrarMensaje();
+}
+//---------------------------------------------------    
+//	fin CRUT15 - Incidente en botón guardar
+//---------------------------------------------------  
+
+  /**
+   * Al confirmar se muestra un mensaje con la clave para el PDF
+   */
+  this.confirmarSI = function () {
+      var claveOk = false;
+      var clave = document.getElementById('clave');
+      var reclave = document.getElementById('reclave');
+      var textoValidacion = document.getElementById('textoValidacion');
+
+      if(clave != null && clave.value.length > 0){
+         if (reclave != null && reclave.value.length > 0) {
+             if (clave.value ==  reclave.value) {
+                 claveOk = true;
+             } else {
+                textoValidacion.value = "La clave y su confimacion deben ser iguales.";
+             }
+         } else {
+            textoValidacion.value = "Debe reescribir la clave para su confirmación";
+         }
+      } else {
+          textoValidacion.value = "Debe digitar una clave";
+      }
+      if (!claveOk) {
+          clave.value = "";
+          reclave.value = "";
+      } else {
+          textoValidacion.value = "";
+      }
+      if(claveOk) {
+        var config = this.configurarPdf();
+        config.put('password', clave.value);
+        miGestorMensajes.cerrarlayer('divMensaje');
+        focus();
+        this.generarPDF(DVisor.controlador.getId(), DVisor.controlador.getNumRepeticionDoc(), config);
+      }
+    }
+
+  /**
+   * Está función llama al servlet que genera el PDF
+   */
+  this.generarPDF = function(idDocumento, numRepeticion, config) {
+    var fabricaMensajes = new DFabricaMensajes();
+    // Servlet PDF
+    var URL_SERVLET_PDF = '/WebRutMuisca/dservletpersistenciapdf';
+
+    // Creamos una forma dummy
+    var forma = new DAuxBotonContinuar(URL_SERVLET_PDF);
+    // Mostramos un mensaje mientras se genera el PDF
+    var mensaje = fabricaMensajes.getMensaje(0, COD_TIPO_INFO, "GENERACION ARCHIVO PDF","Cargando el PDF del documento, por favor espere...","","");
+    miGestorMensajes.limpiarMensajes();
+    miGestorMensajes.agregarMensaje(mensaje);
+    miGestorMensajes.mostrarMensaje();
+
+    // Adicionamos los parámetros a la forma
+    forma.adicionarParametro('idDocumento', idDocumento);
+    forma.adicionarParametro('numRepeticion', numRepeticion);
+    forma.adicionarParametro('idFormato', 1);
+    forma.adicionarParametro('idVersion', 4);
+
+    //El visor siempre deberia generar el crc (casilla 999)
+    var reqCrc32 = true;
+    var marcas = config.get("marcas");
+    var estado = config.get("estado");
+    var password = config.get("password");
+    var numCopias = config.get("numCopias");
+
+    if (reqCrc32) {
+      forma.adicionarParametro('reqCrc32', reqCrc32);
+    }
+    if (marcas) {
+      forma.adicionarParametro('marcas', marcas);
+    }
+    if (estado) {
+      forma.adicionarParametro('estado', estado);
+    }
+    if (password) {
+      forma.adicionarParametro('password', password);
+    }
+    if (numCopias) {
+      forma.adicionarParametro('numCopias', numCopias);
+    }
+    // Ejecutamos la forma
+    forma.ir();
+    // Borramos los mensajes
+    miGestorMensajes.limpiarMensajes();
+  }
+}
+
+DGenerarPDFRUTJS.reqCrc32 = 'reqCrc32';
+DGenerarPDFRUTJS.marcas = 'marcas';
+DGenerarPDFRUTJS.estado = 'estado';
+DGenerarPDFRUTJS.password = 'password';
+DGenerarPDFRUTJS.origen = 'origen';
+
+
+
+

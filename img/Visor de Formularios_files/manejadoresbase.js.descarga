@@ -1,0 +1,1806 @@
+var MANEJADORES = new Hashtable();
+MANEJADORES.put('0','DValEnteroJS');
+MANEJADORES.put('1','DValDecimalJS');
+MANEJADORES.put('2','DValCadenaJS');
+MANEJADORES.put('3','DValAlfanumericoJS');
+MANEJADORES.put('4','DValPositivoJS');
+MANEJADORES.put('5','DRedondeoMilJS');
+MANEJADORES.put('10','DActDocumentoJS');
+MANEJADORES.put('12','DAritmeticoLogicoJS');
+MANEJADORES.put('13','DEvalCheckJS');
+MANEJADORES.put('15','DEvaldigitacionMasivaJS');
+MANEJADORES.put('17','DEvalRangoEnteroJS');
+MANEJADORES.put('18','DManejadorAyudaJS');
+MANEJADORES.put('26','DDigitoVerificacionJS');
+MANEJADORES.put('28','DValidaCorreoJS');
+MANEJADORES.put('31','DManejadorValidaFechaActJS');
+MANEJADORES.put('32','DManejadorFechaJS');
+MANEJADORES.put('33','DResaltarCasillaActualJS');
+MANEJADORES.put('34','DActivarJS');
+MANEJADORES.put('51','DValidaNitJS');
+MANEJADORES.put('52','DInicalizarValorJS');
+MANEJADORES.put('53','DAvanzarCasillaJS');
+MANEJADORES.put('54','DValidarMayorCeroJS');
+MANEJADORES.put('55','DRecordarValorOriginalJS');
+MANEJADORES.put('56','DValidarCambioJS');
+MANEJADORES.put('57','DRedondeoEnteroJS');
+MANEJADORES.put('58','DValidarValoresNoCeroJS');
+MANEJADORES.put('59','DCompletaNumerosDecimalesJS');
+MANEJADORES.put('60','DValidarRangoNumericoEnteroJS');
+MANEJADORES.put('61','DValidarNumDigitosJS');
+MANEJADORES.put('62','DDigitacionConfirmacionJS');
+MANEJADORES.put('63','DValidarFechaJS');
+MANEJADORES.put('64','DManejadorValidFechaJS');
+MANEJADORES.put('65','DManejadorBusquedaMostrarLimpiarJS');
+MANEJADORES.put('66','DManejadorSeleccionTexto');
+MANEJADORES.put('67','DManejadorIsAllowKeyPress'); //8
+MANEJADORES.put('68','DManejadorObtenerKeyPress'); //10
+MANEJADORES.put('69','DManejadorFormatoMascara'); //1
+
+
+
+// Define los alias para Eventos
+var EVENTOS = new Hashtable();
+EVENTOS.put('0','abort');
+EVENTOS.put('1','blur');
+EVENTOS.put('2','change');
+EVENTOS.put('3','click');
+EVENTOS.put('4','dblclick');
+EVENTOS.put('5','dragdrop');
+EVENTOS.put('6','error');
+EVENTOS.put('7','focus');
+EVENTOS.put('8','keydown');
+EVENTOS.put('9','keypress');
+EVENTOS.put('10','keyup');
+EVENTOS.put('11','load');
+EVENTOS.put('12','mousedown');
+EVENTOS.put('13','mousemove');
+EVENTOS.put('14','mouseout');
+EVENTOS.put('15','mouseover');
+EVENTOS.put('16','mouseup');
+EVENTOS.put('17','move');
+EVENTOS.put('18','reset');
+EVENTOS.put('19','resize');
+EVENTOS.put('20','select');
+EVENTOS.put('21','submit');
+EVENTOS.put('22','unload');
+EVENTOS.put('23','afterupdate');
+
+
+/**
+ * Manejador que valida aproxima un n�mero al entero m�s cercano.
+ */
+DRedondeoEnteroJS.prototype=new DManejadorJS();
+DRedondeoEnteroJS.prototype.constructor=DRedondeoEnteroJS;
+function DRedondeoEnteroJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      var numero = objCas.getValor()*1;
+      //--objCas.value = Math.round(numero);
+      objCas.setValor(Math.round(numero));
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Manejador que valida si un valor es entero.
+ */
+DValEnteroJS.prototype=new DManejadorJS();
+DValEnteroJS.prototype.constructor=DValEnteroJS;
+function DValEnteroJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+//	  objCas.value=limpiarFormato(objCas.value);
+	  var valor = deleteLeftCerous(objCas.getValor()) + "";
+      if(valor != ""){
+        if(!esEntero(valor)){
+          mostrarError('El valor no es entero!!!');
+          initializeView(objCas);
+        } else {
+          //--objCas.value = valor;
+          objCas.setValor(valor);
+        }
+      } else {
+        initializeView(objCas);
+      }
+        
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/*
+ *  Aplicar formatos de monedas a las casilla del cuerpo del formulario
+ */
+function formatear(casilla){
+	
+    if (casilla.charAt(casilla.length-1) == "."  || isNaN(casilla.charAt(casilla.length-1))  ) 
+    	casilla = casilla.substr(0,casilla.length-1  );
+      
+    casilla  = casilla.replace(/,/g,'');
+    
+    campo = casilla ;
+	campo += ''; 
+    x = campo.split('-'); 
+    x1 = x[0]; 
+    x2 = x.length > 1 ? '.' + x[1] : ''; 
+    var rgx = /(\d+)(\d{3})/; 
+    while (rgx.test(x1)) { 
+        x1 = x1.replace(rgx, '$1' + ',' + '$2'); 
+    } 
+    
+    casilla = x1 + x2; 
+    return casilla ;
+}
+
+/*
+ * Limpiar formato de modena a la casilla
+ */
+function limpiarFormato(casilla){
+	
+	casilla  = casilla.replace(/,/g,'');
+	
+	return casilla;
+			
+}
+
+
+
+/**
+ * @author Alejandro Gamboa
+ */
+DDigitacionConfirmacionJS.prototype = new DManejadorJS();
+DDigitacionConfirmacionJS.prototype.constructor = DDigitacionConfirmacionJS;
+function DDigitacionConfirmacionJS(manejador) {
+   var objCas = null;
+
+   this.manejador = manejador;
+
+   this.manejar = function(objCas) {
+
+       if(objCas.getValor() != "" ){
+
+           this.objCas = objCas;
+
+           var dobleDigitacion = new DDDobleDigitacionJS();
+           dobleDigitacion.inicializar(objCas);
+           dobleDigitacion.mostrarTooltip();
+
+           var casilla = document.getElementById('dd');
+
+           var toolTip = document.getElementById('ToolTip');
+
+           toolTip.style.left = this.findPosX(objCas);
+           toolTip.style.top= this.findPosY(objCas);
+
+           setTimeout(casilla.focus, 100);
+           casilla.select();
+
+           if(manejador) manejador.manejar(objCas);
+       }
+   }
+
+   this.manejarRespuesta = function(msjRespuesta) {
+       //Se debe implementar en caso de que se deba ir al servidor.
+   }
+
+   this.findPosX = function(obj) {
+     var curleft = 0;
+
+     if(obj){
+       if (obj.offsetParent) {
+
+         while (obj.offsetParent) {
+           curleft += obj.offsetLeft;
+           obj = obj.offsetParent;
+         }
+
+       } else if (obj.x) {
+           curleft += obj.x;
+       }
+     }
+     return curleft;
+   }
+
+   this.findPosY = function(obj) {
+
+     var curtop = 0;
+
+     if(obj) {
+       if (obj.offsetParent) {
+         while (obj.offsetParent) {
+           curtop += obj.offsetTop;
+           obj = obj.offsetParent;
+         }
+       } else if (obj.y) {
+         curtop += obj.y;
+       }
+     }
+     return curtop + 30;
+   }
+}
+
+/**
+ * Manejador que valida si un valor es decimal.
+ */
+DValDecimalJS.prototype=new DManejadorJS();
+DValDecimalJS.prototype.constructor=DValDecimalJS;
+function DValDecimalJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      if(!esDecimal(objCas.getValor())){
+        mostrarError('El valor no es decimal!!!');
+        initializeView(objCas);
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Manejador que valida si un valor es cadena.
+ */
+DValCadenaJS.prototype=new DManejadorJS();
+DValCadenaJS.prototype.constructor=DValCadenaJS;
+function DValCadenaJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      if(!esCadena(objCas.getValor())){
+        mostrarError('El valor no es una cadena!!!');
+        initializeView(objCas);
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Manejador que valida si un valor es alfanum�rico.
+ */
+DValAlfanumericoJS.prototype=new DManejadorJS();
+DValAlfanumericoJS.prototype.constructor=DValAlfanumericoJS;
+function DValAlfanumericoJS(manejador){
+
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      if(!esAlfanumerico(objCas.getValor())){
+        mostrarError('El valor no es alfanum�rico!!!');
+         initializeView(objCas);
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+DManejadorSeleccionTexto.prototype=new DManejadorJS();
+DManejadorSeleccionTexto.prototype.constructor=DManejadorSeleccionTexto;
+function DManejadorSeleccionTexto(manejador,tipo){
+
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+	   
+	   if (objCas.readOnly == false) {
+
+		   if (objCas.value == '0')
+			   this.seleccionado=false;
+		   
+		   if (document.selection) {  //  en IE
+		    var valores = 	this.getCursorPos(objCas);
+		    	if ( ((valores.start == valores.end)  ||  (valores.start == 0  && valores.end == 0)) && this.seleccionado == false){
+	    		objCas.select();
+	    		this.seleccionado = true;
+		    	} else  {this.seleccionado= false;}
+		    } else { //  en Mozilla FireFox
+		    	if ( ((objCas.selectionStart == objCas.selectionEnd)  ||  (objCas.selectionStart == 0  && objCas.selectionEnd == 0)) && this.seleccionado == false ){
+		    	objCas.select();
+		    	this.seleccionado = true;
+		    	} else {this.seleccionado= false;}
+		    }
+      }
+	   
+   if(manejador)manejador.manejar(objCas);
+   }
+   
+   this.getCursorPos =  function(objCas) {
+   	objCas.focus();                                        
+       var oSel = document.selection.createRange();        
+       oSel.moveStart('character', -objCas.value.length);    
+       objCas.selectionEnd = oSel.text.length;                    
+       oSel.setEndPoint('EndToStart', document.selection.createRange() );
+       objCas.selectionStart = oSel.text.length;
+       return { start: objCas.selectionStart, end: objCas.selectionEnd };
+   }  
+}
+
+DManejadorIsAllowKeyPress.prototype=new DManejadorJS();
+DManejadorIsAllowKeyPress.prototype.constructor=DManejadorIsAllowKeyPress;
+function DManejadorIsAllowKeyPress(manejador,tipo){
+
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+	   				
+	   			if(objCas.getAttribute("patron")){
+	   				;
+	   
+	   				//if(objCas.mascara.type!= "string") return true;
+	   				
+	   				/*e = this.getEvento();
+	   				var xe = new qEvent(e);
+	   			
+	   				if( ((xe.codigoTecla > 47) && (objCas.value.length >= objCas.mascara.length)) && !xe.ctrlKey ) return false;
+	   				return true;*/
+	   			}
+	   
+	   
+	   			if(manejador)manejador.manejar(objCas);
+	   				
+   }
+}
+
+DManejadorObtenerKeyPress.prototype=new DManejadorJS();
+DManejadorObtenerKeyPress.prototype.constructor=DManejadorObtenerKeyPress;
+function DManejadorObtenerKeyPress(manejador,tipo){
+
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+
+	   
+	   if(objCas.getAttribute("patron")){
+	   
+		   objCas.mascara.allowPartial = true;
+		   e=this.getEvento();
+		   var xe = new qEvent(e);
+		   
+		   //alert(xe.codigoTecla);
+		   
+		   if( (xe.codigoTecla > 47) || (xe.codigoTecla == 8 || xe.codigoTecla == 46) ){
+		      
+		       var v = objCas.value, d;
+			   if( xe.codigoTecla == 8 || xe.codigoTecla == 46 ) d = true;
+			   else d = false
+			
+			   if( objCas.mascara.type == TIPO_PATRON_NUMERICO ) objCas.mascara.value = objCas.mascara.setNumber(v, d);
+			   else if( objCas.mascara.type == TIPO_PATRON_FECHA ) objCas.mascara.value = objCas.mascara.setDateKeyPress(v, d);
+			   else this.value = objCas.mascara.setGeneric(v, d);
+
+			   objCas.value = objCas.mascara.value;
+		   }
+		
+
+		   objCas.mascara.allowPartial = false;
+		
+		   //return true;
+		   
+	   }
+		
+		if(manejador)manejador.manejar(objCas);
+   }
+}
+
+DManejadorFormatoMascara.prototype=new DManejadorJS();
+DManejadorFormatoMascara.prototype.constructor=DManejadorFormatoMascara;
+function DManejadorFormatoMascara(manejador,tipo){
+
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      
+
+	   if(objCas.getAttribute("patron")){
+		   
+		   if( objCas.mascara.type == TIPO_PATRON_NUMERICO ) objCas.mascara.value = objCas.mascara.setNumber(s);
+		   else if( objCas.mascara.type == TIPO_PATRON_FECHA ) objCas.mascara.value = objCas.mascara.setDate(s);
+		   else objCas.mascara.value = objCas.mascara.setGeneric(s);
+		   //return objCas.mascara.value;
+		   
+	   }
+	   
+	   if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * Muestra el tooltip de ayuda.
+ */
+DManejadorAyudaJS.prototype = new DManejadorJS();
+DManejadorAyudaJS.prototype.constructor = DManejadorAyudaJS;
+function DManejadorAyudaJS(manejador, opcionesBusqueda) {
+    this.manejador = manejador;
+    this.opcionesBusqueda = opcionesBusqueda;
+    this.idComandoBusqueda = null;
+    this.parametrosBusqueda = new Hashtable();
+    this.tipoBusqueda = null;
+    this.aliasBusqueda = null;
+    this.layout = null;
+    this.ejecutor = null;
+
+    this.manejar = function(objCas) {
+        if (objCas.disabled == false){
+	        var mostrarAyuda = ((objCas.ayuda == null)?true:objCas.ayuda);
+	        if (mostrarAyuda) {
+	          this.objCas = objCas;
+	          this.inicializar();
+	
+	          // Crea el objeto de bsqueda y se muestra
+	          // Ver visor/js/busqueda/busqueda.js#DBusquedaJS
+	          var busqueda = new DBusquedaJS();
+	          busqueda.inicializar(objCas, this.tipoBusqueda, this.idComandoBusqueda, this.aliasBusqueda, this.parametrosBusqueda, this.layout, this.ejecutor);
+	          busqueda.mostrarTooltip();
+	        }
+	
+	        if(manejador) manejador.manejar(objCas);
+        }
+    }
+
+    // Hace un parsing de las opciones de b�squeda para cargar el idComandoBusqueda, tipo de b�squeda y los par�metros de la misma
+    this.inicializar = function() {
+        var arregloParametros = this.opcionesBusqueda.split(';');
+        if (arregloParametros.length == 5 || arregloParametros.length == 6) {
+            this.idComandoBusqueda = arregloParametros[0];
+            this.aliasBusqueda = arregloParametros[1];
+            this.tipoBusqueda = arregloParametros[2];
+            //El valor puede ser 1 (acordi�n),  2 (p�neles fijos), D3 (solo ayuda) �nicamente.
+            this.layout = arregloParametros[4];
+
+            if (arregloParametros[3] && arregloParametros[3] != '') {
+                //Es una referencia a una casilla
+                if (arregloParametros[3].indexOf('#') != -1) {
+                    var numCasilla = arregloParametros[3].substring(arregloParametros[3].indexOf('#') + 1);
+                    var cadCas = arregloParametros[3].replace(/#/i,'cas');
+                    var numItems = parent.DVisor.controlador.getNumItemsFromCas(numCasilla*1);
+
+                    if (numItems > 0) {
+                      var item = getItem(this.objCas);
+                      if (item > -1) {
+                        cadCas += "_" + item;
+                      }
+                    }
+
+                    var casillaPadre = document.getElementById(cadCas);
+                    if (casillaPadre && !isNaN(casillaPadre.getValor())) {
+                      this.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_PADRE, casillaPadre.getValor());
+                    }
+                    else {
+                      cadCas = arregloParametros[3].substring(arregloParametros[3].indexOf('#')+1);
+                      var arrCasilla = cadCas.split(/[.]/);
+                      if (arrCasilla != null && arrCasilla.length == 3){
+                        var numGrupo = arrCasilla[0];
+                        var numOcurrencia = arrCasilla[1];
+                        var numCasilla = arrCasilla[2];
+                        var valCasilla = '';
+
+                        if (arrCasilla[2].indexOf('_') != -1){
+                          numCasilla = arrCasilla[2].split(/[_]/)[0];
+                          var numItem = arrCasilla[2].split(/[_]/)[1];
+                          valCasilla = parent.DVisor.controlador.getValorCasillaAbsoluto(numGrupo,numOcurrencia,numCasilla,numItem);
+                        }
+                        else {
+                          valCasilla = parent.DVisor.controlador.getValorCasillaAbsoluto(numGrupo,numOcurrencia,numCasilla,-1);
+                        }
+                        this.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_PADRE, valCasilla);
+                      }
+                    }
+                }
+                //Es un valor escalar que se debe pasar directamente como par�metro
+                else {
+                    if (isNaN(arregloParametros[3]))
+                        this.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_PADRE, eval(arregloParametros[3]));
+                    else
+			this.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_PADRE, arregloParametros[3]);
+                }
+            }
+
+            if (arregloParametros[5] && arregloParametros[5] != '') {
+              this.ejecutor = arregloParametros[5];
+            } else {
+              this.ejecutor = "";
+            }
+        }
+    }
+}
+
+/**
+ * Manejador de ayuda y b�squeda para mostrar siempre el tooltip
+ */
+DManejadorBusquedaMostrarLimpiarJS.prototype = new DManejadorAyudaJS();
+DManejadorBusquedaMostrarLimpiarJS.prototype.constructor = DManejadorBusquedaMostrarLimpiarJS;
+function DManejadorBusquedaMostrarLimpiarJS(manejador, opcionesBusqueda){
+    this.manejador = manejador;
+    this.opcionesBusqueda = opcionesBusqueda;
+    this.idComandoBusqueda = null;
+    this.parametrosBusqueda = new Hashtable();
+    this.tipoBusqueda = null;
+    this.aliasBusqueda = null;
+    this.layout = null;
+    this.ejecutor = null;
+
+    this.manejar = function(objCas) {
+        var mostrarAyuda = ((objCas.ayuda == null)?true:objCas.ayuda);
+        if (mostrarAyuda) {
+          this.objCas = objCas;
+          this.inicializar();
+
+          // Crea el objeto de bsqueda y se muestra
+          // Ver visor/js/busqueda/busqueda.js#DBusquedaJS
+          var busqueda = new DBusquedaJS();
+	  this.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_MOSTRAR_LIMPIAR, true);
+          busqueda.inicializar(objCas, this.tipoBusqueda, this.idComandoBusqueda, this.aliasBusqueda, this.parametrosBusqueda, this.layout, this.ejecutor);
+          busqueda.mostrarTooltip();
+        }
+
+        if(manejador) manejador.manejar(objCas);
+    }
+}
+
+/**
+ * Define el comportamiento para casillas checkbox.
+ */
+DEvalCheckJS.prototype=new DManejadorJS();
+DEvalCheckJS.prototype.constructor=DEvalCheckJS;
+function DEvalCheckJS(manejador) {
+   this.manejador = manejador;
+   /**
+    *
+    */
+   this.manejar = function(objCas){
+    var isChecked = !objCas.checked;
+    /**Si la casilla es simple y se maneja con uno solo componente HTML, pe: cas59
+     * fija el value a SI o NO para que el manejador 10 actualice el documento.
+     */
+    var item = getItem(objCas);
+    //Es casilla sencilla
+    if (item == -1) {
+      if (isChecked) {
+        objCas.checked = false;
+        //--objCas.value = "false";
+        objCas.setValor('false');
+      } else {
+        objCas.checked = true;
+        //--objCas.value = "true";
+        objCas.setValor('true');
+      }
+    }
+    //Es de seleccion multiple y se representa con varios componentes, pe: cas59_1, cas59_2
+    else {
+      var excluyentes = objCas.getAttribute('excluyentes');
+      if(excluyentes) {
+        var casillasexcluyentes = excluyentes.split(',');
+        for(var i=0; i < casillasexcluyentes.length; i++) {
+	  var objCasExcluyente = document.getElementById(casillasexcluyentes[i]);
+          objCasExcluyente.checked = false;
+	  //--objCasExcluyente.value = 'false';
+          objCasExcluyente.setValor('false');
+        }
+	objCas.checked = true;
+	//--objCas.value = "true";
+	objCas.setValor('true');
+      }
+    }
+    if(manejador) manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Valida que el valor de la casilla sea mayor o igual a cero.
+ */
+DValPositivoJS.prototype = new DManejadorJS();
+DValPositivoJS.prototype.constructor=DValPositivoJS;
+function DValPositivoJS(manejador) {
+   this.manejador = manejador;
+
+   this.manejar = function(objCas) {
+//	   objCas.value=limpiarFormato(objCas.value);
+	  if (!isNaN(objCas.getValor())) {
+         if (objCas.getValor()*1 < 0 || getAsString(objCas.getValor()).indexOf('-') != -1) {
+            mostrarError('EL VALOR SE HA LLEVADO A CERO; NO DILIGENCIE VALORES NEGATIVOS');
+            initializeView(objCas);
+         }
+      } else {
+         mostrarError('El valor no es un n�mero!!!');
+         initializeView(objCas);
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Redondea a miles el valor de la casilla.
+ */
+DRedondeoMilJS.prototype = new DManejadorJS();
+DRedondeoMilJS.prototype.constructor=DRedondeoMilJS;
+function DRedondeoMilJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas) {
+//	objCas.value=limpiarFormato(objCas.value);
+   	var strNumero = getAsString(deleteLeftCerous(objCas.getValor()));
+	if (strNumero.length<3){
+          initializeView(objCas);
+	}else{
+	  var strNumIni = strNumero.substring(0, strNumero.length - 3)*1;
+          if (strNumero.substring(strNumero.length - 3)*1 >= 501)strNumIni++;
+          strNumIni = deleteLeftCerous(getAsString(strNumIni) + '000');
+          if (strNumIni.length > objCas.maxLength) {
+            initializeView(objCas);
+            mostrarError("Al redondear el valor " + strNumero + " se obtiene un n�mero que supera el l�mite de caracteres permitidos para esta casilla.");
+          } else {
+            //--objCas.value = strNumIni;
+        	  objCas.setValor(strNumIni);
+          }
+	}
+//	 objCas.value = formatear(objCas.value);
+    if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Manejador que actualiza el documento con el
+ * valor de la casilla previamente validada.
+ */
+DActDocumentoJS.prototype=new DManejadorJS();
+DActDocumentoJS.prototype.constructor=DActDocumentoJS;
+function DActDocumentoJS(manejador) {
+   this.manejador = manejador;
+   /**
+    * Este actualiza la casilla con el valor escrito, antes lo borraba pero se
+    * cambio para evitar inconsistencias con los validadores y con el formato
+    * de los documentos
+    */
+   this.manejar = function(objCas) {
+	  var DVisor = window.parent.DVisor;
+      DVisor.controlador.setCasillaFromObjCas(objCas);
+    
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Manejador que ejecuta operaciones aritm�ticas y
+ * l�gicas, seg�n la parametrizaci�n.
+ */
+DAritmeticoLogicoJS.prototype=new DManejadorJS();
+DAritmeticoLogicoJS.prototype.constructor=DAritmeticoLogicoJS;
+function DAritmeticoLogicoJS(manejador,expresion){
+    this.manejador = manejador;
+    this.expresion = expresion;
+    //Lista de funciones cuyos par�metros deben ser aislados antes del parsing.
+    this.fnAAislar = new Array('en');
+    this.expAisladas = new Hashtable();
+    this.backupExp = expresion;
+
+    this.manejar = function(objCas){
+       this.expresion =  this.aislarExpresionesFuncion();
+       
+       var expArit=this.getScript(objCas);
+       
+       expArit = this.restaurarExpresionesAisladas(expArit);
+       
+       eval(expArit);
+       //Si hay expresiones de asignaci�n del tipo objCas.form['cas34'].value=...
+       //--if(expArit.indexOf("'].value=")){
+       if(expArit.indexOf("'].setValor(")){
+    	   //--var arrCas = expArit.split("'].value=");
+    	   var arrCas = expArit.split("'].setValor(");
+         arrCas.length-=1;
+         for (var h=0;h<arrCas.length;h++) {
+        	 //--arrCas[i] = arrCas[i].substring(arrCas[i].lastIndexOf("'")+1);
+            arrCas[h] = arrCas[h].substring(arrCas[h].lastIndexOf("'")+1);
+         }
+         for(var k=0;k<arrCas.length;k++){
+            //obtiene el n�mero de la casilla a la que se le asignar� un valor, la cadena
+            //original es "objCas.form['cas34'].value="y obtiene "cas34", y lanza el evento.
+             evaluate(objCas.form[arrCas[k]]);
+         }
+       }
+       if(manejador)manejador.manejar(objCas);
+   }
+
+   this.getScript = function(objCas){
+      var expTemp = this.replaceFromResumen();
+      var first = true;
+      
+      
+      do{
+         var indIni = expTemp.indexOf('#');
+         var indFin = indIni + 1;
+         var cadCas = '#';
+         while(expTemp.charAt(indFin).isDigit() || expTemp.charAt(indFin) == '_'){
+            cadCas+=expTemp.charAt(indFin);
+            indFin++;
+         }
+         cadCas = cadCas.replace(/#/i,'cas');
+         //Genera una cadena *1 para convertir a n�mero los valores de casillas, pero no lo permite is se
+         //refiere a una asignaci�n.
+         var numConversor = (expTemp.charAt(indFin)=='=' && expTemp.charAt(indFin+1)!='=')?'':'*1';
+         
+         //if (first){
+         //Se determina que es una asignaci�n
+         if(numConversor==''){
+        	 var cadEjecucion = expTemp.substring(indFin);
+        	 cadEjecucion = cadEjecucion.replace('=','');
+        	 expTemp=expTemp.substring(0,indIni) + "objCas.form['" + cadCas + "'].setValor(" + numConversor + cadEjecucion+")";
+        	 
+         } else {
+        	 
+         //eval("objCas.form['" + cadCas + "']..value" + "=" + "limpiarFormato(objCas.form['" + cadCas + "']..value)");
+        	 expTemp=expTemp.substring(0,indIni) + "objCas.form['" + cadCas + "'].getValor()" + numConversor + expTemp.substring(indFin);
+         }
+         
+         first = false;	 
+      }while(expTemp.indexOf('#') != -1)
+      return expTemp;
+   }
+
+  /**
+   * Prepara la expresi�n recortando las expresiones que debe aislar, estas expresiones se aislan por que no
+   * deben ser parseadas ya que est�n dentro de la invocaci�n a una funci�n y esta es la que las procesa, pe:
+   *
+   * !en(#45,#53)?mostrarError('Mensaje de error!!!'):;
+   *
+   * la expresi�n aislada es "#45,#53"
+   * y la preparada "!en()?mostrarError('Mensaje de error!!!'):;"
+   */
+  this.aislarExpresionesFuncion = function () {
+      var expPreparada = this.expresion;
+      for (var i=0; i<this.fnAAislar.length; i++) {
+        //Parte al exp de acuerdo a la expresi�n de turno
+        var arrTemp = expPreparada.split(this.fnAAislar[i]);
+        //Indica si la expresi�n inicia con la invocaci�n a la funcion
+        var iniConFn = this.expresion.indexOf(this.fnAAislar[i])==0?true:false;
+        //Recorre los tokens aislando las expresiones que son par�metros de la funci�n de turno
+        for (var j=iniConFn?0:1; j<arrTemp.length; j++) {
+          //Inicio de los par�metros de la funci�n, pe: en >(< #45,#53)
+          var indIni = arrTemp[j].indexOf('(');
+          //Fin de los par�metros de la funci�n, pe: en(#45,#53 >)<
+          var indFin = 0;
+          while (arrTemp[j].charAt(indFin) != ')') {
+            indFin++;
+          }
+          //Expresi\uFFFD a aislar, pe: #45,#53
+          var expTemp = arrTemp[j].substring(indIni + 1, indFin);
+          //Modifica el token aislando la expresi�n
+          arrTemp[j] = arrTemp[j].substring(0,indIni + 1) + arrTemp[j].substring(indFin);
+          //Registra la expresi�n aislada en el Hashtable
+          if (this.expAisladas.get(this.fnAAislar[i])) {
+            this.expAisladas.get(this.fnAAislar[i]).push(this.prepararParametro(expTemp));
+          } else {
+            this.expAisladas.put(this.fnAAislar[i], new Array(this.prepararParametro(expTemp)));
+          }
+        }
+        //Concatena los tokens con el nombre de la funcion de turno para reensamblar la expresi�n
+        expPreparada = '';
+        for (var k=0;k<arrTemp.length ;k++) {
+          expPreparada += arrTemp[k];
+		if (k<arrTemp.length - 1) {
+			expPreparada += this.fnAAislar[i];
+		}
+        }
+        //Si la expresi�n inicia con una invocaci�n a la funci�n la antepone
+        if (iniConFn) {
+          expPreparada = this.fnAAislar[i] + expPreparada;
+        }
+      }
+    return expPreparada;
+  }
+
+  /**
+   * La preparaci�n consiste en convertir en cadenas las referencias a casilla, asi los par�metros:
+   * 25,#45 ser�n 25,'#45'
+   */
+  this.prepararParametro = function (parametros) {
+    var arrTemp = parametros.split(',');
+    for (var i=0;i<arrTemp.length;i++) {
+      arrTemp[i] = arrTemp[i].indexOf('#') == 0?"'" + arrTemp[i] + "'":arrTemp[i];
+    }
+    return arrTemp.join(',');
+  }
+
+  /**
+   * Restaura la expresi�n introduci�ndole las expresiones aisladas.
+   */
+  this.restaurarExpresionesAisladas = function(exp) {
+    var funciones = this.expAisladas.keys();
+    for (var i=0;i<funciones.length;i++) {
+      var expAisladasFn = this.expAisladas.get(funciones[i]);
+      for (var j=0;j<expAisladasFn.length;j++){
+        var indFn = exp.indexOf(funciones[i] + '()');
+        exp = exp.substring(0,indFn + funciones[i].length + 1) + expAisladasFn[j] +
+              exp.substring(indFn + funciones[i].length + 1);
+      }
+    }
+    return exp;
+  }
+
+
+   this.replaceFromResumen = function(){
+      var expTemp = this.expresion;
+      var idresumen = new Array();
+      var documento = null;
+
+      do{
+         posIni = expTemp.indexOf('R(');
+         posFin = expTemp.indexOf(')', posIni+2);
+
+         if(posIni != -1){
+
+            keydoc = expTemp.substring(posIni+2, posFin);
+            idresumen = keydoc.split('.');
+            documento = parent.DVisor.getDocResumen(idresumen[0]+'.'+idresumen[1]);
+
+            idgrupo = documento.getIdGrupos()[0];
+            gruporesumen = documento.getGrupoByID(idgrupo);
+            idocurrencia = gruporesumen.getIdOcurrencias()[0];
+            ocurrenciaresumen = gruporesumen.getOcurrencia(idocurrencia);
+            casillaresumen = ocurrenciaresumen.getCasilla(idresumen[2]);
+
+            expTemp = expTemp.replace('R('+keydoc+')', casillaresumen.getValor());
+         }
+
+      }while(expTemp.indexOf('R(') != -1);
+
+      return expTemp;
+   }
+}
+
+/**
+ * Manejador que valida si un manejador est� dentro del rango de los enteros primitivos en java.
+ * este rango esta entre  -2147483648 a 2147483647
+ */
+DEvalRangoEnteroJS.prototype=new DManejadorJS();
+DEvalRangoEnteroJS.prototype.constructor=DEvalRangoEnteroJS;
+function DEvalRangoEnteroJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      var numero = objCas.getValor()*1;
+      if(numero < -2147483648 || numero > 2147483648){
+         mostrarError('Valor fuera del rango!!!');
+         initializeView(objCas);
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Valida que el valor de la casilla sea un dv v�lido para el nit en el valor de la casilla anterior.
+ */
+DDigitoVerificacionJS.prototype=new DManejadorJS();
+DDigitoVerificacionJS.prototype.constructor=DDigitoVerificacionJS;
+function DDigitoVerificacionJS(manejador){
+    this.manejador = manejador;
+
+    this.iniciarVariables = function(){
+    }
+
+    this.manejar = function(objCas){
+        var casNIT = getNumber(objCas)*1-1;
+        var cas = objCas.name;
+        var repeticion = "";
+        var indiceSeparadorRep = cas.indexOf("_");
+        // Si la casilla es repetible, contar el n�mero de repetici�n
+        if(indiceSeparadorRep!=-1){
+            indiceSeparadorRep++;
+            while(cas.charAt(indiceSeparadorRep).isDigit()){
+                repeticion = repeticion + cas.charAt(indiceSeparadorRep);
+                indiceSeparadorRep++;
+            }
+        }
+        if(repeticion != ""){
+            casNIT = "cas"+casNIT+"_"+repeticion;
+        }
+        else{
+            casNIT = "cas"+casNIT;
+        }
+        var numero = document.getElementById(casNIT).getValor();
+        var digitoChequeo = objCas.getValor();
+        var valores  = new Array("3", "7", "13", "17", "19", "23", "29", "37", "41", "43", "47", "53", "59", "67", "71");
+        var digito = 0;
+        var j = 0;
+        var suma = 0;
+        var i = numero.length -1;
+        if (digito == null && digito.length == 0) {
+            parent.DVisor.dialogomensaje.showModal('Error', 'No se ingres� el D�gito de Chequeo.', 3);
+            initialize(objCas);
+            evaluate(objCas);
+	    return false;
+        }
+        else {
+            var ultimoDigito = parseInt(digitoChequeo);
+            for (i = numero.length - 1; i >= 0; i--) {
+                factor1 = parseInt(numero.substr(i,1));
+		factor2 = parseInt(valores[j]);
+	        suma = suma + (factor1 * factor2);
+                if(suma % 11 > 1){
+                    digito = 11 - (suma % 11);
+                } else {
+                    digito = suma % 11;
+                }
+                j++;
+            }
+	    if (numero.length > 0) {
+                if (ultimoDigito != digito) {
+                    parent.DVisor.dialogomensaje.showModal('Error', 'NIT errado, por favor dig�telo nuevamente.', 3);
+                    //--objCas.value = "";
+                    objCas.setValor("");
+                    //initialize(objCas);
+                    evaluate(objCas);
+	            return false;
+                }
+               /* else
+                {
+                    return true;
+                }*/
+            }
+	  /*  else{
+                return true;
+            }*/
+	}
+         if(manejador)manejador.manejar(objCas);
+    }
+
+}
+
+/**
+ * Valida que el valor de la casilla cumpla con la estructura de un e-mail
+ */
+DValidaCorreoJS.prototype=new DManejadorJS();
+DValidaCorreoJS.prototype.constructor=DValidaCorreoJS;
+function DValidaCorreoJS(manejador){
+
+    this.iniciarVariables = function(){
+    }
+    this.manejador = manejador;
+    this.manejar = function(objCas)
+    {
+      var correo = objCas.getValor();
+      if(correo.length > 0){
+        if (correo.indexOf("@")<2){
+          parent.DVisor.dialogomensaje.showModal('error', ' La direcci�n e-mail no es v�lida. Por favor introduzca una direcci�n que contenga el simbolo @.', 3);
+          //initialize(objCas);
+          evaluate(objCas);
+          return false;
+        }
+        var i = 0;
+        var cont = 0;
+        for (i = 0; i < correo.length ; i++) {
+          if (correo.substr(i,1) == "@")
+            cont++;;
+        }
+        var n = correo.indexOf("@");
+        var cont1 = 0;
+        for (i = n; i < correo.length ; i++) {
+          if (correo.substr(i,1) == ".")
+            cont1++;
+        }
+        if ( cont > 1 || cont1 == 0){
+          parent.DVisor.dialogomensaje.showModal('error', 'La direcci�n e-mail no es v�lida. La direccion e-mail debe contener al menos un punto despues de @ y solo un @.', 3);
+          initialize(objCas);
+          evaluate(objCas);
+          return false;
+        }
+      }
+      if(manejador)
+        manejador.manejar(objCas);
+      return true;
+    }
+}
+
+/**
+ * Valida que el valor de la casilla este en los rangos de nits de acuerdo al tipo de declarante.
+ */
+DValidaNitJS.prototype = new DManejadorJS();
+DValidaNitJS.prototype.constructor = DValidaNitJS;
+function DValidaNitJS(manejador) {
+    this.manejador = manejador;
+    var DVisor = parent.DVisor;
+
+    this.manejar = function(objCas) {
+ //   this.objCas = objCas;
+    var tipoContribuyente =parent.DVisor.getValorCasillaAbsoluto(1, 1, 24,-1);
+    var id = objCas.getValor();
+     if (tipoContribuyente == 1){
+
+        if (id >= 800000000 && id <= 999999999){
+	     return true;
+     }
+	else {
+	    var mensaje = "El Nro. del NIT para personas jur�dicas debe estar entre el rango 800.000.000 a 899.999.999999, verifique " ;
+            DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+	 }
+     }
+         else if (tipoContribuyente == 2){
+                 if ( (id <= 99999999) || (id >= 600000000 && id <= 600200000) || (id >= 700000001 && id <= 799999999) || id > 1000000000 ){
+	            return true;
+        }else {
+	       var mensaje = "Nro. de identificaci�n o NIT  para personas naturales no es v�lido. " ;
+		DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+	 }
+         }
+   if(manejador) manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Carga la ventana de fechas.
+ */
+DManejadorFechaJS.prototype = new DManejadorJS();
+DManejadorFechaJS.prototype.constructor = DManejadorFechaJS;
+function DManejadorFechaJS(manejador){
+    this.manejador = manejador;
+
+    this.manejar = function(objCas){
+      //Solo lo muestra si la casilla no es readOnly
+//      if (!objCas.readOnly) {
+        var posX  = this.findPosX(objCas);
+        var posY = this.findPosY(objCas);
+        showCalendar(objCas, objCas, 'yyyy-mm-dd', null,1,posX,posY);
+        if(this.manejador) {
+
+          manejador.manejar(objCas);
+        }
+//      }
+    }
+
+    /**
+     * Calcula la posicion X del objeto que llamo el manejador
+     */
+    this.findPosX = function (obj){
+      var curleft = 0;
+      if (obj.offsetParent)
+      {
+        while (obj.offsetParent)
+        {
+          curleft += obj.offsetLeft
+          obj = obj.offsetParent;
+        }
+      }
+      else if (obj.x){
+        curleft += obj.x;
+      }
+      return curleft;
+    }
+
+    /* Calcula la posicion Y del objeto que llamo el manejador
+    */
+    this.findPosY = function (obj)
+    {
+      var curtop = 0;
+      if (obj.offsetParent)
+      {
+        while (obj.offsetParent)
+        {
+          curtop += obj.offsetTop
+          obj = obj.offsetParent;
+        }
+      }
+      else if (obj.y)
+        curtop += obj.y;
+      return curtop;
+    }
+}
+
+/**
+ * Valida que le valor de la fecha no sea superior a la fecha actual.
+ */
+DManejadorValidaFechaActJS.prototype = new DManejadorJS();
+DManejadorValidaFechaActJS.prototype.constructor = DManejadorValidaFechaActJS;
+function DManejadorValidaFechaActJS(manejador){
+    this.manejador = manejador;
+    var DVisor = parent.DVisor;
+
+    this.manejar = function(objCas){
+
+        var fechai = objCas.getValor();
+        var fechaActual=new Date();
+        var dia = fechaActual.getDate();
+	var mes = fechaActual.getMonth() + 1;
+	var ano = fechaActual.getYear();
+
+        if( dia < 10)
+          dia = "0" + dia;
+	if( mes < 10)
+          mes = "0" + mes;
+        anoi = parseInt(ano);
+	if (anoi < 1000)
+          anoi += 1900;
+        fecha = anoi + "-" + mes + "-" + dia;
+	if ( fechai > fecha) {
+	      var mensaje =  "La fecha seleccionada debe ser menor o igual a la fecha actual.";
+              //--objCas.value = "";
+              objCas.setValor("");
+              evaluate(objCas);
+	      DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+	}
+	else{
+	    if(manejador) manejador.manejar(objCas);
+         }
+    }
+
+}
+
+/**
+ * Resalta la casilla actual con color amarillo, este manejador es adicinado por defecto a
+ * todas las casillas cuando se carga la hoja.
+ */
+DResaltarCasillaActualJS.prototype = new DManejadorJS();
+DResaltarCasillaActualJS.prototype.constructor = DResaltarCasillaActualJS;
+function DResaltarCasillaActualJS(manejador,tipo) {
+    var DVisor = parent.DVisor;
+    var bgBlanco = 'rgb(255, 255, 255) none repeat scroll 0% 0%';
+    var bgAmarillo = 'rgb(255, 247, 222) none repeat scroll 0% 0%';
+    var bgGris = 'rgb(212, 212, 212) none repeat scroll 0% 0%';
+
+    this.manejar = function(objCas) {
+	objCas.bgOriginal = (!objCas.bgOriginal)?
+			(objCas.style.background=='')?bgBlanco:objCas.style.background
+			:objCas.bgOriginal;
+
+      if (objCas.readOnly == true) {
+        objCas.style.background = bgGris;
+      } else  {
+        if (tipo == 'in') {
+          objCas.style.background = bgAmarillo;
+        }else if (tipo == 'out') {
+          objCas.style.background = objCas.bgOriginal;
+        }
+      }
+
+      
+       if(manejador) manejador.manejar(objCas);
+    }
+}
+
+/**
+ *
+ */
+DEvaldigitacionMasivaJS.prototype=new DManejadorJS();
+DEvaldigitacionMasivaJS.prototype.constructor=DEvaldigitacionMasivaJS;
+function DEvaldigitacionMasivaJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      var numerrores = 0;
+
+      if(esEntero(objCas.getValor())){
+         objCas.setAttribute('errores', '0');
+         if(manejador)  manejador.manejar(objCas);
+      }else{
+         numerrores = objCas.getAttribute('errores');
+
+         if(numerrores < 3){
+            alert('el valor debe ser entero');
+
+            numerrores++;
+            objCas.setAttribute('errores', numerrores);
+            initialize(objCas);
+            evaluate(objCas);
+            //--objCas.value='';
+            objCas.setValor('');
+            document.getElementById(objCas.name).focus();
+            throw "Error2";
+         }else{
+            if(confirm('Est\uFFFDseguro de querer fijar ese valor?')){
+               //objCas.nextSibling.focus();
+            } else {
+               //--objCas.value='';
+            	objCas.setValor('');
+               return false;
+            }
+         }
+      }
+      this.finalizarVariables();
+   }
+}
+
+/**
+ * Este manejador permite inicializar el valor de las casillas de acuerdo al tipo de dato.
+ */
+DInicalizarValorJS.prototype=new DManejadorJS();
+DInicalizarValorJS.prototype.constructor=DInicalizarValorJS;
+function DInicalizarValorJS(manejador){
+
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+    initializeView(objCas);
+    if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * Manejador para ejecutar la activacion o desactivacion de casillas.
+ */
+DActivarJS.prototype = new DManejadorJS();
+DActivarJS.prototype.constructor = DActivarJS;
+function DActivarJS(manejador) {
+  this.manejador = manejador;
+  this.activaciones = new DActivacionesJS();
+
+  this.manejar = function(objCas) {
+    this.activaciones.activar();
+  }
+}
+
+/**
+ * Cunado se oprima ENTER en la casilla pasa a la siguiente.
+ */
+DAvanzarCasillaJS.prototype=new DManejadorJS();
+DAvanzarCasillaJS.prototype.constructor=DAvanzarCasillaJS;
+function DAvanzarCasillaJS(manejador){
+   this.evento = null;
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      if (this.evento.keyCode == 13) {
+          if (getItem(objCas) == -1) {
+              var nextCas = document.getElementById('cas' + (getNumber(objCas)*1 + 1));
+              if (nextCas) {
+                  nextCas.focus();
+                  nextCas.select();
+              }
+          } else {
+              var nextItemCas = document.getElementById('cas' + getNumber(objCas) + '_' + (getItem(objCas)*1 + 1));
+              if (nextItemCas) {
+                  nextItemCas.focus();
+                  nextCas.select();
+              }
+          }
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+
+   this.setEvento = function(evento) {
+   	this.evento = evento;
+   }
+}
+
+/**
+ * Valida si el valor de la casilla ha cambiado con respecto al valor en el documento.
+ */
+DValidarCambioJS.prototype=new DManejadorJS();
+DValidarCambioJS.prototype.constructor=DValidarCambioJS;
+function DValidarCambioJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+    var valorCasDoc = DVisor.getValorCasilla(getNumber(objCas), getItem(objCas));
+    if ((!valorCasDoc || valorCasDoc != objCas.getValor()) && this.manejador) {
+      manejador.manejar(objCas);
+    }
+   }
+}
+
+/**
+ * Valida si el tipo dato del numero es decimal y si no tiene los puntos
+ * decimales los coloca.
+ */
+DCompletaNumerosDecimalesJS.prototype=new DManejadorJS();
+DCompletaNumerosDecimalesJS.prototype.constructor=DCompletaNumerosDecimalesJS;
+function DCompletaNumerosDecimalesJS(manejador) {
+  this.manejador = manejador;
+
+  this.manejar = function(objCas){
+    var tdato = objCas.getAttribute('tdato');
+    if(tdato == 'DE'){
+      CompletaValoresDecimales(objCas, 2);
+    }
+    if(manejador)manejador.manejar(objCas);
+  }
+}
+
+/**
+ *
+ */
+DManejadorValidFechaJS.prototype=new DManejadorJS();
+DManejadorValidFechaJS.prototype.constructor=DManejadorValidFechaJS;
+function DManejadorValidFechaJS(manejador,expresion) {
+    this.manejador = manejador;
+    this.expresion = expresion;
+    var DVisor = parent.DVisor;
+
+    this.manejar = function(objCas) {
+
+        var valid = true;
+        var mensajeFecha = "";
+
+        var value = objCas.getValor();
+        var datePattern = expresion;
+
+        if ((value.length > 0) &&  (datePattern.length > 0)) {
+            var MONTH = "MM";
+            var DAY = "dd";
+            var YEAR = "yyyy";
+            var orderMonth = datePattern.indexOf(MONTH);
+            var orderDay = datePattern.indexOf(DAY);
+            var orderYear = datePattern.indexOf(YEAR);
+            if (orderDay < orderYear && orderDay > orderMonth) {
+                var iDelim1 = orderMonth + MONTH.length;
+                var iDelim2 = orderDay + DAY.length;
+                var delim1 = datePattern.substring(iDelim1, iDelim1 + 1);
+                var delim2 = datePattern.substring(iDelim2, iDelim2 + 1);
+                if (iDelim1 == orderDay && iDelim2 == orderYear) {
+                   dateRegexp = new RegExp("^(\\d{2})(\\d{2})(\\d{4})$");
+                } else if (iDelim1 == orderDay) {
+                   dateRegexp = new RegExp("^(\\d{2})(\\d{2})[" + delim2 + "](\\d{4})$");
+                } else if (iDelim2 == orderYear) {
+                   dateRegexp = new RegExp("^(\\d{2})[" + delim1 + "](\\d{2})(\\d{4})$");
+                } else {
+                   dateRegexp = new RegExp("^(\\d{2})[" + delim1 + "](\\d{2})[" + delim2 + "](\\d{4})$");
+                }
+                 var matched = dateRegexp.exec(value);
+                if(matched != null) {
+                    if (!isValidDate(matched[2], matched[1], matched[3])) {
+                        mensajeFecha = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                        valid =  false;
+                    }
+                }
+                mensajeFecha = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                valid =  false;
+
+              } else if ((orderMonth < orderYear && orderMonth > orderDay)) {
+                  var iDelim1 = orderDay + DAY.length;
+                  var iDelim2 = orderMonth + MONTH.length;
+                  var delim1 = datePattern.substring(iDelim1, iDelim1 + 1);
+                  var delim2 = datePattern.substring(iDelim2, iDelim2 + 1);
+                  if (iDelim1 == orderMonth && iDelim2 == orderYear) {
+                      dateRegexp = new RegExp("^(\\d{2})(\\d{2})(\\d{4})$");
+                  } else if (iDelim1 == orderMonth) {
+                      dateRegexp = new RegExp("^(\\d{2})(\\d{2})[" + delim2 + "](\\d{4})$");
+                  } else if (iDelim2 == orderYear) {
+                      dateRegexp = new RegExp("^(\\d{2})[" + delim1 + "](\\d{2})(\\d{4})$");
+                  } else {
+                      dateRegexp = new RegExp("^(\\d{2})[" + delim1 + "](\\d{2})[" + delim2 + "](\\d{4})$");
+                  }
+                  var matched = dateRegexp.exec(value);
+                  if(matched != null) {
+                      if (!isValidDate(matched[1], matched[2], matched[3])) {
+                          mensajeFecha = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                          valid =  false;
+                      }
+                  } else {
+                      mensajeFecha = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                      valid =  false;
+                  }
+              } else if ((orderMonth > orderYear && orderMonth < orderDay)) {
+                  var iDelim1 = orderYear + YEAR.length;
+                  var iDelim2 = orderMonth + MONTH.length;
+                  var delim1 = datePattern.substring(iDelim1, iDelim1 + 1);
+                  var delim2 = datePattern.substring(iDelim2, iDelim2 + 1);
+                  if (iDelim1 == orderMonth && iDelim2 == orderDay) {
+                      dateRegexp = new RegExp("^(\\d{4})(\\d{2})(\\d{2})$");
+                  } else if (iDelim1 == orderMonth) {
+                      dateRegexp = new RegExp("^(\\d{4})(\\d{2})[" + delim2 + "](\\d{2})$");
+                  } else if (iDelim2 == orderDay) {
+                      dateRegexp = new RegExp("^(\\d{4})[" + delim1 + "](\\d{2})(\\d{2})$");
+                  } else {
+                      dateRegexp = new RegExp("^(\\d{4})[" + delim1 + "](\\d{2})[" + delim2 + "](\\d{2})$");
+                  }
+                  var matched = dateRegexp.exec(value);
+                  if(matched != null) {
+                      if (!isValidDate(matched[3], matched[2], matched[1])) {
+                          mensajeFecha = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                          valid =  false;
+                      }
+                  } else {
+                      mensajeFecha = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                      valid =  false;
+                  }
+              } else {
+                  mensajeFecha = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                  valid =  false;
+              }
+        }
+
+        if (!valid) {
+            mostrarError(mensajeFecha)
+        }
+
+        if(manejador)manejador.manejar(objCas);
+    }
+}
+
+
+/**
+ * -------------------------------------------------------------------------------
+ * VALIDADORES
+ * -------------------------------------------------------------------------------
+ */
+
+/**
+ * Esta funci�n valida que el valor de una casilla este entre el rango definido.
+ */
+DValidarRangoNumericoEnteroJS.prototype=new DValidadorCasillaJS();
+DValidarRangoNumericoEnteroJS.prototype.constructor=DValidarRangoNumericoEnteroJS;
+function DValidarRangoNumericoEnteroJS(validador, expresion) {
+    this.validador = validador;
+    this.expresion = expresion;
+    this.manejadorVal = null;
+    this.valido = true;
+    this.mensaje = "";
+    var DVisor = parent.DVisor;
+
+    this.validar = function(objCasJS) {
+
+        if (objCasJS) {
+            var arrRangos = this.expresion.split(',');
+
+            var valorCas = objCasJS.getValor() != '' ? parseInt(objCasJS.getValor()) : 0;
+            var rangoMen = parseInt(arrRangos[0]);
+            var rangoMay = parseInt(arrRangos[1]);
+            if (!(rangoMen <= valorCas && valorCas <= rangoMay)) {
+                this.valido = false;
+                this.mensaje = "El valor de la casilla "+objCasJS.getId()+" debe estar entre "+rangoMen+" y "+rangoMay+".";
+            }
+        }
+        if (!this.valido) {
+            this.manejadorVal.getLogErrores().addLogError(objCasJS, this.mensaje);
+        }
+        if(validador)validador.validar(objCasJS);
+    }
+
+    this.setManejadorVal = function(manejadorVal) {
+        this.manejadorVal = manejadorVal;
+    }
+
+    this.esValidado = function() {
+        return this.valido;
+    }
+
+    this.getMensajeError = function() {
+        return mensaje;
+    }
+}
+
+/**
+ *
+ */
+DValidarNumDigitosJS.prototype=new DValidadorCasillaJS();
+DValidarNumDigitosJS.prototype.constructor=DValidarNumDigitosJS;
+function DValidarNumDigitosJS(validador, expresion){
+    this.expresion = expresion;
+    this.validador = validador;
+    this.manejadorVal = null;
+    this.valido = true;
+    this.mensaje = "";
+    var DVisor = parent.DVisor;
+
+    this.validar = function(objCasJS) {
+        if (objCasJS) {
+            var valCasilla = parseInt(objCasJS.getValor());
+            var numDigitosCasilla = valCasilla.length;
+            var numDigValid = parseInt(expresion);
+
+            if (numDigitosCasilla != numDigValid) {
+                this.valido = false;
+                this.mensaje = "La cantidad de digitos de la casilla debe ser igual a "+expresion+".";
+            }
+
+        }
+        if (!this.valido) {
+            this.manejadorVal.getLogErrores().addLogError(objCasJS, this.mensaje);
+        }
+        if(validador)validador.validar(objCasJS);
+    }
+
+    this.setManejadorVal = function(manejadorVal) {
+        this.manejadorVal = manejadorVal;
+    }
+
+    this.esValidado = function() {
+        return this.valido;
+    }
+
+    this.getMensajeError = function() {
+        return mensaje;
+    }
+}
+
+/**
+ * Validador mayor que cero.
+ */
+DValidarMayorCeroJS.prototype=new DValidadorCasillaJS();
+DValidarMayorCeroJS.prototype.constructor=DValidarMayorCeroJS;
+function DValidarMayorCeroJS(validador){
+    this.validador = validador;
+    this.manejadorVal = null;
+    this.valido = true;
+    this.mensaje = "";
+    var DVisor = parent.DVisor;
+
+    this.validar = function(objCasJS) {
+        if (objCasJS) {
+          if (objCasJS.className == "DCasillaJS") {
+              this.valido = !isNaN(objCasJS.getValor()) && objCasJS.getValor() > 0;
+              if (!this.valido) {
+                  this.mensaje = "El valor debe ser un n�mero mayor que cero.";
+              }
+          }
+          else if (objCasJS.className == "DCasillaColumnaJS") {
+            var valoresCasilla = objCasJS.getValoresCasilla();
+            for(var i=0; i< valoresCasilla.length && this.valido; i++){
+              this.valido = !isNaN(valoresCasilla[i]) && valoresCasilla[i] > 0;
+            }
+            if (!this.valido) {
+              this.mensaje = "El valor en cada item debe ser un n�mero mayor que cero.";
+            }
+          }
+          if (!this.valido) {
+            this.manejadorVal.getLogErrores().addLogError(objCasJS, this.mensaje);
+          }
+        }
+        if(validador)validador.validar(objCasJS);
+    }
+
+    this.setManejadorVal = function(manejadorVal) {
+        this.manejadorVal = manejadorVal;
+    }
+
+    this.esValidado = function() {
+        return this.valido;
+    }
+
+    this.getMensajeError = function() {
+        return mensaje;
+    }
+}
+
+
+/**
+ * Recuerda el valor original de una casilla, este valiador debe userse en el evento 11, de tal manera
+ * que se ejecuta en la carga de la p�gina.
+ *
+ * El valor original se almacena en la propieda "valorOriginal" de la caja de texto.
+ *
+ * Use con precauci�n en formularios de varias hojas.
+ */
+DRecordarValorOriginalJS.prototype=new DValidadorCasillaJS();
+DRecordarValorOriginalJS.prototype.constructor=DRecordarValorOriginalJS;
+function DRecordarValorOriginalJS(validador){
+    this.validador = validador;
+
+    this.validar = function(objCasJS) {
+        if (objCasJS) {
+            if (objCasJS.className == "DCasillaJS") {
+              var objCas = document.getElementById('cas' + objCasJS.getId());
+              objCas.valorOriginal = objCasJS.getValor();
+            }else if (objCasJS.className == "DCasillaColumnaJS") {
+                var casillas = getArregloCasiilaColumna(objCasJS.getId());
+                for(var i=0; i< casillas.length && this.valido; i++){
+                    if (objCasJS.irA(i)) {
+                      casillas[i].valorOriginal = objCasJS.getValor();
+                    }
+                }
+            }
+        }
+        if(validador)validador.validar(objCasJS);
+    }
+
+    this.setManejadorVal = function(manejadorVal) {
+        this.manejadorVal = manejadorVal;
+    }
+
+    this.esValidado = function() {
+        return this.valido;
+    }
+
+    this.getMensajeError = function() {
+        return mensaje;
+    }
+}
+
+/**
+ * Validador mayor que cero.
+ */
+DValidarValoresNoCeroJS.prototype=new DValidadorCasillaJS();
+DValidarValoresNoCeroJS.prototype.constructor=DValidarValoresNoCeroJS;
+function DValidarValoresNoCeroJS(validador,expresion) {
+    this.validador = validador;
+    this.expresion = expresion;
+    this.manejadorVal = null;
+    this.valido = true;
+    this.mensaje = "";
+    var DVisor = parent.DVisor;
+
+    this.validar = function(objCasJS) {
+      var args = this.expresion.split(/,/);
+      var sumaCasillas = 0;
+      for (var i=0; i<args.length;i++) {
+        var id = args[i].indexOf('-');
+        //Estas dos aqui son como definiciones dummy para el recorte al final
+        var ini = 1;
+        var fin = ini;
+        if (id != -1) {
+          //Esto es medio truco asumiendo que el # esta en la posicion 1
+          ini = args[i].substring(1,id);
+          fin = args[i].substring(id+2, args[i].length);
+          var idColIni = ini.indexOf('_');
+          var idColFin = fin.indexOf('_');
+
+          // Estas condiciones validan que sean rangos extrictos tipo
+          // #30_1-#30_2 y no cosas como #40-#40_2
+          if (idColIni == -1 && idColFin == -1) {
+            // Aqui solo los vuelvo numeros para el conteo y ya
+            ini *= 1;
+            fin *= 1;
+          } else if (idColIni != -1 && idColFin != -1) {
+            //Valor de la parte de la casilla
+            var nomCasIni = ini.substring(0,idColIni);
+            var nomCasFin = fin.substring(0,idColFin);
+            if (nomCasIni == nomCasFin) {
+              //Valor de la parte de las columnas
+              ini = ini.substring(idColIni+1);
+              fin = fin.substring(idColFin+1);
+              //Aqui se revisan las columnas
+              while (ini<=fin) {
+                var valCasilla = DVisor.controlador.getValorCasilla(nomCasIni,ini) * 1;
+                // es el nombre a la derecha de la casilla
+                sumaCasillas += Math.abs(valCasilla);
+                ini++;
+              }
+              continue;
+            }
+          }
+          while (ini<=fin) {
+            var valCasilla = DVisor.controlador.getValorCasilla(ini,-1) * 1;
+            // es el nombre a la derecha de la casilla
+            sumaCasillas += Math.abs(valCasilla);
+            ini++;
+          }
+        } else {
+          //Si es una casilla simple
+          ini = args[i].substring(1)*1;
+          var valCasilla = DVisor.controlador.getValorCasilla(ini,-1) * 1;
+          sumaCasillas += Math.abs(valCasilla);
+        }
+      }
+      if (sumaCasillas == 0) {
+          this.valido = false;
+          this.mensaje = "- Si su declaraci�n va a ser presentada en ceros, NO se puede presentar via Internet\r\n";
+          this.manejadorVal.getLogErrores().addMensajeError(this.mensaje);
+      }
+      if(validador)validador.validar(objCasJS);
+    }
+
+    this.setManejadorVal = function(manejadorVal) {
+        this.manejadorVal = manejadorVal;
+        if(this.validador)this.validador.setManejadorVal(manejadorVal);
+    }
+
+    this.esValidado = function() {
+        return this.valido;
+    }
+
+    this.getMensajeError = function() {
+        return mensaje;
+    }
+}
+
+/**
+ *
+ */
+DValidarFechaJS.prototype=new DValidadorCasillaJS();
+DValidarFechaJS.prototype.constructor=DValidarFechaJS;
+function DValidarFechaJS(validador,expresion) {
+    this.validador = validador;
+    this.expresion = expresion;
+    this.manejadorVal = null;
+    this.valido = true;
+    this.mensaje = "";
+
+    this.validar = function(objCasJS) {
+
+        var value = objCasJS.getValor();
+        var datePattern = expresion;
+
+        if ((value.length > 0) &&  (datePattern.length > 0)) {
+            var MONTH = "MM";
+            var DAY = "dd";
+            var YEAR = "yyyy";
+            var orderMonth = datePattern.indexOf(MONTH);
+            var orderDay = datePattern.indexOf(DAY);
+            var orderYear = datePattern.indexOf(YEAR);
+            if (orderDay < orderYear && orderDay > orderMonth) {
+                var iDelim1 = orderMonth + MONTH.length;
+                var iDelim2 = orderDay + DAY.length;
+                var delim1 = datePattern.substring(iDelim1, iDelim1 + 1);
+                var delim2 = datePattern.substring(iDelim2, iDelim2 + 1);
+                if (iDelim1 == orderDay && iDelim2 == orderYear) {
+                   dateRegexp = new RegExp("^(\\d{2})(\\d{2})(\\d{4})$");
+                } else if (iDelim1 == orderDay) {
+                   dateRegexp = new RegExp("^(\\d{2})(\\d{2})[" + delim2 + "](\\d{4})$");
+                } else if (iDelim2 == orderYear) {
+                   dateRegexp = new RegExp("^(\\d{2})[" + delim1 + "](\\d{2})(\\d{4})$");
+                } else {
+                   dateRegexp = new RegExp("^(\\d{2})[" + delim1 + "](\\d{2})[" + delim2 + "](\\d{4})$");
+                }
+                 var matched = dateRegexp.exec(value);
+                if(matched != null) {
+                    if (!isValidDate(matched[2], matched[1], matched[3])) {
+                        mensaje = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                        valido =  false;
+                    }
+                }
+                mensaje = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                valido =  false;
+
+              } else if ((orderMonth < orderYear && orderMonth > orderDay)) {
+                  var iDelim1 = orderDay + DAY.length;
+                  var iDelim2 = orderMonth + MONTH.length;
+                  var delim1 = datePattern.substring(iDelim1, iDelim1 + 1);
+                  var delim2 = datePattern.substring(iDelim2, iDelim2 + 1);
+                  if (iDelim1 == orderMonth && iDelim2 == orderYear) {
+                      dateRegexp = new RegExp("^(\\d{2})(\\d{2})(\\d{4})$");
+                  } else if (iDelim1 == orderMonth) {
+                      dateRegexp = new RegExp("^(\\d{2})(\\d{2})[" + delim2 + "](\\d{4})$");
+                  } else if (iDelim2 == orderYear) {
+                      dateRegexp = new RegExp("^(\\d{2})[" + delim1 + "](\\d{2})(\\d{4})$");
+                  } else {
+                      dateRegexp = new RegExp("^(\\d{2})[" + delim1 + "](\\d{2})[" + delim2 + "](\\d{4})$");
+                  }
+                  var matched = dateRegexp.exec(value);
+                  if(matched != null) {
+                      if (!isValidDate(matched[1], matched[2], matched[3])) {
+                          mensaje = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                          valido =  false;
+                      }
+                  } else {
+                      mensaje = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                      valido =  false;
+                  }
+              } else if ((orderMonth > orderYear && orderMonth < orderDay)) {
+                  var iDelim1 = orderYear + YEAR.length;
+                  var iDelim2 = orderMonth + MONTH.length;
+                  var delim1 = datePattern.substring(iDelim1, iDelim1 + 1);
+                  var delim2 = datePattern.substring(iDelim2, iDelim2 + 1);
+                  if (iDelim1 == orderMonth && iDelim2 == orderDay) {
+                      dateRegexp = new RegExp("^(\\d{4})(\\d{2})(\\d{2})$");
+                  } else if (iDelim1 == orderMonth) {
+                      dateRegexp = new RegExp("^(\\d{4})(\\d{2})[" + delim2 + "](\\d{2})$");
+                  } else if (iDelim2 == orderDay) {
+                      dateRegexp = new RegExp("^(\\d{4})[" + delim1 + "](\\d{2})(\\d{2})$");
+                  } else {
+                      dateRegexp = new RegExp("^(\\d{4})[" + delim1 + "](\\d{2})[" + delim2 + "](\\d{2})$");
+                  }
+                  var matched = dateRegexp.exec(value);
+                  if(matched != null) {
+                      if (!isValidDate(matched[3], matched[2], matched[1])) {
+                          mensaje = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                          valido =  false;
+                      }
+                  } else {
+                      mensaje = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                      valido =  false;
+                  }
+              } else {
+                  mensaje = "El valor de la casilla deber ser una fecha que posea el siguiente formato "+this.expresion+"";
+                  valido =  false;
+              }
+        }
+
+        if (!this.valido) {
+            this.manejadorVal.getLogErrores().addLogError(objCasJS, this.mensaje);
+        }
+
+        if(validador)validador.validar(objCasJS);
+    }
+
+    this.setManejadorVal = function(manejadorVal) {
+        this.manejadorVal = manejadorVal;
+        if(this.validador)this.validador.setManejadorVal(manejadorVal);
+    }
+
+    this.esValidado = function() {
+        return this.valido;
+    }
+
+    this.getMensajeError = function() {
+        return mensaje;
+    }
+}

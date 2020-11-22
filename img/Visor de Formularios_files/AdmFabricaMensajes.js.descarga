@@ -1,0 +1,977 @@
+var COD_TIPO_INFO ="1";
+var COD_TIPO_ERROR ="2";
+var COD_TIPO_ADVERTENCIA ="3";
+var COD_TIPO_ADVERTENCIA_V2 ="3.2";
+var COD_TIPO_CONFIRMACION ="4";
+var COD_TIPO_CORRECTO ="5";
+var COD_TIPO_PASSWORD ="6";
+var COD_TIPO_ESPERA ="7";
+var COD_TIPO_VERIFICA ="8";
+var COD_TIPO_INFO_SIN_CERRAR = "9";
+
+/**
+ * Esta clase hace referencia al estado del mensaje ha ser procesado.
+ */
+DMensaje = function(unCodigo, unTipo, unResumen, unDetalle, unaClaseEstiloFrame, unaClaseEstiloFont){
+  this.codigo = unCodigo;
+  this.tipo = unTipo;
+  this.resumen = unResumen;
+  this.detalle = unDetalle;
+  this.claseEstiloFrame = unaClaseEstiloFrame;
+  this.claseEstiloFont = unaClaseEstiloFont;
+}
+
+DMensaje.prototype.getTipoMensaje = function(){
+  return this.tipo;
+}
+DMensaje.prototype.getCodigoMensaje = function (){
+  return this.codigo;
+}
+DMensaje.prototype.getResumenMensaje = function (){
+  return this.resumen;
+}
+DMensaje.prototype.getDetalleMensaje = function (){
+  return this.detalle;
+}
+DMensaje.prototype.getClaseEstiloFrame = function (){
+  return this.claseEstiloFrame;
+}
+DMensaje.prototype.getClaseEstiloFont = function(){
+  return this.claseEstiloFont;
+}
+DMensaje.prototype.setRendererMensaje = function(unRendererMensaje){
+  this.renderer = unRendererMensaje;
+  this.renderer.setMensaje(this);
+}
+DMensaje.prototype.getRendererMensaje = function (){
+  return this.renderer;
+}
+
+/**
+ * La superclase para dibujar un mensaje.
+ */
+function DRendererMensaje(){
+  this.mensaje = null;
+  this.rutaImagenes = "/WebEntradasalida/imagenes/es/";
+  this.eventosListeners = new Hashtable();
+
+  this.putEventoFunctionListener = function (unKeyEvento, unKeyFunctionListener){
+    this.eventosListeners.put(unKeyEvento, unKeyFunctionListener);
+  }
+  this.getFunctionListener = function (unKeyEvento){
+    return this.eventosListeners.get(unKeyEvento);
+  }
+  this.setMensaje = function (unMensaje){
+    this.mensaje = unMensaje;
+  }
+  this.getMensaje= function(){
+    return this.mensaje;
+  }
+  this.dibujar = function (){
+      //Todos los renders deben implementar este m\uFFFDodo.
+  }
+}
+
+/***
+ * Esta clase hace referencia al render que dibuja un mensaje de correcto
+ */
+DRendererMensajeInformativo.prototype=new DRendererMensaje();
+DRendererMensajeInformativo.prototype.constructor=DRendererMensajeInformativo;
+function DRendererMensajeInformativo(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "/WebEntradasalida/imagenes/es/";
+
+  /**
+   * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+   * mapeados a unos handlers.
+   */
+  this.eventosListeners = new Hashtable();
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+
+  this.clonar= function (){this
+    return new DRendererMensajeInformativo();
+  }
+  this.setMensaje = function (unMensaje){
+    this.mensaje = unMensaje;
+  }
+
+  this.dibujar = function() {
+    var unHTML = "", posX = 0, posY = 0;
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+      posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+      posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    } else{
+      posX = parseInt((window.innerWidth/2) + window.scrollX);
+      posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (270)/2 >0 ? parseInt(posY - (270)/2) : 0;
+    posXShadow = posX+10;
+    posYShadow = posY+10;
+
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:400px; height:250px; background-color:#999999; left:"+posXShadow+"px; top:" + posYShadow+"px;z-index:1;\" >";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:400px; height:250px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+
+    unHTML += "<table width='100%' border='0' >";
+    unHTML += "<tr bgcolor='#FFFFFF'>";
+    unHTML += "<td colspan='2' align='left' valign='bottom'></td>";
+    unHTML += "<td></td>";
+    unHTML += "<td  colspan='2' align='right' height='58'><img src='"+this.rutaImagenes+"logos/DaniMensajeInfo.gif' width='43' height='62'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td background = '"+this.rutaImagenes+"fondos/fondoTituloMensajeInfo.jpg' width='20%'><font size='2' face='Arial' color='#FFFFFF'><strong>AYUDA</strong></font></td>";
+    unHTML += "<td colspan='4' bgcolor='#FFE188' align='center'><font size='2' face='Arial' color='#FFFFFF'><strong>"+this.mensaje.getResumenMensaje()+"</strong></font></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td></tr><tr><td colspan='5' align='center'>";
+    unHTML += "<table width='100%' >";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='justify' id=\"textoMensaje\"><font size='2' face='Arial'>"+this.mensaje.getDetalleMensaje()+"</font></td></tr><tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>"
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td  colspan='5' align='right' bgcolor='#FFE188'>";
+
+    unHTML += "<img height='20' name='ImagenCerrar' width='20' src= '"+this.rutaImagenes+"botones/botcerrar.gif' ";
+    unHTML += "onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botcerra.gif'\"";
+    unHTML += "onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botcerrar.gif'\" ";
+    unHTML += "onclick=\""+ this.getFunctionListener('onClickCerrar') + "\" ></td>";
+
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</div>";
+
+    return unHTML;
+  }
+}
+
+/***
+ * Esta clase hace referencia al render que dibuja un mensaje de espera
+ */
+DRendererMensajeEspera.prototype=new DRendererMensaje();
+DRendererMensajeEspera.prototype.constructor=DRendererMensajeEspera;
+
+function DRendererMensajeEspera(unMensaje){
+	this.mensaje = unMensaje;
+	this.rutaImagenes = "/WebEntradasalida/imagenes/es/";
+
+	/**
+     * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+     * mapeados a unos handlers.
+     */
+    this.eventosListeners = new Hashtable();
+
+    this.clonar= function (){this
+    	return new DRendererMensajeEspera();
+	}
+    this.setMensaje = function (unMensaje){
+    	this.mensaje = unMensaje;
+	}
+
+    this.dibujar = function(){
+
+		var unHTML = "", posX = 0, posY = 0;
+
+		var  posXShadow = 0,posYShadow = 0;
+		if(ie){
+ 			posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+			posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+		}
+		else{
+			posX = parseInt((window.innerWidth/2) + window.scrollX);
+			posY = parseInt((window.innerHeight/2) + window.scrollY);
+		}
+		posX = posX - (220)/2 >0 ? parseInt(posX - (220)/2) : 0;
+		posY = posY - (120)/2 >0 ? parseInt(posY - (120)/2) : 0;
+		posXShadow = posX+10;
+		posYShadow = posY+10;
+
+		unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:200px; height:100px; background-color:#999999; left:"+posXShadow+"px; top:" + posYShadow+"px;z-index:1;\" >";
+		unHTML += "</div>";
+		unHTML += "<div id=\"divMensaje\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:200px; height:100px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+
+		unHTML += "<table width=\"150\" border=\"0\">";
+		unHTML += "<tr>";
+		unHTML += "<td align=\"center\" valign=\"middle\"><img src=\"" + this.rutaImagenes + "ventanasMensajes/en_proceso.gif\" width=\"200\" height=\"100\" /></td>";
+		unHTML += "</tr>";
+		unHTML += "</table>";
+
+		unHTML += "</div>";
+
+        return unHTML;
+	}
+}
+
+/***
+ * Esta clase hace referencia al render que dibuja un mensaje de error
+ */
+DRendererMensajeError.prototype=new DRendererMensaje();
+DRendererMensajeError.prototype.constructor=DRendererMensajeError;
+function DRendererMensajeError(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "imagenes/es/";
+
+  /**
+   * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+   * mapeados a unos handlers.
+   */
+  this.eventosListeners = new Hashtable();
+
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+  this.eventosListeners.put("onClickBtnSig", "miGestorMensajes.siguienteMensaje();");
+  this.eventosListeners.put("onClickBtnAnt", "miGestorMensajes.anteriorMensaje();");
+
+  this.clonar= function (){
+    return new DRendererMensajeError();
+  }
+
+  this.dibujar = function() {
+    var unHTML = "", posX = 0, posY = 0;
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+      posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+      posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    } else {
+      posX = parseInt((window.innerWidth/2) + window.scrollX);
+      posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (270)/2 >0 ? parseInt(posY - (270)/2) : 0;
+    posXShadow = posX+10;
+    posYShadow = posY+10;
+
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:380px; height:270px; background-color:#999999; left:"+posXShadow+"px; top:" + posYShadow+"px;z-index:2;\" >";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:380px; height:270px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+    unHTML += "<table width='100%' border='0' cellspacing='0' cellpadding='0' >";
+    unHTML += "<tr bgcolor='#FFFFFF'>";
+    unHTML += "<td colspan='2' align='left' valign='bottom'></td>";
+    unHTML += "<td></td>";
+    unHTML += "<td  colspan='2' align='right' height='58'><img src='"+this.rutaImagenes+"logos/DaniMensajeError.gif' width='43' height='62'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td background='"+this.rutaImagenes+"fondos/fondoTituloMensajeError.jpg' width='20%'><font size='2' face='Arial' color='#FFFFFF'><strong>ERROR</strong></font></td>";
+    unHTML += "<td colspan='4' bgcolor='#CCCCCC' align='center'><font size='2' face='Arial' color='#FFFFFF'><strong>"+this.mensaje.getResumenMensaje()+"</strong></font></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td></tr><tr><td colspan='5' align='center'>";
+    unHTML += "<table width='100%' >";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='justify' id=\"textoMensaje\"><font size='2' face='Arial'>"+this.mensaje.getDetalleMensaje()+"</font></td></tr><tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>"
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td>";
+    unHTML += "</tr>";
+
+    unHTML += "<tr bgcolor='#CCCCCC'>";
+    unHTML += "<td></td>";
+    unHTML += "<td ><img src='" + this.rutaImagenes + "botones/bp_anteriorMsjError.gif' alt='Anterior' name='imgAnterior' width='20' height='20' border='0'";
+    unHTML += "onmouseout=\"this.src='"+ this.rutaImagenes + "botones/bp_anteriorMsjError.gif'\" onmouseover=\"this.src='"+ this.rutaImagenes + "botones/bp_anteriorMsjErrorRollOver.gif'\"";
+    unHTML += "onclick=\""+this.getFunctionListener('onClickBtnSig')+";\"></td>";
+    unHTML += "<td ><img src='" + this.rutaImagenes + "botones/bp_siguienteMsjError.gif' alt='Siguiente' name='imgSiguiente' width='20' height='20' border='0'";
+    unHTML += "onmouseout=\"this.src='"+ this.rutaImagenes + "botones/bp_siguienteMsjError.gif'\" onmouseover=\"this.src='"+ this.rutaImagenes + "botones/bp_siguienteMsjErrorRollOver.gif'\"";
+    unHTML += "onclick=\""+this.getFunctionListener('onClickBtnAnt')+";\"></td>";
+    unHTML += "<td align='center'></td>";
+    unHTML += "<td align='right' ><img height='20' name='imgCerrar' width='20' src= '" + this.rutaImagenes + "botones/bp_cerrarMsjError.gif' ";
+    unHTML += "onMouseOut=\"this.src = '" + this.rutaImagenes + "botones/bp_cerrarMsjError.gif'\"";
+    unHTML += "onMouseOver=\"this.src = '" + this.rutaImagenes + "botones/bp_cerrarMsjErrorRollOver.gif'\" ";
+    unHTML += "onclick=\""+ this.getFunctionListener('onClickCerrar') + "\" ></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr><td colspan='5' align='center'></td></tr>";
+    unHTML += "</table>";
+    unHTML += "</div>";
+    return unHTML;
+  }
+}
+
+/***
+ * Esta clase hace referencia al render que dibuja un mensaje de correcto
+ */
+DRendererMensajeCorrecto.prototype=new DRendererMensaje();
+DRendererMensajeCorrecto.prototype.constructor=DRendererMensajeCorrecto;
+function DRendererMensajeCorrecto(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "imagenes/es/";
+
+  /**
+   * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+   * mapeados a unos handlers.
+   */
+  this.eventosListeners = new Hashtable();
+
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+
+  this.clonar= function (){
+    return new DRendererMensajeCorrecto();
+  }
+
+  this.dibujar = function(){
+    var unHTML = "", posX = 0, posY = 0;
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+            posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+            posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    }
+    else{
+            posX = parseInt((window.innerWidth/2) + window.scrollX);
+            posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (270)/2 >0 ? parseInt(posY - (270)/2) : 0;
+    posXShadow = posX+10;
+    posYShadow = posY+10;
+
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:380px; height:270px; background-color:#999999; left:"+ posXShadow + "px; top:" + posYShadow +"px;z-index:2;\" >";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:380px; height:270px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+
+    unHTML += "<table width='100%' border='0' >";
+    unHTML += "<tr bgcolor='#FFFFFF'>";
+    unHTML += "<td colspan='2' align='left' valign='bottom'></td>";
+    unHTML += "<td></td>";
+    unHTML += "<td  colspan='2' align='right' height='58'><img src='"+this.rutaImagenes+"logos/DaniMensajeCorrecto.gif' width='43' height='62'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td background='"+this.rutaImagenes+"fondos/fondoTituloMensajeCorrecto.jpg' width='20%'><font size='2' face='Arial' color='#FFFFFF'><strong>CORRECTO</strong></font></td>";
+    unHTML += "<td colspan='4' bgcolor='#448267' align='center'><font size='2' face='Arial' color='#FFFFFF'><strong>"+this.mensaje.getResumenMensaje()+"</strong></font></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td></tr><tr><td colspan='5' align='center'>";
+    unHTML += "<table width='100%' >";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='justify' id=\"textoMensaje\"><font size='2' face='Arial'>"+this.mensaje.getDetalleMensaje()+"</font></td></tr><tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>"
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td  colspan='5' align='right' bgcolor='#448267'>";
+
+    unHTML += "<img height='20' name='ImagenCerrar' width='20' src= '"+this.rutaImagenes+"botones/botcerrar.gif' ";
+    unHTML += "onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botcerra.gif'\"";
+    unHTML += "onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botcerrar.gif'\" ";
+    unHTML += "onclick=\""+ this.getFunctionListener('onClickCerrar') + "\" ></td>";
+
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</div>";
+
+    return unHTML;
+  }
+}
+
+
+/**
+ * Esta clase hace referencia al Render de un mensaje de confirmaci\uFFFD.
+ */
+DRendererMensajeConfirmacion.prototype=new DRendererMensaje();
+DRendererMensajeConfirmacion.prototype.constructor=DRendererMensajeConfirmacion;
+function DRendererMensajeConfirmacion(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "imagenes/es/";
+
+  /**
+   * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+   * mapeados a unos handlers.
+   */
+  this.eventosListeners = new Hashtable();
+
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+  this.eventosListeners.put("onClickBtnSI",  "confirmarSI();");
+  this.eventosListeners.put("onClickBtnNO",  "confirmarNO();");
+
+  this.clonar= function () {
+    return new DRendererMensajeConfirmacion();
+  }
+
+  this.dibujar = function() {
+    var unHTML = "", posX = 0, posY = 0;
+
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+            posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+            posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    }
+    else{
+            posX = parseInt((window.innerWidth/2) + window.scrollX);
+            posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (270)/2 >0 ? parseInt(posY - (270)/2) : 0;
+    posXShadow = posX+10;
+    posYShadow = posY+10;
+
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:380px; height:270px; background-color:#999999; left:" + posXShadow + "px; top:" + posYShadow + "px;z-index:2;\" >";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:380px; height:270px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+
+    unHTML += "<table width='100%' border='0' >";
+    unHTML += "<tr bgcolor='#FFFFFF'>";
+    unHTML += "<td colspan='2' align='left' valign='bottom'></td>";
+    unHTML += "<td></td>";
+    unHTML += "<td  colspan='2' align='right' height='58'><img src='"+this.rutaImagenes+"logos/DaniMensajeConfirmacion.gif' width='43' height='62'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr bgcolor='fff7de' bordercolor='#FFFFFF'>";
+    unHTML += "<td bgcolor='#2D5544' width='20%'><font size='2' face='Arial' color='#FFFFFF'><strong>CORRECTO</strong></font></td>";
+    unHTML += "<td colspan='4' bgcolor='#448267' align='center'><font size='2' face='Arial' color='#FFFFFF'><strong>"+this.mensaje.getResumenMensaje()+"</strong></font></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td></tr><tr><td colspan='5' align='center'>";
+    unHTML += "<table width='100%' bgcolor='fff7de' >";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='justify' id=\"textoMensaje\"><font size='2' face='Arial'>"+this.mensaje.getDetalleMensaje()+"</font></td></tr><tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>"
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td></td>";
+    unHTML += "<td align='center'>";
+
+    unHTML += "<input height='20' type='image' name='btnSI' width='20' src= '"+this.rutaImagenes+"botones/botsi.gif' ";
+    unHTML += "onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botsi.gif'\"";
+    unHTML += "onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botsir.gif'\" ";
+
+    if (miGestorMensajes.getObjEventoListener('onClickBtnSI')) {
+      unHTML += "onclick=\"miGestorMensajes.getObjEventoListener('onClickBtnSI').confirmarSI();\" ></td>";
+    }else {
+      unHTML += "onclick=\""+ this.getFunctionListener('onClickBtnSI') + "\" ></td>";
+    }
+
+    unHTML += "<td></td>";
+    unHTML += "<td align='center'>";
+
+    unHTML += "<input height='20' type='image' name='btnNO' width='20' src= '"+this.rutaImagenes+"botones/botno.gif' ";
+    unHTML += "onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botno.gif'\"";
+    unHTML += "onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botnor.gif'\" ";
+
+    if (miGestorMensajes.getObjEventoListener('onClickBtnNO')) {
+      unHTML += "onclick=\"miGestorMensajes.getObjEventoListener('onClickBtnNO').confirmarNO();\" ></td>";
+    } else {
+      unHTML += "onclick=\""+ this.getFunctionListener('onClickBtnNO') + "\" ></td>";
+    }
+
+    unHTML += "<td></td>";
+    unHTML += "</tr>";
+
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='right' bgcolor='#448267'>	";
+    unHTML += "<img height='20' name='ImagenCerrar' width='20' src= '"+this.rutaImagenes+"botones/botcerra.gif' ";
+    unHTML += "onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botcerra.gif'\"";
+    unHTML += "onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botcerrar.gif'\" ";
+    unHTML += "onclick=\""+ this.getFunctionListener('onClickCerrar') + "\" ></td>";
+    unHTML += "</tr>";
+
+    unHTML += "</table>";
+    unHTML += "</div>";
+    return unHTML;
+  }
+}
+
+/**
+ * Esta clase hace referencia al Render de un mensaje de password.
+ */
+
+DRendererMensajePassword.prototype=new DRendererMensaje();
+DRendererMensajePassword.prototype.constructor=DRendererMensajePassword;
+function DRendererMensajePassword(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "imagenes/es/";
+
+  /**
+   * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+   * mapeados a unos handlers.
+   */
+  this.eventosListeners = new Hashtable();
+
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+  this.eventosListeners.put("onClickBtnSI",  "confirmarPassSI();");
+  this.eventosListeners.put("onClickBtnNO",  "confirmarPassNO();");
+  //this.eventosListeners.put("onChangePass",  "validaPass();");
+
+  this.clonar= function () {
+    return new DRendererMensajePassword();
+  }
+
+  this.dibujar = function(){
+    var unHTML = "", posX = 0, posY = 0;
+
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+            posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+            posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    }
+    else{
+            posX = parseInt((window.innerWidth/2) + window.scrollX);
+            posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (270)/2 >0 ? parseInt(posY - (270)/2) : 0;
+    posXShadow = posX+10;
+    posYShadow = posY+15;
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:380px; height:270px; background-color:#999999; left:" + posXShadow + "px; top:" + posYShadow + "px;z-index:1;\" >";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" style=\"position:absolute; left:"+posX+"px; top:" + posY+"px;width:380px; height:270px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+    unHTML += "   <table width='100%' border='0' >";
+    unHTML += "      <tr bgcolor='#FFFFFF'>";
+    unHTML += "        <td colspan='2' align='left' valign='bottom'></td>";
+    unHTML += "        <td></td>";
+    unHTML += "       <td  colspan='2' align='right' height='58'><img src='"+this.rutaImagenes+"logos/DaniMensajeConfirmacion.gif' width='43' height='62'></td>";
+    unHTML += "     </tr>";
+    unHTML += "     <tr bgcolor='fff7de' bordercolor='#FFFFFF'>";
+    unHTML += "        <td bgcolor='#2D5544' width='20%'><font size='2' face='Arial' color='#FFFFFF'><strong>PASSWORD</strong></font></td>";
+    unHTML += "        <td colspan='4' bgcolor='#448267' align='center'><font size='2' face='Arial' color='#FFFFFF'><strong>"+this.mensaje.getResumenMensaje()+"</strong></font></td>";
+    unHTML += "     </tr>";
+    unHTML += "     <tr>";
+    unHTML += "        <td colspan='5' align='center'>&nbsp;</td></tr><tr><td colspan='5' align='center'>";
+    unHTML += "           <table width='100%' bgcolor='fff7de' >";
+    unHTML += "              <tr>";
+    unHTML += "                <td colspan='5' align='justify' id=\"textoMensaje\"><font size='2' face='Arial'>"+this.mensaje.getDetalleMensaje()+"</font></td>";
+    unHTML += "              </tr>";
+    unHTML += "              <tr>";
+    unHTML += "                  <td  colspan='3'> <div align='right'>Escriba su clave:</div></td>";
+    unHTML += "                  <td colspan='2' > <div align='left'>";
+    unHTML += "                      <input name='clave' type='password' id='clave' value='' onclick='this.focus();'/>";
+    unHTML += "                  </div></td>";
+    unHTML += "              </tr>";
+    unHTML += "              <tr>";
+    unHTML += "                  <td  colspan='3' > <div align='right'>Reescriba su clave:</div></td>";
+    unHTML += "                  <td colspan='2' > <div align='left'>";
+    unHTML += "                      <input name='reclave' type='password' id='reclave' value='' onclick='this.focus();'/>";
+           //unHTML += "onchange=\""+ this.getFunctionListener('onChangePass') + "\" />";
+    unHTML += "                  </div></td>";
+    unHTML += "              </tr>";
+    unHTML += "              <tr>";
+    unHTML += "                   <td colspan='5' > <div align='center'> ";
+    unHTML += "                       <input  style=\"background-color: #FFFFFF; border-top: none; border-right: none; border-bottom: none; border-left: none;\"name='textoValidacion' type='text' id='textoValidacion' value='' size='45' maxlength='45'readonly />";
+    unHTML += "                   </div></td>";
+    unHTML += "               </tr>";
+    unHTML += "           </table>";
+    unHTML += "        </td>";
+    unHTML += "    <tr>";
+    unHTML += "       <td></td>";
+    unHTML += "       <td align='center'>";
+    unHTML += "            <input height='20' type='image' name='btnSI' width='20' src= '"+this.rutaImagenes+"botones/botsi.gif' ";
+    unHTML += "                     onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botsi.gif'\"";
+    unHTML += "                     onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botsir.gif'\" ";
+    if (miGestorMensajes.getObjEventoListener('onClickBtnSI')) {
+      unHTML += "onclick=\"miGestorMensajes.getObjEventoListener('onClickBtnSI').confirmarSI();\" ></td>";
+    }else {
+      unHTML += "onclick=\""+ this.getFunctionListener('onClickBtnSI') + "\" ></td>";
+    }
+    unHTML += "       <td></td>";
+    unHTML += "       <td align='center'>";
+    unHTML += "          <input height='20' type='image' name='btnNO' width='20' src= '"+this.rutaImagenes+"botones/botno.gif' ";
+    unHTML += "               onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botno.gif'\"";
+    unHTML += "               onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botnor.gif'\" ";
+    unHTML += "               onclick=\""+ this.getFunctionListener('onClickBtnNO') + "\" ></td>";
+    unHTML += "      <td></td>";
+    unHTML += "    </tr>";
+    unHTML += "    <tr>";
+    unHTML += "        <td colspan='5' align='right' bgcolor='#448267'>	";
+    unHTML += "            <img height='20' name='ImagenCerrar' width='20' src= '"+this.rutaImagenes+"botones/botcerra.gif' ";
+    unHTML += "               onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botcerra.gif'\"";
+    unHTML += "               onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botcerrar.gif'\" ";
+    unHTML += "               onclick=\""+ this.getFunctionListener('onClickBtnNO') + "\" ></td>";
+    unHTML += "    </tr>";
+    unHTML += "  </table>";
+    unHTML += "</div>";
+    return unHTML;
+  }
+}
+/**
+ * Esta clase hace referencia al Render de un mensaje de verificacion.
+ */
+
+DRendererMensajeVerifica.prototype=new DRendererMensaje();
+DRendererMensajeVerifica.prototype.constructor=DRendererMensajeVerifica;
+function DRendererMensajeVerifica(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "/WebEntradasalida/imagenes/es/";
+
+  /**
+   * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+   * mapeados a unos handlers.
+   */
+  this.eventosListeners = new Hashtable();
+
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+  this.eventosListeners.put("onClickBtnSI",  "confirmarPassSI();");
+  this.eventosListeners.put("onClickBtnNO",  "confirmarPassNO();");
+  //this.eventosListeners.put("onChangePass",  "validaPass();");
+
+  this.clonar= function () {
+    return new DRendererMensajeVerifica();
+  }
+
+  this.dibujar = function(){
+    var unHTML = "", posX = 0, posY = 0;
+
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+            posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+            posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    }
+    else{
+            posX = parseInt((window.innerWidth/2) + window.scrollX);
+            posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (270)/2 >0 ? parseInt(posY - (290)/2) : 0;
+    posXShadow = posX+10;
+    posYShadow = posY+15;
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:380px; height:270px; background-color:#999999; left:" + posXShadow + "px; top:" + posYShadow + "px;z-index:1;\" >";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" style=\"position:absolute; left:"+posX+"px; top:" + posY+"px;width:380px; height:270px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+    unHTML += "   <table width='100%' border='0' >";
+    unHTML += "      <tr bgcolor='#FFFFFF'>";
+    unHTML += "        <td colspan='2' align='left' valign='bottom'></td>";
+    unHTML += "        <td></td>";
+    unHTML += "       <td  colspan='2' align='right' height='58'><img src='"+this.rutaImagenes+"logos/DaniMensajeConfirmacion.gif' width='43' height='62'></td>";
+    unHTML += "     </tr>";
+    unHTML += "     <tr bgcolor='fff7de' bordercolor='#FFFFFF'>";
+    unHTML += "        <td bgcolor='#2D5544' width='20%'><font size='2' face='Arial' color='#FFFFFF'><strong>VERIFICACION</strong></font></td>";
+    unHTML += "        <td colspan='4' bgcolor='#448267' align='center'><font size='2' face='Arial' color='#FFFFFF'><strong>"+this.mensaje.getResumenMensaje()+"</strong></font></td>";
+    unHTML += "     </tr>";
+    unHTML += "     <tr>";
+    unHTML += "        <td colspan='5' align='center'>&nbsp;</td></tr><tr><td colspan='5' align='center'>";
+    unHTML += "           <table width='100%' bgcolor='#FFFFFF' >";
+    unHTML += "              <tr>";
+    unHTML += "                <td colspan='5' align='justify' id=\"textoMensaje\"><font size='2' face='Arial'>"+this.mensaje.getDetalleMensaje()+"</font></td>";
+    unHTML += "              </tr>";
+    unHTML += "              <tr>";
+    unHTML += "                  <td  colspan='3'> <div align='right'>Valor a verificar: </div></td>";
+    unHTML += "                  <td colspan='2' > <div align='left'>";
+    unHTML += "                      <input name='clave' type='text' id='clave' value='' onclick='this.focus();'/>";
+    unHTML += "                  </div></td>";
+    unHTML += "              </tr>";
+    unHTML += "              <tr>";
+    unHTML += "                   <td colspan='5' > <div align='center'> ";
+    unHTML += "                       <input  style=\"background-color: #FFFFFF; border-top: none; border-right: none; border-bottom: none; border-left: none;\"name='textoValidacion' type='text' id='textoValidacion' value='' size='45' maxlength='45'readonly />";
+    unHTML += "                   </div></td>";
+    unHTML += "               </tr>";
+    unHTML += "           </table>";
+    unHTML += "        </td>";
+    unHTML += "    <tr>";
+    unHTML += "       <td></td>";
+    unHTML += "       <td align='center'>";
+    unHTML += "                      <td  colspan='1'> <div align='right'>Desea Confirmar :  </div></td>";
+    unHTML += "            <input background-color: #FFFFFF; border = 0; border-top: none; border-right: none; border-bottom: none; border-left: none; height='20' type='image' name='btnSI' width='70' src= '"+this.rutaImagenes+"botonesTexto/b_compararut.gif' ";
+    unHTML += "                     onMouseOut=\"this.src = '"+this.rutaImagenes+"botonesTexto/b_compararut.gif'\"";
+    unHTML += "                     onMouseOver=\"this.src = '"+this.rutaImagenes+"botonesTexto/b_compararutr.gif'\" ";
+    if (miGestorMensajes.getObjEventoListener('onClickBtnSI')) {
+      unHTML += "onclick=\"miGestorMensajes.getObjEventoListener('onClickBtnSI').confirmarSI();\" ></td>";
+    }else {
+      unHTML += "onclick=\""+ this.getFunctionListener('onClickBtnSI') + "\" ></td>";
+    }
+    unHTML += "    </tr>";
+    unHTML += "  </table>";
+    unHTML += "</div>";
+    return unHTML;
+  }
+}
+
+/**
+ * Esta clase hace referencia al Render de un mensaje de advertencia.
+ */
+
+DRendererMensajeAdvertencia.prototype=new DRendererMensaje();
+DRendererMensajeAdvertencia.prototype.constructor=DRendererMensajeAdvertencia;
+function DRendererMensajeAdvertencia(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "imagenes/es/";
+
+  /**
+   * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+   * mapeados a unos handlers.
+   */
+  this.eventosListeners = new Hashtable();
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+
+  this.clonar= function () {
+    return new DRendererMensajeAdvertencia();
+  }
+
+  this.dibujar = function(){
+    var unHTML = "", posX = 0, posY = 0;
+
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+            posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+            posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    }
+    else{
+            posX = parseInt((window.innerWidth/2) + window.scrollX);
+            posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (270)/2 >0 ? parseInt(posY - (270)/2) : 0;
+    posXShadow = posX+5;
+    posYShadow = posY+5;
+
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:380px; height:270px; background-color:#999999; left:" + posXShadow + "px; top:" + posYShadow + "px;z-index:2;\" >";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:380px; height:300px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+
+    unHTML += "<table width='100%' border='0' >";
+    unHTML += "<tr bgcolor='#FFFFFF'>";
+    unHTML += "<td colspan='2' align='left' valign='bottom'></td>";
+    unHTML += "<td></td>";
+    unHTML += "<td  colspan='2' align='right' height='58'><img src='"+this.rutaImagenes+"logos/DaniMensajeConfirmacion.gif' width='43' height='62'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr bgcolor='fff7de' bordercolor='#FFFFFF'>";
+    unHTML += "<td bgcolor='#2D5544' width='20%'><font size='2' face='Arial' color='#FFFFFF'><strong>ADVERTENCIA</strong></font></td>";
+    unHTML += "<td colspan='4' bgcolor='#448267' align='center'><font size='2' face='Arial' color='#FFFFFF'><strong>"+this.mensaje.getResumenMensaje()+"</strong></font></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td></tr><tr><td colspan='5' align='center'>";
+    unHTML += "<table width='100%' bgcolor='fff7de' >";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='justify' id=\"textoMensaje\"><font size='2' face='Arial'>"+this.mensaje.getDetalleMensaje()+"</font></td></tr><tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>"
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='right' bgcolor='#448267'>	";
+    unHTML += "<img height='20' name='ImagenCerrar' width='20' src= '"+this.rutaImagenes+"botones/botcerrar.gif' ";
+    unHTML += "onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botcerrar.gif'\"";
+    unHTML += "onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botrollover.gif'\" ";
+    unHTML += "onclick=\""+ this.getFunctionListener('onClickCerrar') + "\" ></td>";
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</div>";
+    return unHTML;
+  }
+}
+
+DRendererMensajeAdvertenciaV2.prototype=new DRendererMensaje();
+DRendererMensajeAdvertenciaV2.prototype.constructor=DRendererMensajeAdvertenciaV2;
+function DRendererMensajeAdvertenciaV2(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "imagenes/es/";
+
+  this.eventosListeners = new Hashtable();
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+
+  this.clonar= function () {
+    return new DRendererMensajeAdvertenciaV2();
+  }
+
+  this.dibujar = function(){
+    var unHTML = "", posX = 0, posY = 0;
+
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+            posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+            posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    }
+    else{
+            posX = parseInt((window.innerWidth/2) + window.scrollX);
+            posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (200)/2 >0 ? parseInt(posY - (200)/2) : 0;
+    posXShadow = posX+2;
+    posYShadow = posY+2;
+
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:400px; height:200px; background-color:#999999; left:" + posXShadow + "px; top:" + posYShadow + "px;z-index:2;\">";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" class=\"drag\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:400px; height:200px; z-index:2; background-color:#fff; border:0px solid #336; border-color:#000000;\">";
+    unHTML += "<div id=\"divMensaje\" class=\"advertencia\" />";
+    unHTML += "<table class=\"encabezado\" border=\"0\" width=\"100%\">";
+    unHTML += "<tr>";
+    unHTML += "<td><input type=\"image\" src=\""+this.rutaImagenes+"botones/v2/botcerrar.gif\" onmouseover=\"this.src='"+this.rutaImagenes+"botones/v2/botcerrarroll.gif'\" onmouseout=\"this.src='"+this.rutaImagenes+"botones/v2/botcerrar.gif'\" onclick=\""+ this.getFunctionListener('onClickCerrar') + "\" title=\"Cerrar\" />";
+    unHTML += "</td>";
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "<table class=\"cuerpo\" border=\"0\">";
+    unHTML += "<tr>";
+    unHTML += "<td>"+this.mensaje.getDetalleMensaje()+"</td>";
+    unHTML += "</tr>";
+    unHTML += "</div>";
+    unHTML += "</div>";
+
+    return unHTML;
+  }
+}
+
+/***
+ * Esta clase hace referencia al render que dibuja un mensaje de correcto
+ */
+DRendererMensajeInformativoSinCerrar.prototype=new DRendererMensaje();
+DRendererMensajeInformativoSinCerrar.prototype.constructor=DRendererMensajeInformativoSinCerrar;
+function DRendererMensajeInformativoSinCerrar(unMensaje){
+  this.mensaje = unMensaje;
+  this.rutaImagenes = "/WebEntradasalida/imagenes/es/";
+
+  /**
+   * Mantiene una referencia a un Hashtable que contiene los tipos de eventos
+   * mapeados a unos handlers.
+   */
+   this.eventosListeners = new Hashtable();
+  this.eventosListeners.put("onClickCerrar", "cerrarLayer();");
+
+  this.clonar= function (){this
+    return new DRendererMensajeInformativoSinCerrar();
+  }
+  this.setMensaje = function (unMensaje){
+    this.mensaje = unMensaje;
+  }
+
+  this.dibujar = function() {
+    var unHTML = "", posX = 0, posY = 0;
+    var  posXShadow = 0,posYShadow = 0;
+    if(ie){
+      posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+      posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+    } else{
+      posX = parseInt((window.innerWidth/2) + window.scrollX);
+      posY = parseInt((window.innerHeight/2) + window.scrollY);
+    }
+    posX = posX - (420)/2 >0 ? parseInt(posX - (420)/2) : 0;
+    posY = posY - (270)/2 >0 ? parseInt(posY - (270)/2) : 0;
+    posXShadow = posX+10;
+    posYShadow = posY+10;
+
+    unHTML += "<div id=\"divMensajeShadow\" style=\"position:absolute; width:400px; height:250px; background-color:#999999; left:"+posXShadow+"px; top:" + posYShadow+"px;z-index:1;\" >";
+    unHTML += "</div>";
+    unHTML += "<div id=\"divMensaje\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:400px; height:250px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;\" class=\"drag\">";
+
+    unHTML += "<table width='100%' border='0' >";
+    unHTML += "<tr bgcolor='#FFFFFF'>";
+    unHTML += "<td colspan='2' align='left' valign='bottom'></td>";
+    unHTML += "<td></td>";
+    unHTML += "<td  colspan='2' align='right' height='58'><img src='"+this.rutaImagenes+"logos/DaniMensajeInfo.gif' width='43' height='62'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td background = '"+this.rutaImagenes+"fondos/fondoTituloMensajeInfo.jpg' width='20%'><font size='2' face='Arial' color='#FFFFFF'><strong>AYUDA</strong></font></td>";
+    unHTML += "<td colspan='4' bgcolor='#FFE188' align='center'><font size='2' face='Arial' color='#FFFFFF'><strong>"+this.mensaje.getResumenMensaje()+"</strong></font></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td></tr><tr><td colspan='5' align='center'>";
+    unHTML += "<table width='100%' >";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='justify' id=\"textoMensaje\"><font size='2' face='Arial'>"+this.mensaje.getDetalleMensaje()+"</font></td></tr><tr>";
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>"
+    unHTML += "<td colspan='5' align='center'></td>";
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td colspan='5' align='center'>&nbsp;</td>";
+    unHTML += "</tr>";
+    unHTML += "<tr>";
+    unHTML += "<td  colspan='5' align='right' bgcolor='#FFE188'>";
+
+//    unHTML += "<img height='20' name='ImagenCerrar' width='20' src= '"+this.rutaImagenes+"botones/botcerrar.gif' ";
+//    unHTML += "onMouseOut=\"this.src = '"+this.rutaImagenes+"botones/botcerra.gif'\"";
+//    unHTML += "onMouseOver=\"this.src = '"+this.rutaImagenes+"botones/botcerrar.gif'\" ";
+//    unHTML += "onclick=\""+ this.getFunctionListener('onClickCerrar') + "\" ></td>";
+
+    unHTML += "</tr>";
+    unHTML += "</table>";
+    unHTML += "</div>";
+
+    return unHTML;
+  }
+}
+
+
+/**
+ * Esta clase permite obtener un Renderer de acuerdo al tipo de mensaje que se este procesando.
+ */
+DFabricaRendererMensaje = function DFabricaRendererMensaje(){
+  this.renders = new Hashtable();
+  this.renders.put(COD_TIPO_INFO,new DRendererMensajeInformativo());
+  this.renders.put(COD_TIPO_ERROR,new DRendererMensajeError());
+  this.renders.put(COD_TIPO_ADVERTENCIA,new DRendererMensajeAdvertencia());
+  this.renders.put(COD_TIPO_ADVERTENCIA_V2,new DRendererMensajeAdvertenciaV2());
+  this.renders.put(COD_TIPO_CONFIRMACION,new DRendererMensajeConfirmacion());
+  this.renders.put(COD_TIPO_CORRECTO,new DRendererMensajeCorrecto());
+  this.renders.put(COD_TIPO_PASSWORD,new DRendererMensajePassword());
+  this.renders.put(COD_TIPO_ESPERA,new DRendererMensajeEspera());
+  this.renders.put(COD_TIPO_VERIFICA,new DRendererMensajeVerifica());
+  this.renders.put(COD_TIPO_INFO_SIN_CERRAR,new DRendererMensajeInformativoSinCerrar());
+}
+
+/**
+ *
+ */
+DFabricaRendererMensaje.prototype.getRenderMensaje = function (unTipoMensaje){
+  if(this.renders.get(unTipoMensaje)){
+    return this.renders.get(unTipoMensaje).clonar();
+  } else {
+    return this.renders.get("1").clonar();
+  }
+}
+
+
+/**
+ * Esta clase permite obtener un mensaje.
+ */
+DFabricaMensajes = function DFabricaMensajes(){
+ //if(this.fabricaRenders == null){
+    this.fabricaRenders = new DFabricaRendererMensaje();
+ //}
+}
+
+DFabricaMensajes.prototype.getMensaje = function (unCodigo, unTipo, unResumen, unDetalle, unaClaseEstilo, unaClaseEstiloFont){
+  var unMensaje = new DMensaje(unCodigo, unTipo, unResumen, unDetalle, unaClaseEstilo, unaClaseEstiloFont);
+  unMensaje.setRendererMensaje(this.fabricaRenders.getRenderMensaje(unMensaje.getTipoMensaje()));
+  return unMensaje;
+}

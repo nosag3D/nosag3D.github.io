@@ -1,0 +1,56 @@
+/*
+   Esta clase implementa un MessageBox modal.
+
+   Ejemplo de uso:
+   var dialogomensaje = new DMessageBox();
+   dialogomensaje.showModal('Mensaje del dialogo','showModalReturnMethod()');
+
+*/
+
+var ModalDialogWindow;
+var ModalDialogInterval;
+var ModalDialog;
+
+DMessageBox = function DMessageBox(){
+
+   ModalDialog = new Object;
+   ModalDialog.value = '';
+   ModalDialog.eventhandler = '';
+   ModalDialog.titulo = '';
+   ModalDialog.cuerpo = '';
+   ModalDialog.tipo = '';
+
+   this.ModalDialogRemoveWatch = function(){
+      ModalDialog.value = '';
+      ModalDialog.eventhandler = '';
+   }
+
+   this.showModal = function(titulo, cuerpo, tipo){
+
+      this.ModalDialogRemoveWatch();
+      ModalDialog.eventhandler = 'showModalReturnMethod()';
+      ModalDialog.titulo = titulo;
+      ModalDialog.cuerpo = cuerpo;
+      ModalDialog.tipo = tipo;
+
+      var url = PATH_ENTRADASALIDA_VISOR + '/mensajes/dialogo.html';
+      var args = 'toolbar=0,scrollbars=0,location=0,statusbar=1,menubar=0,resizable=0,width=470,height=380';
+
+      ModalDialogWindow = window.open(url, titulo, args);
+
+      ModalDialogWindow.focus();
+      ModalDialogInterval = window.setInterval("ModalDialogMaintainFocus()",5);
+   }
+}
+
+function ModalDialogMaintainFocus(){
+   try{
+      if (ModalDialogWindow.closed){
+         window.clearInterval(ModalDialogInterval);
+         eval(ModalDialog.eventhandler);
+         return;
+      }
+      ModalDialogWindow.focus();
+   }catch (everything) {   }
+}
+

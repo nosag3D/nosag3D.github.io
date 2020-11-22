@@ -1,0 +1,211 @@
+/*
+ UTILIZACI\uFFFD:
+
+ - Para mostrar un tooltip, utilice la sintaxis: toolTip(inputObjetivo, texto, opciones)
+ - Para ocultar el tooltip, utilice la sintaxis: toolTip()
+ -- Opciones disponibles:
+        width           ancho (p\uFFFDeles)
+        bgColor         color de fondo
+        textColor       color del texto
+        borderColor     color del borde
+        opacity         opacidad (porcentaje) - No funciona con algunos browsers
+        cursorDistance  distancia desde el cursor (p\uFFFDeles)
+
+------------------------------------------------------------------------------------------------------
+
+ Ejemplo:
+
+ <a href="#" onMouseOver="toolTip(this, 'Tooltip de prueba', {width: 150, bgColor: '#FFFFFF'})" onMouseOut="toolTip()">Enlace</a>
+
+======================================================================================================
+*/
+
+extend  = function(object, otherObject) {
+  for (property in otherObject) {
+    object[property] = otherObject[property];
+  }
+  return object;
+}
+
+  function Tooltip() {
+//----------------------------------------------------------------------------------------------------
+// Configuraci\uFFFD
+//----------------------------------------------------------------------------------------------------
+
+    // No cambiar
+    this.text = '';
+    this.obj = 0;
+    this.sobj = 0;
+    this.active = false;
+
+// -------------------------------------------------------------------------------------------------------
+// Funciones
+// -------------------------------------------------------------------------------------------------------
+    this.create = function() {
+      if(!this.sobj) this.init();
+
+      var t = '<table border=0 cellspacing=0 cellpadding=0 width=' + this.options.width + ' bgColor=' + this.options.bgColor + '><tr>' +
+              '<td align=center style=\"font-family: Arial, Helvetica, sans-serif; font-size: 6pt; color: #000066;\">' + this.text + '</td></tr></table>';
+
+      if(document.layers) {
+        t = '<table border=0 cellspacing=0 cellpadding=0 ><tr><td borderColor=' + this.options.borderColor + '>' + t + '</td></tr></table>';
+        this.sobj.document.write(t);
+        this.sobj.document.close();
+      }
+      else {
+        this.sobj.border = '1px solid ' + this.options.borderColor;
+        this.setOpacity();
+        if(document.getElementById) document.getElementById('ToolTip').innerHTML = t;
+        else document.all.ToolTip.innerHTML = t;
+      }
+      this.show();
+    }
+
+    this.init = function() {
+      if(document.getElementById) {
+        this.obj = document.getElementById('ToolTip');
+        this.sobj = this.obj.style;
+      }
+      else if(document.all) {
+        this.obj = document.all.ToolTip;
+        this.sobj = this.obj.style;
+      }
+      else if(document.layers) {
+        this.obj = document.ToolTip;
+        this.sobj = this.obj;
+      }
+    }
+
+    this.setOptions = function(options) {
+      this.options = {
+        width          : 22,            // width (pixels)
+        bgColor        : '#FFF7DE',      // background color
+        textColor      : '#448267',      // text color
+        textSize       : '8',            // text size
+        borderColor    : '#448267',      // border color
+        opacity        : 100,            // opacity (percent) - doesn't work with all browsers
+        cursorDistanceX : 0,           // distance from cursor (pixels)
+        cursorDistanceY : 0	         // distance from cursor (pixels)
+      }
+      extend(this.options, options || {});
+    }
+
+    this.show = function() {
+      var ext = (document.layers ? '' : 'px');
+      var left = mouseX;
+
+      if(left + this.options.width + this.options.cursorDistanceX > winX) left -= this.options.width + this.options.cursorDistanceX;
+      else left += this.options.cursorDistanceX;
+
+      this.sobj.left = left + ext;
+      this.sobj.top = mouseY + this.options.cursorDistanceY - this.obj.scrollHeight/2 + ext;
+
+      if(!this.active) {
+        this.sobj.visibility = 'visible';
+        this.active = true;
+      }
+    }
+
+    this.hide = function() {
+      if(this.sobj) this.sobj.visibility = 'hidden';
+      this.active = false;
+    }
+
+    this.setOpacity = function() {
+      this.sobj.filter = 'alpha(opacity=' + this.options.opacity + ')';
+      this.sobj.mozOpacity = '.1';
+      if(this.obj.filters) this.obj.filters.alpha.opacity = this.options.opacity;
+      if(!document.all && this.sobj.setProperty) this.sobj.setProperty('-moz-opacity', this.options.opacity / 100, '');
+    }
+}
+
+//----------------------------------------------------------------------------------------------------
+// Construir el div o el layer, capturar las coordenadas del mouse y el ancho de la ventana, crear el objeto tooltip
+//----------------------------------------------------------------------------------------------------
+  var tooltip = mouseX = mouseY = winX = 0;
+
+
+  if(document.layers) {
+    document.write('<layer id="ToolTip" class="drag"></layer>');
+    document.captureEvents(Event.MOUSEMOVE);
+  }
+  else document.write('<div id="ToolTip" style="position:absolute; z-index:99" class="drag"></div>');
+  document.onmouseover = getMouseXY;
+
+  function getMouseXY(e) {
+    var target = 0;
+    if (e && e.target) target = e.target;
+    else if (event.srcElement) target = event.srcElement;
+	if (!target.disabled){
+		if (target == tooltip.target) {
+			var isObjCasEn = (target.getAttribute('tdato')=="EN");
+			if (isObjCasEn) {
+				mouseX = (valorSinPX(target.style.width) > tooltip.options.width*1) ? valorSinPX(target.parentNode.style.left) + tooltip.options.width*1 : valorSinPX(target.parentNode.style.left);
+			} else {
+				mouseX = valorSinPX(target.parentNode.style.left) + valorSinPX(target.style.width) - tooltip.options.width*1;
+			}
+			mouseY = valorSinPX(target.parentNode.style.top) + 16;
+			//Si es un checkbox o es peque\uFFFD
+			if ((target.type && target.type == 'checkbox') ||
+					(target.style.width && valorSinPX(target.style.width) <= 70)){
+				mouseX += 40;
+			}
+			if(mouseX < 0) mouseX = 0;
+			if(mouseY < 0) mouseY = 0;
+			if(tooltip && tooltip.active) {
+				tooltip.show();
+				
+	//----------------------------------------------------------------------------------------------------
+	// crut-9.  Incidente con Mozilla Firefox versiones 17 o Superior, IExplore o Superior
+	//          Celda 161, presenta inconsistencia
+	//			Indra - Luis Augusto Guerra Hernandez
+	//----------------------------------------------------------------------------------------------------
+	// Codigo Anterior
+	//        if (document.releaseEvents)  document.releaseEvents(Event.MOUSEMOVE);
+	//
+	//----------------------------------------------------------------------------------------------------
+	// Codigo Sugerido
+	//----------------------------------------------------------------------------------------------------
+				
+				if (document.removeEventListener)
+				{
+					document.removeEventListener(Event.MOUSEMOVE,Tooltip);
+				}
+				else
+				{
+					if (document.releaseEvents)
+					{
+						document.releaseEvents(Event.MOUSEMOVE);
+					}
+				}
+	//----------------------------------------------------------------------------------------------------
+	// Fin Codigo Sugerido
+	//----------------------------------------------------------------------------------------------------
+				
+				document.onmousemove = null;
+			}
+		}	
+	}
+  }
+
+  function toolTip(target, text, options) {
+    var currentOptions = ((options != null)?options:this.options);
+
+    if(target && text) {
+        tooltip = new Tooltip();
+        tooltip.target = target;
+        tooltip.text = text;
+        tooltip.setOptions(currentOptions);
+        tooltip.create();
+    } else if(tooltip) tooltip.hide();
+  }
+
+
+  /**
+   *Retorna un valor sin el sufijo px, pe: '840px' retorna 840 como nmero
+   */
+  function valorSinPX(valor) {
+  	return ((valor.indexOf('px') != -1)?
+	valor.substring(0,valor.indexOf('px'))*1
+	:valor);
+  }

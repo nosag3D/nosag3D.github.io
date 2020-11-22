@@ -1,0 +1,68 @@
+/*
+Configure menu styles below
+NOTE: To edit the link colors, go to the STYLE tags and edit the ssm2Items colors
+*/
+
+NS6 = (document.getElementById&&!document.all);
+IE = (document.all);
+NS = (navigator.appName=="Netscape" && navigator.appVersion.charAt(0)=="4");
+
+tempBar='';
+barBuilt=0;
+//Arreglo para navegacion normal
+ssmItems=new Array();
+//Arreglo para navegacion por secciones
+ssmItemsSec=new Array();
+
+moving=setTimeout('null',1)
+
+var ah = screen.availHeight;
+BYOffset=  ah - 35; // 550; // no quotes!!
+BXOffset=10;
+BmenuWidth=10;
+BbarWidth=750;
+BstaticYOffset=ah - 30; //550;
+
+YOffset= ah/2 - 30;   //150; // no quotes!!
+XOffset=0;
+staticYOffset=30; // no quotes!!
+slideSpeed=20 // no quotes!!
+waitTime=160; // no quotes!! this sets the time the menu stays out for after the mouse goes off it.
+menuBGColor="black";
+menuIsStatic="yes"; //this sets whether menu should stay static on the screen
+menuWidth=150; // Must be a multiple of 10! no quotes!!
+menuCols=2;
+hdrFontFamily="verdana";
+hdrFontSize="2";
+hdrFontColor="black";
+
+hdrBGColor="#fgb9a6";
+
+hdrAlign="left";
+hdrVAlign="center";
+hdrHeight="15";
+linkFontFamily="Verdana";
+linkFontSize="2";
+linkBGColor="white";
+linkOverBGColor="#FFF7DE";
+
+linkTarget="_top";
+linkAlign="Left";
+
+barBGColor="#dddff"; // Color de la barra vertical
+
+barFontFamily="Verdana";
+barFontSize="1";
+barFontColor="white";
+barVAlign="center";
+barWidth=20; // no quotes!!
+controlSlide=0;
+controlSlide1=0;
+
+//Constantes para la barra de la izquierda del visor
+barText = "Mapa Formulario";
+var encabezadoPagina = "Pág. ";
+var formulario = "HOJA";
+var extension = "html";
+
+var numeroPagina = 1;

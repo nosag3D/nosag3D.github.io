@@ -1,0 +1,63 @@
+
+/** Tiene las propiedades del Browser del Cliente*/
+Browser=new (function Browser() {
+  var n=navigator,b=n.appName,v=n.vendorSub||n.appVersion,u=n.userAgent,t=this,s,ver;
+  if(b=="Netscape"){
+    ver=parseInt(v);
+    s=(b="NS")+(ver==5?6:ver);
+  }else if(u.indexOf("Opera")>0||b=="Opera"){
+    v=u.slice(u.indexOf("Opera")+6);
+    s="Opera5";
+  }else{
+    v=v.slice(v.indexOf("MSIE")+5);
+    ver=v.slice(0,2);
+    s=(b="IE")+ver.replace(/\.|0/g,"");
+  }
+  t.DOM=document.getElementById?true:false;
+  t.version=parseFloat(v);
+  t.name=s;
+  t[s]=t[b]=true;
+  t[t.platform=u.indexOf("Win")>-1?"WIN":u.indexOf("Mac")>-1?"MAC":"N/A"]=true;
+});
+
+/** Función para importar archivos javaScript (*.js)*/
+I=Import=function(){with(Import){
+  var a=arguments,iL=I._iL,t="",p,s;
+  for(var i=0;i<a.length;i++){
+  	s=a[i];
+    if(typeof s!="string"||iL[s]) continue; // maybe add error
+    p=s.split(".");
+    if(p.length>1){
+	    if(_rP){
+	    	if(p[0]!=_rP) continue;
+	    	s=s.replace(_rP,"");
+	    }
+	    for(var n=0,l=p.length-1,r=window;n<l;n++){
+	    	if(!r[p[n]]) r[p[n]]={}; //creating namespace
+	    	r=r[p[n]];
+	    }
+	    if(s.indexOf("*")==-1) I._p[p[l]]=r; // mapping the class name to a package reference
+    }
+    iL[s]=true;
+    t+='<SCRIPT src="'+_cP+ s.replace(/\./g,"/").replace(/\$/,_var).replace("*","_Package")+'.js"><\/SCRIPT>'
+  }
+  if(_log) alert(t);
+  document.write(t);
+  return t
+}}
+I.Name="Import"; // == Name
+I._log=false; // == log
+I._var="$/"+Browser.name+"_"; // == variant
+I._rP=""; // == rootPack == rootPackage
+I._iL=[];// == importList
+I._p={}; // packaged classes, classes and what package they belong to
+I.setRootPackage=function(s){
+	if(typeof s!="string") return
+	this.rootPack=s+".";
+}
+
+I.setClassPath=function(s){
+  if(typeof s!="string") return;
+  this._cP=s;//.charAt(-1)=="/"?s:s+"/"
+}
+I._cP=""; // == classPath

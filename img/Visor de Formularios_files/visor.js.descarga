@@ -1,0 +1,286 @@
+// DVisor necesita un ambito Global
+var DVisor = new Object();
+
+//----------------- Atributos Esticos --------------------------
+DVisor.contexto = null;         //Contexto de la aplicación
+DVisor.docOriginal = null;      //Documento Original
+DVisor.docCopia = null;         //Documento Copia de Trabajo
+DVisor.docDescripcion = null;   //Documento De Descripciones (input des)
+DVisor.controlador = null;      //Controlador del Documento
+DVisor.controladorOriginal = null;      //Controlador del Documento
+DVisor.controladorDescripciones = null; //Controlador para el Documento de Descripciones
+DVisor.controladorResumen = null; //Controlador para el Documento de Resumen
+DVisor.transportador = null;    //Transporta la información al servidor via AJAX
+DVisor.docResumen = null;       //HashTable que contiene varios docuemntos resumen. El key es id_documento.version
+DVisor.dialogomensaje = null;   //Clase que representa una caja de dialogo modal
+DVisor.formato = null;          //El formato del documento que se esta diligenciando
+
+DVisor.inicializar = function(idFormato, idVersion) {
+
+    DVisor.contexto = new DContextoJS();
+    DVisor.docOriginal = new DDocumentoJS(idFormato, idVersion);
+    DVisor.docCopia = new DDocumentoJS(idFormato, idVersion);
+    DVisor.docDescripcion = new DDocumentoJS(idFormato, idVersion);
+    /** @todo En este se necesita saber el idFormato y de Version especificos ? */
+    DVisor.docResumen = new DDocumentoJS(idFormato, idVersion);
+
+    DVisor.dialogomensaje = new DMessageBox();
+
+    DVisor.controlador = new DControladorDocumento(DVisor.docCopia);
+    DVisor.controladorOriginal = new DControladorDocumento(DVisor.docOriginal);
+    DVisor.controladorDescripciones = new DControladorDocumento(DVisor.docDescripcion);
+    DVisor.controladorDescripciones.setTipo(DVisor.controlador.TIPO_DOC_RESUMEN);
+    DVisor.controladorResumen = new DControladorDocumento(DVisor.docResumen);
+
+    DVisor.transportador = new DTransportadorWddxJS();
+    //Validadores del documento completo, son parametrizados desde el mediador.
+    DVisor.validadorDocumentoIni = new DValidarDocumentoJS();
+    DVisor.validadorDocumentoFin = new DValidarDocumentoJS();
+
+    this.validarInicioDoc = function() {
+        DVisor.validadorDocumentoIni.manejar(null);
+    }
+
+    this.validarFinDoc = function() {
+        DVisor.validadorDocumentoFin.manejar(null);
+    }
+
+    this.validarInicioHoja = function(idHoja) {
+        DVisor.validadorDocumentoIni.manejarPorHoja(idHoja);
+    }
+
+    this.validarFinHoja = function(idHoja) {
+        DVisor.validadorDocumentoFin.manejarPorHoja(idHoja);
+    }
+
+    /**
+     * Si se han asignado documentos previos, revisa si ya se han cargado
+     * (inicializado a partar de un xml) los documentos, sino se han cargado
+     * los carga en el objeto documento a traves del controlador
+     */
+    this.cargarDocumentos = function() {
+      if (documentos != null) {
+        var xml = documentos.get('DOCUMENTO_XML');
+        if (xml != null && !DVisor.controlador.isIniFromXml()) {
+          DVisor.controlador.updateFromXml(xml);
+          DVisor.controladorOriginal.updateFromXml(xml);
+        }
+        var xmlDesc = documentos.get('DOCUMENTO_DESC');
+        if (xmlDesc != null && !DVisor.controladorDescripciones.isIniFromXml()) {
+          DVisor.controladorDescripciones.updateFromXml(xmlDesc);
+        }
+        var xmlResumen = documentos.get('DOCUMENTO_RESUMEN');
+        if (xmlResumen != null && !DVisor.controladorResumen.isIniFromXml()) {
+          DVisor.controladorResumen.updateFromXml(xmlResumen);
+        }
+
+        //Identifica si el documento que se carga ya existe en el sistema.
+        this.definirEstadoDocumento(DVisor.controlador);
+        this.definirEstadoDocumento(DVisor.controladorOriginal);
+      }
+    }
+
+    this.getDocResumen = function(idresumen) {
+        //Este metodo dobe retornar un documento Resumen.
+        return DVisor.docResumen.get(idresumen);
+    }
+
+  /**
+   * Es un llamado al setCasilla del controlador
+   */
+    this.setCasilla = function(idGrupo, idOcurrencia, idCasilla, idIteracion , valor) {
+       DVisor.controlador.setCasilla(idGrupo, idOcurrencia, idCasilla, idIteracion , valor);
+    }
+
+    //metodo que permite eliminar una casilla
+    this.removeCasilla = function(idGrupo, idOcurrencia, idCasilla){
+       DVisor.controlador.removeCasilla(idGrupo, idOcurrencia, idCasilla);
+    }
+
+    /**
+     * Obtiene un mensaje especifico para una ejecucion de accion
+     * en el servidor usando el esquema de enviar un
+     */
+    this.obtenerDMensajeEjecAccion = function() {
+        return new DMensajeInvocarAccJS();
+    }
+
+    /**
+     * @param mensaje DMensajeJS
+     * @param invocador El manejador que esta invocando esta ejecucion
+     */
+    this.enviarMensajeConstruido = function(mensaje, invocador, async) {
+        // Se hcae el encoding del mensaje
+        // la funcion escape escape hace el url encoding de la cadena
+        var wddxSer = new WddxSerializer();
+        var mensajeSer = wddxSer.serialize(mensaje);
+        // Genera el request con el mensaje como parametro codificado via url+wddx
+        var url = PATH_WEB_CONTEXTO + "/c.ctrl";
+        return DVisor.transportador.enviarMensaje("POST", url, async, "mensaje=" + escape(mensajeSer), invocador);
+    }
+
+    /**
+     * @param Mensaje a enviar.
+     */
+    this.enviarMensajeConstruidoSincrono = function(mensaje){
+        return DVisor.enviarMensajeConstruido(mensaje, null, false) ;
+    }
+
+    /**
+     * Obtiene el valor de la casilla a partir del grupo y
+     * la ocurrencia en la que este parado el visor
+     */
+    this.getValorCasilla = function(numCasilla, numItem){
+       return DVisor.controlador.getValorCasilla(numCasilla, numItem);
+    }
+
+    /**
+     * Obtiene el valor de la casilla de acuerdo al grupo
+     * y ocurrencia recibidos como parámetros
+     */
+    this.getValorCasillaAbsoluto = function(numGrupo, numOcurrencia, numCasilla, numItem){
+       return DVisor.controlador.getValorCasillaAbsoluto(numGrupo, numOcurrencia, numCasilla, numItem);
+    }
+
+
+
+    /**
+     *
+     */
+    this.initDocResumen = function(cas) {
+        if (cas) {
+            var docResumen = new DDocumentoJS(idFormulario, idVersion);
+            var controladorResumen = new DControladorDocumento(docResumen);
+            for (var i=0;i<cas.length;i++) {
+                var j = cas[i].indexOf('.');
+                var idCasilla = cas[i].substring(0, j);
+                var valorCasilla = cas[i].substring(j+1);
+                controladorResumen.setCasilla("1","1",idCasilla,"1",valorCasilla);
+            }
+            DVisor.docResumen.put(idFormulario + "." + idVersion, docResumen);
+        }
+    }
+
+    /**
+     * Este metodo tiene por objeto validar que un documento sea validad contra
+     * un formato de documento antes de ser enviado.
+     * Retorna true en caso de que el docuemnto sea valido, falso en caso contrario.
+     *
+     */
+    /*this.isDocumentoValido = function(documento, formato){
+        var isValido = true;
+        var grupos = new Array();
+        var ocurrencias = new Array();
+        var casillasObligatorias = new Array();
+        casObligatorias = formato.getIdCasillasObligatorias();
+        grupos = documento.getGrupos();
+        for(var i=0; i < grupos.length; i++){
+            idgrupo = grupos[i].getId();
+            var grupo = grupos[i];
+            ocurrencias = grupo.getOcurrencias();
+            for(var j=0; j < ocurrencias.length; j++){
+                for(var k = 0; k < casObligatorias.length; k++){
+                    var idCasObligatoria = casObligatorias[k];
+                    var casilla = ocurrencias[j].getCasilla(idCasObligatoria);
+                    if(!casilla){
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return isValido;
+    }*/
+
+    this.isDocumentoValido = function(documento, formato){
+      return this.validarDocumento(documento, formato, formato.getIdGrupos());
+    }
+
+    this.isGrupoValido = function(documento, formato, idGrupo){
+      var arrGrupos = new Array();
+      arrGrupos[0] = idGrupo;
+      return this.validarDocumento(documento, formato, arrGrupos);
+    }
+
+    this.validarDocumento = function(documento, formato, arrGrupos){
+        var isValido = true;
+        var grupo = null;
+        var arrIdsCasOblGrupo = null;
+        var arrOcurrenciasGrupo = null;
+        var logErrores = DVisor.validadorDocumentoFin.getLogErrores();
+
+        for (var i=0;i<arrGrupos.length;i++) {
+          arrIdsCasOblGrupo = formato.getGrupo(arrGrupos[i]).getIdCasillasObligatorias();
+          var grupo = documento.getGrupo(arrGrupos[i]);
+          if (grupo) {
+            arrOcurrenciasGrupo = grupo.getOcurrencias();
+            for (var j=0;j<arrIdsCasOblGrupo.length;j++) {
+              for (var k=0;k<arrOcurrenciasGrupo.length;k++) {
+                var idCas = arrIdsCasOblGrupo[j];
+                var casilla = arrOcurrenciasGrupo[k].getCasilla(idCas);
+                var casValida = false;
+                if(casilla){
+                  // Si es casilla columna verifica que por lo menos un item se encuentre diligenciado.
+                  if(casilla.className == "DCasillaColumnaJS"){
+                    var numItems = DVisor.controlador.getNumItemsFromCasAbsoluto(arrGrupos[i], k+1, idCas);
+                    if(numItems > -1){
+                      for(var l=1; l<=numItems && !casValida; l++){
+                        var valItem = DVisor.controlador.getValorCasillaAbsoluto(arrGrupos[i], k+1, idCas, l);
+                        if(valItem+'' != ''){
+                          casValida = true;
+                        }
+                      }
+                    }
+                  }
+                  // Casilla simple
+                  else {
+                    if (casilla.getValor()+'' != '') {
+                      casValida = true;
+                    }
+                  }
+                }
+                if(!casValida) {
+                  logErrores.addLogErrorSinCasilla(arrGrupos[i], k+1, idCas, 'Esta casilla es obligatoria y debe ser diligenciada.\r\n');
+                  isValido = false;
+                }
+              }
+            }
+          } else {
+            if (arrGrupos[i] == 1) {
+              logErrores.addLogErrorDocumento('Debe diligenciar el documento.');
+              isValido = false;
+            }
+          }
+        }
+        return isValido;
+    }
+
+    /**
+     * Este método debe ser llamado en la carga del visor para identificar si el documento que llega
+     * ya exite en la base de datos y evitar que en el guardado se cree uno nuevo.
+     */
+    this.definirEstadoDocumento = function(controlador) {
+      var numRepeticion = DVisor.contexto.getParametro('NUM_REPETICION_DOC');
+      var estadoActual = DVisor.contexto.getParametro('ESTADO_ACTUAL_DOC');
+      var idDoc = controlador.getValorCasilla(4,-1);
+      var numPC=DVisor.contexto.getParametro('NUMERO_PC');
+
+      if (estadoActual) {
+        controlador.setEstadoActualDoc(estadoActual);
+      }
+
+      if (numRepeticion && idDoc) {
+        controlador.setNumRepeticionDoc(numRepeticion);
+        controlador.setId(idDoc);
+        if(numPC=="0"){
+           controlador.setIsDocGuardado(true);
+        }/*fin de if*/
+      }
+    }
+
+}
+
+DVisor.guardar = function() {
+  var manejador = new DGuardarDocTemporalJS(null);
+  manejador.manejar(null);
+}

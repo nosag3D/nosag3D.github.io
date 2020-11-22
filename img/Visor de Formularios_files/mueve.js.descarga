@@ -1,0 +1,118 @@
+window.onscroll=movera;
+window.onmouseout=movera;
+window.onmouseover=movera;
+window.onblur=movera;
+
+var hoja="Hoja";
+var numeroHoja=1;
+var nombre=hoja + numeroHoja + ".html";
+
+var y1 = 0;
+var y2 = 0;
+var x1 = 0;
+var x2 = 0;
+var my1 = 0;
+var my2 = 0;
+var mx1 = 0;
+var mx2 = 0;
+var resizew = 0;
+if(NS6) {
+    scrollTopAnt   = parseInt(window.scrollY);
+    altoPantAnt    = parseInt(window.innerHeight);
+    scrollLeftAnt  = parseInt(window.scrollX);
+    clientWidthAnt = parseInt(window.innerWidth);
+    clientWidthAnt = screen.availWidth;
+    altoPantAnt = screen.availHeight - 160;
+
+} else {
+    scrollTopAnt   = parseInt(document.body.scrollTop);
+    altoPantAnt    = parseInt(document.body.clientHeight);
+    scrollLeftAnt  = parseInt(document.body.scrollLeft);
+    clientWidthAnt = parseInt(document.body.clientWidth);
+    clientWidthAnt = screen.availWidth;
+    altoPantAnt = screen.availHeight + 20;
+}
+
+function mover(nombreCapa){
+    capa = nombreCapa;
+    if (IE) {
+        capa = "D" + capa;
+    }
+    if(document.getElementById(capa))  {
+        if(NS6) {
+            y2 = parseInt(window.innerHeight + (14*window.innerHeight/16) - altoPantAnt)+8;
+            x1 = parseInt(window.scrollX) - scrollLeftAnt;
+            x2 = parseInt(window.innerWidth) - clientWidthAnt;
+            y1 = parseInt(window.scrollY)  - scrollTopAnt;
+            posY = y1 + y2 - 16;
+            posX = x1 + x2 + 10;
+            if(posY<0)
+                posY = parseInt(window.innerHeight);
+            if(posY>window.innerHeight || y1 == 0)
+                posY = parseInt(window.innerHeight-100);
+            if(posX<0)
+                posX = 25;
+        } else {
+            x1 = parseInt(document.body.scrollLeft) - scrollLeftAnt;
+            x2 = parseInt(document.body.clientWidth)  - clientWidthAnt;
+            y1 = parseInt(document.body.scrollTop)    - scrollTopAnt;
+            y2 = parseInt(document.body.clientHeight ) - altoPantAnt;
+            posY = y1 + y2;
+            posX = x1 + x2 + 25;
+            if(posX<0)
+                posX = 25;
+        }
+        document.getElementById(capa).style.top=posY+'px';
+        document.getElementById(capa).style.left=posX+'px';
+    }
+}
+
+function moverMenu(nombreMenu){
+    menu = nombreMenu;
+    if (IE) {
+        menu = "D" + menu;
+    }
+    if(document.getElementById(menu)) {
+        if (NS6) {
+            mx1 = parseInt(window.scrollX) - scrollLeftAnt + 19;
+            mx2 = (parseInt(window.innerWidth) - clientWidthAnt) ;
+            my1 = parseInt(window.scrollY)  - scrollTopAnt;
+            my2 = parseInt(window.innerHeight + window.innerHeight/4) - altoPantAnt ;
+        } else {
+            mx1 = parseInt(document.body.scrollLeft) - scrollLeftAnt + 22;
+	        mx2 = (parseInt(document.body.clientWidth) - clientWidthAnt) - parseInt(menuWidth);
+            my1 = parseInt(document.body.scrollTop)  - scrollTopAnt;
+            my2 = parseInt(document.body.clientHeight) - altoPantAnt;
+        }
+        mposX = mx1 + mx2;// - mx2;
+        mposY = my1 + my2;
+        document.getElementById(menu).style.top=mposY+'px';
+        document.getElementById(menu).style.left=mposX+'px';
+    }
+}
+
+function moveBack2(nombreMenu){
+    menu = nombreMenu;
+    if (IE) {
+        menu = "D" + menu;
+    }
+    if(controlSlide ==1 && document.getElementById(menu)) {
+       controlSlide1=0;moveBack1();
+       controlSlide=0;
+    }
+}
+
+function movera() {
+    /*if (resizew == 0) {
+        resizew = 1;
+        SetWindow();
+    }*/
+    if(document.getElementById("basessm")) {
+        moverMenu("basessm");
+    }
+    if(document.getElementById("baseBarra")) {
+      //  setTimeout('mover("baseBarra")', waitTime);
+       mover("baseBarra");
+    }
+}
+

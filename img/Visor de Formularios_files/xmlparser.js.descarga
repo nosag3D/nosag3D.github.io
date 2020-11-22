@@ -1,0 +1,249 @@
+//<<documento.documentos.js>>
+Import("modelo.documento.documentos");
+Import("general.Hashtable");
+Import("modelo.jsdto.dtocasilla");
+
+//Constructor de la clase
+DXMLParserJS = function DXMLParserJS(documento){
+
+   //contiene el texto total del XML
+   this.doc=documento;
+   //Arreglo que contendra objetos de tipo DTOCasillaJS
+   this.casillas=new Array();
+
+   this.getIdCasillasCabPie = function() {
+        var formato = parent.Definicion.getFormatoDocumento();
+        return formato.getIdCasillasCabecera(1).concat(formato.getIdCasillasPie(1));
+   }
+
+   this.idCasillasCabPie = this.getIdCasillasCabPie();
+}
+
+//Esta funcion tiene por objetivo entregar los
+//parametros del tag docuemnto.
+DXMLParserJS.prototype.getDocInfo = function(){
+   var textoDoc=new String(this.doc);
+
+   var tag=new String('');
+
+   inicio=textoDoc.indexOf('<doc');
+   fin=textoDoc.indexOf('>', inicio);
+   tag=textoDoc.substring(inicio,fin);
+
+   return this.getParametros(tag, 'cf', 'id', 'vf');
+}
+
+DXMLParserJS.prototype.getNumRepeticion = function(){
+	  var hashDocInfo = this.getDocInfo();
+	  return hashDocInfo.get('n_r');		   
+}
+
+DXMLParserJS.prototype.esCasillaDeCabPie = function(idCasilla) {
+    var esCasilla = false;
+    if ((idCasilla >= 1 && idCasilla <= 20) || (idCasilla >= 980 && idCasilla <= 999)) {
+        for (var i=0; i<this.idCasillasCabPie.length && !esCasilla; i++) {
+            if (this.idCasillasCabPie[i] == idCasilla) {
+                esCasilla = true;
+            }
+        }
+    }
+    return esCasilla;
+}
+
+
+/* Permite obtener un objeto documento a partir del xml genérico. */
+/** @todo este metodo lo usa alguien ?? */
+DXMLParserJS.prototype.getDocumento = function(){
+    var hashDocInfo = this.getDocInfo();
+    var documento = new DDocumentoJS(hashDocInfo.get('cf'),hashDocInfo.get('vf'));
+    var controlador = new DControladorDocumento(documento);
+    var arrayCasillas = this.parseDoc();
+
+    for(var i=0; i<arrayCasillas.length; i++){
+        casilla = arrayCasillas[i];
+        var grupoid = casilla.getGrupo();
+        var idOcurrencia = casilla.getOcurrencia();
+        var idCasilla = casilla.getCasilla();
+        var idIteracion = casilla.getIteracion();
+        var valor = casilla.getValor();
+        controlador.setCasilla(grupoid, idOcurrencia, idCasilla, idIteracion, valor);
+    }
+    return documento;
+}
+
+//funcion que parsea el documento. Debe entregar un array
+//que contiene objetos de tipo DTOCasillaJS. Con este arreglo
+//se debe hacer una llamada a la funcion setcasilla del visor.
+DXMLParserJS.prototype.parseDoc = function(){
+   //Arreglos para grupos, ocurrencias y casillas
+   var grupos = new Array();
+   var ocurrencias = new Array();
+   var casillascompuestas = new Array();
+
+   //Identificadores de grupos ocurrencias y casillas
+   var idgrupo;
+   var idocurrencia;
+   var idcasillacompuesta;
+
+   //hash que contiene los parametros de cada tag
+   var hashAux;
+
+   //obtenemos un arreglo en el cual cada posicion representa el tag
+   //completo de un grupo.
+   grupos=this.getTag('gr', this.doc);
+
+   //recorremos el tag docuemnto y extrameos cada ocurrencia dentro del tag
+   for(var i=0; i<grupos.length; i++){
+      txt_grupo=grupos[i];
+
+      hashAux=this.getParametros(txt_grupo, 'id');
+      idgrupo=hashAux.get('id');
+
+      //obtenemos un arreglo similar al de grupos pero en su logar
+      //cada posicion representa una ocurrencia.
+      ocurrencias=this.getTag('oc', txt_grupo);
+
+      //recorrmos las ocurrencias para procesar
+      //cada casilla simple y compuesta.
+      for(var j=0; j<ocurrencias.length; j++){
+
+         txt_ocurrencia=ocurrencias[j];
+
+         hashAux=this.getParametros(txt_ocurrencia, 'id');
+         idocurrencia=hashAux.get('id');
+
+         //enviamos el texto de la ocurrencia y extremos las casillas simples.
+         this.getCasilla(txt_ocurrencia, idocurrencia, idgrupo, 'cs', 0);
+
+         //obtenemos un arreglo similar al de grupos pero en su lugar
+         //cada posicion representa una casilla compuesta.
+         casillascompuestas=this.getTag('cc', txt_ocurrencia);
+
+
+         //recorremos el arreglo para extraer las casillas compuestas
+         for(var k=0; k<casillascompuestas.length; k++){
+            txt_casillacompuesta=casillascompuestas[k];
+
+            hashAux=this.getParametros(txt_casillacompuesta, 'id');
+            idcasillacompuesta=hashAux.get('id');
+
+            this.getCasilla(txt_casillacompuesta, idocurrencia, idgrupo, 'it', idcasillacompuesta);
+         }
+      }
+   }
+
+   //retornamos el arreglo con las casillas. este arreglo es llenado en
+   //el metodo getCasillas.
+   return this.casillas;
+}
+
+//Esta funcion tiene por objeto retornar un arreglo que contenga en cada posicion
+//el texto del tag especificado
+DXMLParserJS.prototype.getTag=function(nombretag, textoxml){
+   var flag=true;
+   var ultimaPos=0;
+
+   //El texto completo del Tag
+   var textoTag=new String(textoxml);
+
+   //Arreglo de String que contiene el texto serializado de cada grupo en XML
+   var tags=new Array();
+
+   //while que recorre el xml en busca de el tag especificado
+   while(flag){
+      inicio=textoTag.indexOf(('<'+nombretag), ultimaPos);
+
+      //evalua si se encontro un grupo
+      if(inicio!=-1){
+
+         fin=textoTag.indexOf(('</'+nombretag+'>'), inicio);
+         if (fin == -1 )   fin=textoTag.indexOf(('/>'), inicio);
+
+         textoEtiqueta=textoTag.substring(inicio, fin);
+
+         if(textoEtiqueta.indexOf('<'+nombretag, 3) !=-1){
+            fin=textoTag.indexOf('/>', inicio);
+            textoEtiqueta=textoTag.substring(inicio, fin);
+         }
+
+         ultimaPos=fin;
+
+         tags.push(textoEtiqueta);
+      }else{
+         //si no encontro ninguna ocurrencia dentro del texto
+         //sale del ciclo
+         flag=false;
+      }
+   }
+   //retorna el array con los grupos
+   return tags;
+}
+
+//Esta funcion tiene por objeto retornar un arreglo que contenga objetos DTOCasillaJS
+//que representan una casilla en el docuemnto
+DXMLParserJS.prototype.getCasilla=function(txtTag, idocurrencia, idgrupo, tag, idcasilla){
+   var flag=true;
+   var ultimaOcurrencia=0;
+
+   var textoOcurrencia=new String(txtTag);
+
+   var hashAux;
+
+   while(flag){
+      inicio=textoOcurrencia.indexOf('<'+tag, ultimaOcurrencia);
+
+      if(inicio!=-1){
+         fin=textoOcurrencia.indexOf('/>', inicio);
+         casillasimple=textoOcurrencia.substring(inicio, fin);
+
+         ultimaOcurrencia=fin;
+
+         //extraemos el id y valor de cada casilla o iteracion.
+         hashAux=this.getParametros(casillasimple, 'id', 'v');
+
+         //se crea el objeto DDTOCasillaJS y se pone en el arreglo de casillas
+	 var valor = hashAux.get('v');
+	 valor = cambiarCaracteresDeXml(valor);
+         if(tag=='cs') {
+           this.casillas.push(new DDTOCasillaJS(idgrupo, idocurrencia, hashAux.get('id'), false, -1, valor));
+         } else {
+           this.casillas.push(new DDTOCasillaJS(idgrupo, idocurrencia, idcasilla, true, hashAux.get('id'), valor));
+         }
+      } else {
+         flag=false;
+      }
+   }
+}
+
+//Esta funcion pretende extraer los parametros de un tag dado.
+//Se le debe enviar la lista de parametros que se quieren extraer y el entrega
+//un Hashtable con los parametros encontrados. Puede ser invocada de la
+//siguiente forma: getParametros(texto_etiqueta, param1, param2, param3, ...);
+//donde param1, param2... son los nombres de los parametros que queremos extraer.
+DXMLParserJS.prototype.getParametros=function(tag){
+
+   var args=arguments.length-1;
+   var parametros=new Hashtable();
+
+   //Recorremos la lista de argumentos
+   for(var i=0; i<args; i++){
+      var aEncontrar = new String(arguments[i+1]);
+      aEncontrar+='=\"';
+
+      //correccion a bug de documento de descripciones que consistia en asignar
+      //un valor extrano al atributo v si este en el tag de la casilla del documento
+      //no existia, ahora queda en vacio el valor si este caso se presenta
+
+      if(tag.indexOf(aEncontrar) != -1){
+          inicio=tag.indexOf(aEncontrar)+aEncontrar.length;
+          fin=tag.indexOf('\"', inicio);
+
+          valorParam=tag.substring(inicio,fin);
+      }
+      else {
+          valorParam="";
+      }
+      parametros.put(arguments[i+1], valorParam);
+   }
+   return parametros;
+}

@@ -1,0 +1,267 @@
+//<<modelo.formato.ftoSecciones.js>>
+Import("modelo.formato.ftoGrupos");
+Import("visor.estructura.Seccion");
+
+/**Clase que define el formato de un documento*/
+DFormatoDocumentoJS = function DFormatoDocumentoJS(idFormato, idVersion, nomb){
+
+   this.id;
+   this.version;
+
+   this.nombre = nomb;
+   this.descripcion;
+
+   this.estado = DFormatoDocumentoJS.ESTADO_ACTIVO; 	//Por defecto se crea ACTIVO
+
+   this.grupos = new Array();
+
+   idFormato = Number(idFormato);
+   if (!isNaN(idFormato) && idFormato > 0 )
+  	this.id = idFormato;
+
+   idVersion = Number(idVersion);
+   if (!isNaN(idVersion) && idVersion > 0 )
+  	this.version = idVersion;
+
+   this.getId = function(){
+     return this.id;
+   }
+
+   this.getVersion = function(){
+      return this.version;
+   }
+
+   this.getNombre = function(){
+       return this.nombre;
+   }
+
+   this.getDescripcion = function(){
+       return this.descripcion;
+   }
+
+   this.setDescripcion = function(des){
+       this.descripcion = des;
+   }
+
+   this.getEstado = function(){
+       return this.estado;
+   }
+
+   /**No permite estados que no esten definidos*/
+   this.setEstado = function(est){
+     switch(est){
+       	case DFormatoDocumentoJS.ESTADO_ACTIVO:
+	case DFormatoDocumentoJS.ESTADO_INACTIVO:
+        	this.estado = est;
+     }
+
+   }
+
+   /**Agrega un grupo. Recibe como parmetro un objeto DFormatoGrupoJS*/
+   this.addGrupo = function(grupo) {
+     // El grupo no debe ser nulo, el objeto tiene que ser una instancia del Formato de Grupo y debe tener Id.
+      if (grupo && grupo.className == DFormatoGrupoJS.prototype.className
+      	&& grupo.getId()){
+
+      	var existe = false;
+        for (var c = 0; c < this.grupos.length; c++){
+           if (grupo.getId() == this.grupos[c].getId()){
+            	this.grupos[c] = grupo;
+            	existe = true;
+                break;
+           }
+        }//-- for()
+        if (!existe)
+        	this.grupos.push(grupo);
+      }//-- if()
+   }//-- addGrupo()
+
+   /**Obtiene un Formato de grupo segun su Id*/
+   this.getGrupo = function(idGrupo){
+     idGrupo = Number(idGrupo);
+      var grupo = null;
+      for (var g = 0; g < this.grupos.length; g++){
+         if (this.grupos[g].getId() == idGrupo){
+            grupo = this.grupos[g];
+            break;
+         }
+      }
+      return grupo;
+   }//-- getGrupo()
+
+   /**Retorna un arreglo con los Ids de los grupos que contiene el formato*/
+   this.getIdGrupos = function(){
+      var idGrupos = new Array();
+      for (var g = 0; g < this.grupos.length; g++){
+         idGrupos.push(this.grupos[g].getId());
+      }
+
+      return idGrupos;
+   }//-- getIdGrupos()
+
+   this.getNumGrupos = function(){
+       return this.grupos.length;
+   }
+
+   this.isRepetible = function(idGrupo){
+     var grupo = this.getGrupo(idGrupo);
+     if (grupo)
+     	return grupo.isRepetible();
+      else
+      	throw "El grupo no existe";
+   }//-- isRepetible()
+
+   this.getIdCasillasObligatorias = function(){
+       var idCasillas = new Array();
+	for (var g = 0; g < this.grupos.length; g++){
+           idCasillas = idCasillas.concat(this.grupos[g].getIdCasillasObligatorias());
+      	}
+        return idCasillas;
+   }
+
+   this.getIdCasillasLlave = function(){
+       var idCasillas = new Array();
+	for (var g = 0; g < this.grupos.length; g++){
+           idCasillas = idCasillas.concat(this.grupos[g].getIdCasillasLlave());
+      	}
+        return idCasillas;
+   }
+
+   /** Esta funcion tiene por objetivo brindar una interfaz para recuperar el formato de una casilla directamente del formato.
+   * 	Recibe como parametro el Id de la casilla a Buascar y opcionalmente
+   *  	el Id del grupo. Si no se pasa el Id del grupo, se busca la casilla en todos los grupos hasta encontrarla.
+   */
+   this.getCasilla = function(idCasilla, idGrupo) {
+      var grp;
+      var casilla = null;
+      if (idGrupo){
+      	grp = this.getGrupo(idGrupo);
+        if (grp)
+           casilla = grp.getCasilla(idCasilla);
+      }
+      else{
+      	for (var g = 0; g < this.grupos.length; g++){
+           casilla = this.grupos[g].getCasilla(idCasilla);
+           if (casilla)
+             	break;
+      	}
+      }//-- else
+      return casilla;
+   }//-- getCasilla()
+
+   /**Retorna el arreglo de secciones. Cada objeto es de tipo Seccion*/
+   this.getSecciones = function(idGrupo){
+     var grupo = this.getGrupo(idGrupo);
+     var secciones = new Array();
+     var seccionTmp = null;
+     if (grupo){
+     	var ftoSecciones = grupo.getAllSecciones();
+      	for (var s = 0; s < ftoSecciones.length; s++){
+        	seccionTmp = new Seccion(ftoSecciones[s].getNombre(),ftoSecciones[s].getId());
+         	secciones.push(seccionTmp);
+      	}//-- for()
+     }
+     return secciones;
+   }//-- getSecciones()
+
+   /**Retorna una seccion. El objeto es de tipo Seccion*/
+   this.getSeccion = function(idGrupo, idSeccion){
+     var grupo = this.getGrupo(idGrupo);
+     var ftoSeccion;
+     var seccionTmp = null;
+     if (grupo){
+       ftoSeccion = grupo.getSeccion(idSeccion);
+       seccionTmp = new Seccion(ftoSeccion.getNombre(),ftoSeccion.getId());
+     }
+     return seccionTmp;
+   }//-- getSeccion()
+
+   /**retorna los Ids de las casillas de la sección de CABECERA*/
+   this.getIdCasillasCabecera = function(idGrupo){
+     var idCasillas = new Array();
+     var grupo = this.getGrupo(idGrupo);
+     if (grupo){
+       ftoSeccion = grupo.getSeccionCabecera();
+       if (ftoSeccion){
+         idCasillas = ftoSeccion.getIdCasillas();
+       }
+
+     }
+     return idCasillas;
+   }//-- getIdCasillasCabecera()
+
+   /**retorna los Ids de las casillas de la sección de PIE*/
+   this.getIdCasillasPie = function(idGrupo){
+     var idCasillas = new Array();
+     var grupo = this.getGrupo(idGrupo);
+     if (grupo){
+       ftoSeccion = grupo.getSeccionPie();
+       if (ftoSeccion){
+         idCasillas = ftoSeccion.getIdCasillas();
+       }
+     }
+     return idCasillas;
+   }//-- getIdCasillasPie()
+
+   /**Retorna un arreglo de los grupos donde se encuentra una casilla*/
+   this.getIdGruposByIdCasilla = function(idCasilla){
+     	var idGrupos = new Array();
+      	for (var g = 0; g < this.grupos.length; g++){
+           casilla = grupos[g].getCasilla(idCasilla);
+           if (casilla)
+             idGrupos.push(g);
+      	}
+        return idGrupos;
+   }//-- getIdGruposByIdCasilla()
+
+    /**Retorna el arreglo de secciones en donde se encuentra una casilla. Cada objeto es de tipo Seccion*/
+   this.getSeccionesByIdCasilla = function(idCasilla){
+     	var secciones = new Array();
+        var seccionTmp = null;
+     	var ftoSeccion;
+     	var ftoGrupo;
+        var ftoCasilla;
+     	var idGrupos = this.getIdGruposByIdCasilla(idCasilla);
+    	for (var g = 0; g < idGrupos.length; g++){
+           ftoGrupo = this.getGrupo(idGrupos[g]);
+           if (ftoCasilla){
+           	ftoCasilla = grupoTmp.getCasilla(idCasilla);
+              	ftoSeccion = ftoCasilla.getSeccion();
+              	if (ftoSeccion){
+                   seccionTmp = new Seccion(ftoSeccion.getNombre(),ftoSeccion.getId());
+                   secciones.push(seccionTmp);
+              	}
+          }
+      	}//-- for
+     return secciones;
+   }//-- getSeccionesByIdCasilla()
+
+}//-- DFormatoDocumentoJS
+
+/** Constante que indica el estado ACTIVO del formato */
+DFormatoDocumentoJS.ESTADO_ACTIVO = 'A';
+/** Constante que indica el estado INACTIVO del formato */
+DFormatoDocumentoJS.ESTADO_INACTIVO = 'I';
+
+DFormatoDocumentoJS.prototype.className = "DFormatoDocumentoJS";
+
+DFormatoDocumentoJS.prototype.toString=function(){
+  return this.toXml();
+}//-- toString()
+
+/**
+ * Convierte el contenido del documento en un flujo Xml
+ */
+DFormatoDocumentoJS.prototype.toXml=function(){
+  	//Cabecera del fORMATO
+  	var xmlDocumento = "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+	xmlDocumento += "<fto id=\"" +
+        this.id+"\" vf=\""+ this.version + "\" n=\"" + this.nombre+ "\" estado=\"" + this.estado+ "\" > ";
+
+        //for (var prop in this.grupos){
+        for (var i=0; i < this.grupos.length;i++){
+    		xmlDocumento += "\n" + this.grupos[i].toString();
+  	}
+  	xmlDocumento += "\n</fto>";
+  	return xmlDocumento;
+}//-- toXml()

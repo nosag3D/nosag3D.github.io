@@ -1,0 +1,51 @@
+var Class = {
+  create: function() {
+    return function() { 
+      this.initialize.apply(this, arguments);
+    }
+  }
+}
+
+Object.prototype.extend = function(object) {
+  for (property in object) {
+    this[property] = object[property];
+  }
+  return this;
+}
+
+Function.prototype.bind = function(object) {
+  var method = this;
+  return function() {
+    method.apply(object, arguments);
+  }
+}
+
+Function.prototype.bindAsEventListener = function(object) {
+  var method = this;
+  return function(event) {
+    method.call(object, event || window.event);
+  }
+}
+
+/*--------------------------------------------------------------------------*/
+
+function $() {
+  var elements = new Array();
+  
+  for (var i = 0; i < arguments.length; i++) {
+    var element = arguments[i];
+    if (typeof element == 'string')
+      element = document.getElementById(element);
+
+    if (arguments.length == 1) 
+      return element;
+      
+    elements.push(element);
+  }
+  
+  return elements;
+}
+
+/*--------------------------------------------------------------------------*/
+
+var Effect = new Object();

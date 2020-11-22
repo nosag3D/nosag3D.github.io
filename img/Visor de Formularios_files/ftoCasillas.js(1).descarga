@@ -1,0 +1,222 @@
+//<<modelo.formato.ftoCasillas.js>>
+
+/**
+ * DFormatoCasillaJS	Formato de una casilla simple
+ */
+DFormatoCasillaJS = function DFormatoCasillaJS(idCasilla, nomb, tDato, esObligatoria, esLlave) {
+
+  	/**Valor Inicial del Id*/
+	this.id;
+        /**Si el Id no es numerico no se acepta*/
+        idCasilla = Number(idCasilla);
+
+   if (!isNaN(idCasilla) && idCasilla > 0)
+  	this.id = idCasilla;
+
+
+   this.nombre = nomb;
+   this.descripcion;
+   this.tipoCasilla = DFormatoCasillaJS.CASILLA_SIMPLE;
+
+   this.tipoDato = DFormatoCasillaJS.DATO_CADENA;		//Por defecto se crea con tipo de dato CADENA
+
+   /**Dice si la casilla hace parte de una llave o identificador*/
+   this.llave = false;
+
+   this.obligatoria = false;
+
+   this.comportamiento=DFormatoCasillaJS.COMPORTAMIENTO_UNICO;
+
+
+
+   /**Referencia al grupo al que pertenece*/
+   this.grupo;
+   /**Referencia la seccion a la que pertenece*/
+   this.seccion;
+
+
+   this.getId=function() {
+      return this.id;
+   }
+
+   this.setNombre=function(nom) {
+      this.nombre = nom;
+   }
+
+   this.getNombre=function(){
+      return this.nombre;
+   }
+
+   this.setDescripcion=function(des) {
+      this.descripcion = des;
+   }
+
+   this.getDescripcion=function(){
+      return this.descripcion;
+   }
+
+
+   this.getTipoCasilla=function(){
+      return this.tipoCasilla;
+   }
+
+   /**No se permiten tipos de datos que no esten definidos*/
+   this.setTipoDato=function(tipo) {
+      switch(tipo){
+      	case DFormatoCasillaJS.DATO_ENTERO:
+  	case DFormatoCasillaJS.DATO_DECIMAL:
+  	case DFormatoCasillaJS.DATO_CADENA:
+  	case DFormatoCasillaJS.DATO_CADENA_LARGA:
+  	case DFormatoCasillaJS.DATO_FECHA:
+  	case DFormatoCasillaJS.DATO_HORA:
+  	case DFormatoCasillaJS.DATO_BINARIO:
+  	case DFormatoCasillaJS.DATO_BOOLEAN:
+          this.tipoDato = tipo;
+      }
+   }//-- setTipoDato
+
+   //se ejecuta el set para tipo de Dato
+   this.setTipoDato(tDato);
+
+   this.getTipoDato=function(){
+      return this.tipoDato;
+   }
+
+
+   this.isLlave=function(){
+      return this.llave;
+   }
+
+   this.setComportamiento=function(comp) {
+      if (!isNaN(Number(comp)))
+      	this.comportamiento = comp;
+   }
+
+   this.getComportamiento=function(){
+      return this.comportamiento;
+   }
+
+   this.setObligatoria=function() {
+      this.obligatoria = true;
+   }
+
+   this.isObligatoria=function(){
+      return this.obligatoria;
+   }
+
+   this.setLlave=function() {
+      this.llave = true;
+   }
+
+   if (esObligatoria == true || esObligatoria == "true" || esObligatoria == "S")
+   	this.setObligatoria();
+
+   if (esLlave == true || esLlave == "true"  || esLlave == "S")
+   	this.setLlave();
+
+   //-- referencias al grupo y la seccion a los que pertenece
+   this.setGrupo=function(grp){
+     	//Verifica que el objeto sea de tipo Formato de Grupo
+     	if (grp.className == DFormatoGrupoJS.prototype.className)
+        	this.grupo = grp;
+   }//-- setGrupo()
+
+   this.getGrupo=function(){
+       return this.grupo;
+   }
+
+   this.setSeccion=function(sec){
+     	//Verifica que sea un objeto de tipo Formato de Sección
+     	if (sec== null || sec.className == DFormatoSeccionJS.prototype.className)
+       		this.seccion = sec;
+   }
+
+   this.getSeccion=function(){
+       return this.seccion;
+   }
+
+}//-- DFormatoCasillaJS
+
+DFormatoCasillaJS.prototype.className = "DFormatoCasillaJS";
+
+DFormatoCasillaJS.prototype.toString=function() {
+   return this.toXml();
+}
+
+/**
+ * Convierte el contenido de la casilla en un flujo Xml
+ */
+DFormatoCasillaJS.prototype.toXml=function() {
+   return "<cs id=\"" + this.id + "\" n=\"" + this.nombre +"\" oblig=\"" + this.obligatoria + "\" llave=\"" + this.llave +"\" />";
+}
+
+//-- Definición de Constantes ---------------
+  /** Tipos de Casillas */
+  DFormatoCasillaJS.CASILLA_SIMPLE = "SI";
+  DFormatoCasillaJS.CASILLA_COLUMNA = "CO";
+
+  /** Tipos de Datos */
+  DFormatoCasillaJS.DATO_ENTERO = "EN";
+  DFormatoCasillaJS.DATO_DECIMAL = "DE";
+  DFormatoCasillaJS.DATO_CADENA = "CA";
+  DFormatoCasillaJS.DATO_CADENA_LARGA = "CL";
+  DFormatoCasillaJS.DATO_FECHA = "FE";
+  DFormatoCasillaJS.DATO_HORA = "HO";
+  DFormatoCasillaJS.DATO_BINARIO = "BI";
+  DFormatoCasillaJS.DATO_BOOLEAN = "BO";
+
+  /** Tipos de comportamiento de la Casilla */
+  DFormatoCasillaJS.COMPORTAMIENTO_UNICO = 0;
+//---------------------------------------------------------------------------------------
+
+/**
+* DFormatoCasillaColumnaJS	Define el formato de una casilla columna
+* */
+DFormatoCasillaColumnaJS.prototype = new DFormatoCasillaJS();
+DFormatoCasillaColumnaJS.prototype.constructor=DFormatoCasillaColumnaJS;
+
+function DFormatoCasillaColumnaJS(idCasilla, nomb, tDato, obligatoria, llave, numF){
+
+  /**Si el Id no es numerico no se acepta*/
+  idCasilla = Number(idCasilla);
+  if (!isNaN(idCasilla) && idCasilla > 0)
+  	this.id = idCasilla;
+
+   if (obligatoria == true || obligatoria == "true" || obligatoria == "S")
+   	this.setObligatoria();
+
+   if (llave == true || llave == "true"|| llave == "S")
+   	this.setLlave();
+
+  this.nombre = nomb;
+  this.setTipoDato(tDato);
+
+   this.numFilas = -1;
+
+   this.setNumFilas=function(numF){
+     	var nf = Number(numF);
+        if (!isNaN(nf))
+        	this.numFilas = nf;
+   }
+
+   this.getNumFilas=function(){
+       return this.numFilas;
+   }
+   this.setNumFilas(numF);
+
+   this.tipoCasilla = DFormatoCasillaJS.CASILLA_COLUMNA;
+}//-- DFormatoCasillaColumnaJS
+
+DFormatoCasillaColumnaJS.prototype.className = "DFormatoCasillaColumnaJS";
+
+DFormatoCasillaColumnaJS.prototype.toString=function() {
+   return this.toXml();
+}
+
+/**
+ * Convierte el contenido de la casilla en un flujo Xml
+ */
+DFormatoCasillaColumnaJS.prototype.toXml=function() {
+   var xmlCasilla = "<cc id=\"" + this.id +"\" n=\"" + this.nombre +"\" oblig=\"" + this.obligatoria + "\" llave=\"" + this.llave +"\" filas=\"" + this.numFilas + "\"/>";
+   return xmlCasilla;
+}

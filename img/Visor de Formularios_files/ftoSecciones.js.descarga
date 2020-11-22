@@ -1,0 +1,145 @@
+//<<modelo.formato.ftoSecciones.js>>
+Import("modelo.formato.ftoCasillas");
+
+/**
+ * DFormatoSeccionJS	Formato de una seccion.
+ * Si no se pasa el Tipo de seccion, se crea por defecto como seccion de Cuerpo
+ */
+DFormatoSeccionJS = function DFormatoSeccionJS(idSeccion, nomSeccion, tipoSeccion){
+
+  this.id;
+  this.nombre;
+
+  /**Si el Id no es numerico no se acepta*/
+  idSeccion = Number(idSeccion)
+  if (!isNaN(idSeccion) && idSeccion > 0)
+  	this.id = idSeccion;
+
+   if (tipoSeccion == DFormatoSeccionJS.SECCION_CABECERA){
+     this.tipo = DFormatoSeccionJS.SECCION_CABECERA;
+     this.nombre = "CABECERA";
+     //this.id = 0;
+   }
+   else if (tipoSeccion == DFormatoSeccionJS.SECCION_PIE){
+     this.tipo = DFormatoSeccionJS.SECCION_PIE;
+     this.nombre = "PIE";
+     //this.id = -1;
+   }else{
+   	this.tipo = DFormatoSeccionJS.SECCION_CUERPO;
+        this.nombre = nomSeccion;
+   }
+
+
+   /**Referencia al grupo donde pertenece*/
+   this.grupo;
+
+   this.casillas = new Array();
+   //-- Parte del Constructor
+
+   this.getId = function(){
+      return this.id;
+   }
+
+   this.getNombre = function(){
+     return this.nombre;
+   }
+
+   this.getTipo = function(){
+     return this.tipo;
+   }
+
+   this.setGrupo=function(grp){
+     	//Verifica que el objeto sea de tipo Formato de Grupo
+     	if (grp == null || grp.className == DFormatoGrupoJS.prototype.className)
+        	this.grupo = grp;
+   }//-- setGrupo()
+
+   this.getGrupo=function(){
+     return this.grupo;
+   }
+
+   //**Agrega una casilla. Recibe como parametro un objeto DFormatoCasillaJS*/
+   this.addCasilla = function(casilla) {
+     // La casilla no debe ser nula, el objeto tiene que ser una instancia del Formato de Casilla simple o compuesta y debe tener Id.
+      if (casilla && (casilla.className == DFormatoCasillaJS.prototype.className || casilla.className == DFormatoCasillaColumnaJS.prototype.className )
+      	&& casilla.getId()){
+
+        casilla.setSeccion(this);
+      	var existe = false;
+        for (var c = 0; c < this.casillas.length; c++){
+           if (casilla.getId() == this.casillas[c].getId()){
+            	this.casillas[c] = casilla;
+            	existe = true;
+                break;
+           }
+        }//-- for()
+        if (!existe)
+        	this.casillas.push(casilla);
+      }//-- if()
+   }//-- addCasilla()
+
+   this.removeCasilla = function(idCasilla) {
+
+      for (var c = 0; c < this.casillas.length; c++){
+         if (this.casillas[c].getId() == idCasilla){
+             this.casillas[c].setSeccion(null);
+            this.casillas.splice(c, 1);
+         }
+      }
+      return this.casillas.length;
+   }//-- removeCasilla()
+
+   this.refactorId = function(nuevaid){
+     this.id=nuevaid;
+   }
+
+   /**Obtiene una casilla segn su Id*/
+   this.getCasilla = function(idCasilla){
+      idCasilla = Number(idCasilla);
+      var casilla = null;
+      for (var c = 0; c < this.casillas.length; c++){
+         if (this.casillas[c].getId() == idCasilla){
+            casilla = this.casillas[c];
+            break;
+         }
+      }
+      return casilla;
+   }//-- getCasilla()
+
+   /**Retorna un arreglo con los Ids de las casillas que contiene la seccion*/
+   this.getIdCasillas = function(){
+      var idCasillas = new Array();
+
+      for (var c = 0; c < this.casillas.length; c++){
+         idCasillas.push(this.casillas[c].getId());
+      }
+      return idCasillas;
+   }//-- getIdCasillas()
+
+   this.getNumCasillas = function(){
+      return this.casillas.length;
+   }//-- getNumCasillas()
+
+}//-- DFormatoSeccionJS()
+
+DFormatoSeccionJS.prototype.className = "DFormatoSeccionJS";
+
+
+DFormatoSeccionJS.prototype.toString=function(){
+  return this.toXml();
+}//-- toString()
+
+
+DFormatoSeccionJS.prototype.toXml=function(){
+    var xmlSeccion = "\t\t<sec id=\""+this.id+"\"" + " n=\""+this.nombre+"\">";
+    for (var i=0; i< this.casillas.length; i++){
+    	xmlSeccion += "\n\t\t\t" + this.casillas[i].toXml();
+    }
+    xmlSeccion += "\n\t\t</sec>";
+    return xmlSeccion;
+}
+
+  /** Tipos de Sección del Formato */
+  DFormatoSeccionJS.SECCION_CABECERA = "CA";
+  DFormatoSeccionJS.SECCION_CUERPO = "CU";
+  DFormatoSeccionJS.SECCION_PIE = "PI";

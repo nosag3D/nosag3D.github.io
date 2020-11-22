@@ -1,0 +1,147 @@
+.barraNav {
+	  color            : black;
+	  background-color : #FFF7DE;
+          font-family: Arial, Helvetica, sans-serif;
+	  font-size        : 11px;
+	  font-weight      : bold;
+          border-top: 1px solid #CCCCCC;
+	  border-right: 1px none #FFEBAD;
+	  border-bottom: 4px solid #999999;
+	  border-left: 1px none #007A35;
+}
+
+.barraNavDer {
+	  color            : black;
+	  background-color : #FFF7DE;
+          font-family: Arial, Helvetica, sans-serif;
+	  font-size        : 11px;
+	  font-weight      : bold;
+          border-top: 1px solid #CCCCCC;
+	  border-right: 6px solid #CCCCCC;
+	  border-bottom: 4px solid #999999;
+	  border-left: 1px none #FFC600;
+}
+
+.barraNavIzq {
+	  color            : black;
+	  background-color : #FFF7DE;
+	  font-family: Arial, Helvetica, sans-serif;
+	  font-size        : 11px;
+	  font-weight      : bold;
+          border-top: 1px solid #CCCCCC;
+	  border-right: 1px none #FFC600;
+	  border-bottom: 4px solid #999999;
+	  border-left: 1px solid #CCCCCC;
+}
+
+.barraNavF {
+	color : #000000;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size : 12px;
+	font-weight : bold;
+	background-image: url(../imagenes/barracontrol_visor.gif);
+	background-repeat: no-repeat;
+	background-position: right center;
+	vertical-align: bottom;
+	background-color:transparent;
+}
+
+.barraMenu {
+          color            : white;
+	  background-color : white;
+	  font-family: Arial, Helvetica, sans-serif;
+	  font-size        : 10px;
+	  font-weight      : bold;
+          border-top: 1px none #CCCCCC;
+	  border-right: 1px none #FFC600;
+	  border-bottom: 4px none #999999;
+	  border-left: 1px none #CCCCCC;
+/*         filter:alpha(opacity=50, finishopacity=75, style=3); */
+}
+
+A         {color : #003333; text-decoration : none;}
+A:Visited {color : #3D735B; text-decoration : none;}
+A:Active  {color : #a3cfb8; text-decoration : none;}
+A:Hover   {color : #CC9933; text-decoration : underline; }
+
+.itemsHeader {
+       color : #2d5544;
+       background-color: #FFF7DE;
+       height: 24px;
+       text-align: center;
+       font-family: Arial, Helvetica, sans-serif;
+       font-size : 11px;
+       font-weight : bold;
+       border-top: 1px solid black;
+       border-right: 1px solid black;
+       border-left: 1px solid black;
+       border-bottom: 1px solid black;
+}
+
+.itemsMenu {
+       color : #2d5544;
+       background-color: #E6F2EB;
+       font-family: Arial, Helvetica, sans-serif;
+       font-size : 11px;
+       font-weight : bold;
+       border-top: 1px solid black;
+       border-right: 1px solid black;
+       border-left: 1px solid black;
+       border-bottom: 1px solid black;
+}
+
+.itemsMenu0 {
+       font-family: Arial, Helvetica, sans-serif;
+       font-size : 10px;
+       font-weight : bold; border-right: 1px none black;
+       border-top: 1px none black;
+       border-left: 1px solid black;
+       border-right: 1px solid black;
+       border-bottom: 1px none #E6F2EB;
+}
+
+.itemsMenu1 {
+       color : #ffffff;
+       background-color: white;
+       font-family: Arial, Helvetica, sans-serif;
+       font-size : 10px;
+       font-weight : bold;
+}
+
+.itemsMenu2 {
+       color : #CC0000;
+       background-color: white;
+       font-family: Arial, Helvetica, sans-serif;
+       font-size : 10px;
+       font-weight : bold;
+}
+
+.itemsMenu3 {
+       background-color: white;
+       font-size : 1px;
+       border-top: 1px none black;
+       border-left: 1px solid black;
+       border-right: 1px solid black;
+       border-bottom: 1px solid black;
+}
+
+A.itemsMenu         {color : #6489A0; text-decoration : underline;}
+A.itemsMenu:Visited {color : #6489A0; text-decoration : none;}
+A.itemsMenu:Active  {color : #6489A0; text-decoration : none;}
+A.itemsMenu:Hover   {color : #CC0000; text-decoration : none; }
+
+A.itemsMenu0         {color : #555555; text-decoration : none;}
+A.itemsMenu0:Visited {color : #555555; text-decoration : none;}
+A.itemsMenu0:Active  {color : #555555; text-decoration : none;}
+A.itemsMenu0:Hover   {color : black; text-decoration : none; background-color: #FFF7DE}
+
+
+A.itemsMenu1         {color : #555555; text-decoration : none;}
+A.itemsMenu1:Visited {color : #555555; text-decoration : none;}
+A.itemsMenu1:Active  {color : #555555; text-decoration : none;}
+A.itemsMenu1:Hover   {color : black; text-decoration : none; background-color: #FFF7DE}
+
+A.itemsMenu2         {color : #CC0000; text-decoration : none;}
+A.itemsMenu2:Visited {color : #CC0000; text-decoration : none;}
+A.itemsMenu2:Active  {color : #CC0000; text-decoration : none;}
+A.itemsMenu2:Hover   {color : #CC0000; text-decoration : none; background-color: #FFF7DE}

@@ -1,0 +1,103 @@
+/**
+ * Funcion que se ejecuta despues que es firmado un documento en el visor de formularios
+ */
+
+function onFirmado(isFirmado) {
+  document.formVisorFormulario.txtDocXmlFirmado.value = unaFirmaXML;
+  document.formVisorFormulario.firmaOK.value = isFirmado;
+}
+
+
+/**
+ * Funcion que se ejecuta cuando se loguea en el visor de formularios
+ */
+function onLogueo(isLoagueado, idePerRutRev, rolRev, lugarRevisor, unidAdmRevisor) {
+  if (isLoagueado) {
+    DPresentarFirmadoJS.firmar();
+    document.formVisorFormulario.idePerRutRev.value = idePerRutRev;
+    document.formVisorFormulario.lugarRevisor.value = lugarRevisor;
+    document.formVisorFormulario.rolRevisor.value = rolRev;
+    document.formVisorFormulario.unidAdmRevisor.value = unidAdmRevisor;
+  }
+}
+
+
+/**
+ * Funcion de carga anticipada de imagenes
+ */
+function Preload() {
+  var args = simplePreload.arguments;
+  document.imageArray = new Array(args.length);
+  for(var i=0; i<args.length; i++) {
+    document.imageArray[i] = new Image;
+    document.imageArray[i].src = args[i];
+  }
+}
+
+
+/**
+ * Funcion de mensaje de cargando en los procesos del visor
+ */
+function DMensajeEspera(){
+
+  var unHTML = "", posX = 0, posY = 0;
+
+  var  posXShadow = 0,posYShadow = 0;
+  if(ie){
+    posX = parseInt((document.body.clientWidth/2) + document.body.scrollLeft);
+    posY = parseInt((document.body.clientHeight/2) + document.body.scrollTop);
+  }
+  else{
+    posX = parseInt((window.innerWidth/2) + window.scrollX);
+    posY = parseInt((window.innerHeight/2) + window.scrollY);
+  }
+  posX = posX - (220)/2 >0 ? parseInt(posX - (220)/2) : 0;
+  posY = posY - (120)/2 >0 ? parseInt(posY - (120)/2) : 0;
+  posXShadow = posX+10;
+  posYShadow = posY+10;
+
+  unHTML += "<div id=\"divMensajeShadowEspera\" style=\"position:absolute; width:200px; height:100px; background-color:#999999; left:"+posXShadow+"px; top:" + posYShadow+"px;z-index:1;\" >";
+  unHTML += "</div>";
+  unHTML += "<div id=\"divMensajeEspera\" style=\"position:absolute;left:"+posX+"px; top:" + posY+"px;width:200px; height:100px; z-index:2; background-color:#fff; border:1px solid #336; border-color:#000000;display:;\" class=\"drag\">";
+
+  unHTML += "<table width=\"150\" border=\"0\">";
+  unHTML += "<tr>";
+  unHTML += "<td align=\"center\" valign=\"middle\"><img src=\"/WebEntradasalida/visor/imagenes/en_proceso.gif\" width=\"200\" height=\"100\" /></td>";
+  unHTML += "</tr>";
+  unHTML += "</table>";
+
+  unHTML += "</div>";
+
+  var tablaLayer, tbodyLayer, trLayer, tdLayer;
+
+  tablaLayer = document.createElement("TABLE");
+  tbodyLayer = document.createElement("TBODY");
+  trLayer = document.createElement("TR");
+  tdLayer = document.createElement("TD");
+  //tdLayer.id="tdFrameMensaje";
+
+  tdLayer.innerHTML = unHTML;
+
+  trLayer.appendChild(tdLayer);
+  tbodyLayer.appendChild(trLayer);
+  tablaLayer.appendChild(tbodyLayer);
+  document.body.appendChild(tablaLayer);
+}
+
+
+/**
+ * Funcion de cerrar mensaje de carga de los procesos del visor
+ */
+function cerrarMensajeEspera() {
+  document.getElementById('divMensajeShadowEspera').style.display = 'none';
+  document.getElementById('divMensajeEspera').style.display = 'none';
+}
+
+
+/**
+ * Factory de eventos presentar documento
+ */
+ function FactoryPresentaDoc() {
+    var formato = getAsString(DVisor.contexto.getIdFormato());
+    var versionFormat = getAsString(DVisor.contexto.getVersionFormato());
+ }

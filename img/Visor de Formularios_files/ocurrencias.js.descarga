@@ -1,0 +1,90 @@
+//<<documento.ocurrencias.js>>
+//Import("modelo.documento.casillas");
+
+DOcurrenciaJS = function DOcurrenciaJS(idOcurrencia){
+   //alert ("Constructor >> DOcurrenciaJS")
+   this.id = idOcurrencia;
+   this.casillas = new Array();
+   //-- Parte del Constructor
+
+   this.getId = function(){
+      return this.id;
+   }
+
+   this.refactorId = function(nuevaid){
+     this.id=nuevaid;
+      for (var c = 0; c < this.casillas.length; c++){
+         var casilla = this.casillas[c];
+         casilla.setIdOcurrencia(nuevaid);
+      }
+   }
+
+   //**Agrega una casilla. Recibe como parametro un objeto DCasilla*/
+   this.addCasilla = function(casilla) {
+      if (casilla && casilla.getId()){
+         this.casillas.push(casilla);
+         //this.casillas["ca_" + casilla.getId()] = casilla;
+      }
+   }//-- addCasilla()
+
+   this.removeCasilla = function(idCasilla) {
+      for (var c = 0; c < this.casillas.length; c++){
+         if (this.casillas[c].getId() == idCasilla){
+            this.casillas.splice(c, 1);
+         }
+      }
+      return this.casillas.length;
+   }//-- removeCasilla()
+
+   /**Obtiene una casilla segn su Id*/
+   this.getCasilla = function(idCasilla){
+      //return this.casillas["ca_" + idCasilla];
+      var casilla = null;
+      for (var c = 0; c < this.casillas.length; c++) {
+         if (this.casillas[c].getId() == idCasilla) {
+            return this.casillas[c];
+         }
+      }
+      return casilla;
+   }
+
+   /**Retorna un arreglo con los Ids de las casillas que contiene la ocurrencia*/
+   this.getIdCasillas = function(){
+      var idCasillas = new Array();
+
+      for (var c = 0; c < this.casillas.length; c++){
+         idCasillas.push(this.casillas[c].getId());
+      }
+      return idCasillas;
+   }//-- getIdCasillas()
+
+   this.getCasillas = function(){
+      return this.casillas;
+   }
+
+   this.getNumCasillas = function(){
+      return this.casillas.length;
+   }//-- getNumCasillas()
+
+
+}//-- DOcurrenciaJS
+
+DOcurrenciaJS.prototype.className = "DOcurrenciaJS";
+
+DOcurrenciaJS.prototype.toString=function(){
+   return this.toXml();
+}
+
+/**
+ * Convierte el contenido de la ocurrencia en un flujo Xml
+ */
+DOcurrenciaJS.prototype.toXml=function(){
+    if (this.casillas.length > 0) {
+        var xmlOcurrencia = "<oc id=\""+this.id+"\">\r\n";
+        for (var i=0; i< this.casillas.length; i++){
+            xmlOcurrencia += this.casillas[i].toXml();
+        }
+        xmlOcurrencia += "</oc>\r\n";
+    }
+    return xmlOcurrencia;
+}

@@ -1,0 +1,16 @@
+/**
+ * Recibe el nombre a mostrar de la seccion
+ * y el ancla para enlazarlo
+ */
+Seccion = function Seccion(nombre, ancla) {
+    this.nombre = nombre;
+    this.ancla = ancla;
+}
+
+Seccion.prototype.getNombre = function() {
+    return this.nombre;
+}
+
+Seccion.prototype.getAncla = function() {
+    return this.ancla;
+}

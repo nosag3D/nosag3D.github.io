@@ -1,0 +1,62 @@
+function DHandlerEventosTecladoJS(manejador){
+
+   /* Este Hash debe ser usdado para manejar las variables que necesite usar el manejador. */
+   this.variables=new Hashtable();
+
+   /* Inicia las variable requeridas por el manejador. */
+   this.iniciarVariables = function(){
+      /* Aqui se debe implementar la inicializacion de las variables requeridas para el proceso del evento. */
+   }
+
+   this.manejar = function(){
+      /* Aqui debe ir la logica necesaria para manejar
+       * el evento.
+       */
+   }
+
+   this.finalizarVariables = function(){
+      delete this.variables;
+   }
+
+}
+
+
+DGuardarJS.prototype=new DHandlerEventosTecladoJS();
+DGuardarJS.prototype.constructor=DGuardarJS;
+function DGuardarJS(){
+
+   this.iniciarVariables = function(){
+      this.variables.put('1','a');
+   }
+
+   this.manejar = function(){
+    parent.DVisor.guardar();
+   }
+}
+
+
+DNuevaCopiaJS.prototype=new DHandlerEventosTecladoJS();
+DNuevaCopiaJS.prototype.constructor=DNuevaCopiaJS;
+function DNuevaCopiaJS(){
+
+   this.iniciarVariables = function(){
+      this.variables.put('1','a');
+   }
+
+   this.manejar = function(){
+      alert('Creando copia de la pagina actual');
+   }
+}
+
+DSiguienteHojaJS.prototype=new DHandlerEventosTecladoJS();
+DSiguienteHojaJS.prototype.constructor=DSiguienteHojaJS;
+function DSiguienteHojaJS(){
+
+   this.iniciarVariables = function(){
+      this.variables.put('1','a');
+   }
+
+   this.manejar = function(){
+      parent.paginaSiguiente();
+   }
+}

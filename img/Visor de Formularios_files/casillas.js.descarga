@@ -1,0 +1,156 @@
+DCasillaJS = function DCasillaJS(idGrupo, idOcurrencia, idCasilla, val) {
+   //alert ("Constructor >> DCasillaJS")
+
+   this.idGrupo = idGrupo;
+   this.idOcurrencia = idOcurrencia;
+   this.id = idCasilla;
+   this.valor = val;
+
+   //this.setValor(val);
+
+   this.getId=function() {
+      return this.id;
+   }
+
+    this.setValor=function(val) {
+      this.valor = val;
+    }
+
+    this.getValor=function(){
+      return this.valor;
+    }
+
+    this.getIdGrupo=function(){
+      return this.idGrupo;
+    }
+
+    this.setIdOcurrencia=function(val){
+      this.idOcurrencia = val;
+    }
+
+    this.getIdOcurrencia=function(){
+      return this.idOcurrencia;
+    }
+
+    /**
+     * Si el valor no es la cadena true retorna false
+     * @return el valor booleano
+     */
+    this.getValorAsBoolean = function() {
+        return (this.valor == "true") ? true : false;
+    }
+
+    /**
+     * Convierte el contenido de la casilla en un flujo Xml
+     */
+    this.toXml = function() {
+      var val = cambiarCaracteresAXml(this.valor);
+      return "<cs id=\"" + this.id + "\" v=\"" + val +"\"/>\r\n";
+    }
+
+    /**
+     *
+     */
+    this.toString=function() {
+      return this.toXml();
+    }
+
+}
+DCasillaJS.prototype.className = "DCasillaJS";
+
+//------------------------------------------------------------------
+/**
+* DCasillaColumnaJS
+* */
+DCasillaColumnaJS = function DCasillaColumnaJS(idGrupo, idOcurrencia, idCasilla){
+
+   this.idGrupo = idGrupo;
+   this.idOcurrencia = idOcurrencia;
+   this.id = idCasilla;
+
+   this.valoresCasilla = new Array();
+   this.cursorFila = 0;
+
+   this.getId=function() {
+      return this.id;
+   }
+
+   this.setValor=function(val) {
+    if (this.cursorFila > 0) {
+      this.valoresCasilla[this.cursorFila - 1] = val;
+    }
+   }
+
+   this.getValor=function() {
+      return (this.cursorFila > 0 ? this.valoresCasilla[this.cursorFila - 1] : null);
+   }
+
+   this.getValoresCasilla = function(){
+      return this.valoresCasilla;
+   }
+
+   this.getIdGrupo=function(){
+     return this.idGrupo;
+   }
+
+   this.setIdOcurrencia=function(val){
+     this.idOcurrencia = val;
+   }
+
+   this.getIdOcurrencia=function(){
+     return this.idOcurrencia;
+   }
+}
+
+DCasillaColumnaJS.prototype.className = "DCasillaColumnaJS";
+
+DCasillaColumnaJS.prototype.toString=function() {
+   return this.toXml();
+}
+
+/**
+ * Convierte el contenido de la casilla en un flujo Xml
+ */
+DCasillaColumnaJS.prototype.toXml=function() {
+   var xmlCasilla = "<cc id=\"" + this.id + "\">\n";
+   for (var index =0; index <  this.valoresCasilla.length; index++){
+      var valor = this.valoresCasilla[index];
+      var val = cambiarCaracteresAXml(valor);
+      xmlCasilla += " <it id=\""+ (index+1) + "\" v=\"" + val +"\" />\n";
+   }
+   xmlCasilla += "\n</cc>";
+   return xmlCasilla;
+}
+
+/**
+ * Añade fila con valor nulo y ubica el cursor en dicha fila para que pueda
+ * ser modificada de una vez.
+ */
+DCasillaColumnaJS.prototype.addFila = function() {
+   this.valoresCasilla.push("");
+   this.cursorFila = this.valoresCasilla.length;
+   return this.cursorFila;
+}
+
+/**
+ * Retorna el Nmero de la fila actual
+ */
+DCasillaColumnaJS.prototype.getFilaActual=function() {
+   return this.cursorFila;
+}
+
+/**Retorna el valor contenido en la fila especificada.
+ * @param fila int: va desde 1..n, donde n es el nmero de filas
+ * @return boolean
+ */
+DCasillaColumnaJS.prototype.irA = function(fila) {
+   this.cursorFila = fila;
+   if (fila > 0 && fila <= this.valoresCasilla.length) {
+      return true;
+   }
+   return false;
+}
+
+DCasillaColumnaJS.prototype.getNumFilas = function() {
+   return this.valoresCasilla.length;
+}

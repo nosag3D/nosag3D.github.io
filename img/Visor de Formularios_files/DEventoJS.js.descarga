@@ -1,0 +1,13 @@
+DEventoJS = function DEventoJS(teclas, documento){
+
+   this.teclas = teclas;
+   this.documento = documento
+   
+   this.getDocumento = function(){
+      return this.documento;
+   }
+   
+   this.getTeclas = function(){
+      return this.teclas;
+   }
+}

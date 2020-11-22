@@ -1,0 +1,60 @@
+DEventosTecladoJS = function DeventosTecladoJS(forma){
+
+   this.inicializar = function() {
+      var elementoforma = null;
+      if(this.forma){
+         for(var i=0;i<this.forma.length;i++){
+         elementoforma = this.forma.elements[i];
+         elementoforma.keyup = register;
+        }
+      }
+   }
+
+    if(forma) {
+      this.forma = forma;
+      document.onkeyup = register;
+      this.inicializar();
+    }
+}
+
+function register(e){
+   var cadenaEvento = '';
+   var manejador = null;
+
+   if (!e)
+      e = window.event;
+
+   var tecla = String.fromCharCode(e.keyCode);
+
+   if(e['ctrlKey'])
+      cadenaEvento += 'CTRL+';
+   if(e['altKey'])
+      cadenaEvento += 'ALT+';
+   if(e['shiftKey'])
+      cadenaEvento += 'SHIFT+';
+
+   cadenaEvento += tecla;
+   cadenaEvento = cadenaEvento.toUpperCase();
+
+   if(e['ctrlKey'] || e['altKey']){
+      evento = new DEventoJS(cadenaEvento, parent.DVisor.docCopia);
+      manejador = DHandlerEventosTecladoFactoryJS.getHandler(cadenaEvento);
+      manejador.manejar(evento);
+
+   }
+}
+
+
+// bloquea la tecla f5 para no refrescar el browser
+    document.onkeydown = function(e){
+        if(window.event){
+          if(window.event.keyCode == 116){
+             window.event.keyCode = 505;
+          }
+          if(window.event.keyCode == 505){
+            return false;
+          }
+        } else if(e.which && e.keyCode == 116){
+          return false;
+        }
+    }

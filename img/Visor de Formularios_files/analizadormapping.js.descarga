@@ -1,0 +1,77 @@
+Import ("general.Hashtable");
+
+DAnalizadorMappingJS = function DAnalizadorMappingJS(mappEventos){
+
+
+   /* INICIALIZA CONSTRUCTOR
+    *
+    * Analiza la matriz de mapping de eventos y la organiza en un hastable de hashtables, asi:
+    *
+    * defEventos = '24:0{1,2}1{3,4}','25:0{1,2}'
+    *
+    * {(24) -> {(0)->[1,2] (1)->[3,4]}
+    *  (25) -> {(0)->[1,2]}
+    * }
+    *
+    */
+   this.analizarEventos = function(cadena,tipo,casilla,evento){
+      //recupera casilla
+      if(tipo==0){
+         this.cas = cadena.substring(0,cadena.indexOf(':'));
+         this.subCad = cadena.substring(cadena.indexOf(':')+1,cadena.length);
+         this.eventos.put(this.cas,new Hashtable());
+         this.analizarEventos(this.subCad,1,this.cas);
+      }else
+      //recupera evento
+      if(tipo==1){
+         this.ev = cadena.substring(0,cadena.indexOf('{'));
+         this.subCad = cadena.substring(cadena.indexOf('{')+1,cadena.length);
+         this.analizarEventos(this.subCad,2,casilla,this.ev)
+      }else
+      //recupera manejadores
+      if(tipo==2){
+        //aisla la cadena de manajadores '1,2,3' y crea un arreglo
+        this.arrMan = cadena.substring(0,cadena.indexOf('}')).split('->');
+        //obtiene hashtable de la casilla
+        this.htCasEv = this.eventos.get(casilla);
+        //fija en el hastable de la casilla el arreglo de manejadores con el evento como key
+        this.htCasEv.put(evento,this.arrMan);
+        //recorta la cadena para continuar con el siguiente evento
+        this.subCad = cadena.substring(cadena.indexOf('}')+1,cadena.length);
+        //quedan eventos
+        if(this.subCad.length>0){
+           this.analizarEventos(this.subCad,1,casilla,'');
+        }else{
+           return;
+        }
+     }
+   }
+
+   this.eventos = new Hashtable();
+
+   //Arreglo que contendra objetos de tipo DTOCasillaJS
+   this.mappEventos=mappEventos;
+
+   for(var i=0;i<this.mappEventos.length;i++){
+      this.analizarEventos(this.mappEventos[i],0,'','');
+   }
+
+   /* FINALIZA CONSTRUCTOR  */
+
+   this.getCasillas = function(){
+      return this.eventos.keys();
+   }
+
+   this.getEventos = function(casilla){
+      if (!this.eventos.get(casilla).keys) {
+          alert(this.eventos);
+      }
+      return this.eventos.get(casilla).keys();
+   }
+
+  this.getManejadores = function(casilla,evento){
+      return this.eventos.get(casilla).get(evento);
+   }
+
+
+}

@@ -1,0 +1,142 @@
+/**
+ * DDDobleDigitacionJS clase que permite adicionar un layer para la confirmacion
+ * de digitacion (doble digitacion) al visor.
+ */
+
+
+DDDobleDigitacionJS = function DDDobleDigitacionJS () {
+
+    this.objCas = null;
+    this.textoCasilla = null;
+    this.textoTooltip = null;
+
+    /** inicializar: Metodo inicializar.
+    *
+    * param objCas la casilla a la cual queremos adicionar el layer de confirmacion.
+    *
+    */
+    this.inicializar = function(objCas, textoCasilla) {
+        this.objCas = objCas;
+
+        // Texto de guia para digitador
+        if(!textoCasilla){
+
+          this.textoCasilla = "Casilla " + objCas.id + ": " + objCas.value;
+        }
+
+        this.textoTooltip = this.IUToolTip();
+    }
+
+    // Muestra el tooltip
+    this.mostrarTooltip = function() {
+        this.tooltip = toolTip(this.objCas, this.textoTooltip, this.textoCasilla, {bgColor: '#F1FDDF'});
+
+    }
+
+    //Este metodo tiene por Objeto retornar el cuerpo del Iframe
+    //que servira para validar la doble digitacion.
+    this.IUToolTip = function(){
+        var nombreCasilla = this.objCas.id;
+        var digitacion_1 = this.objCas.value;
+        var tabIndex = this.objCas.tabIndex;
+
+        var tooltipText = "<div id=\"header\">Encabezado</div>" +
+            "<div id=\"body\" style>" +
+            "<input name=\"dd\" id=\"dd\" type=\"text\"  onchange=\"iniciarValidacion();\" "+
+            "value\"0\" onKeyUp=\"cambiarTabIndex();\" onblur=\"verificarVacio();\">"+
+            "<input name=\"valor1\" id=\"valor1\" type=\"hidden\" value=\""+digitacion_1+"\" >" +
+            "<input name=\"nombreCasilla\" id=\"nombreCasilla\" type=\"hidden\" value=\""+nombreCasilla+"\">" +
+            "<input name=\"sigElemento\" id=\"sigElemento\" type=\"hidden\" value=\""+tabIndex+"\">" +
+            "</div> <div id=\"footer\">Pie</div>";
+
+        return tooltipText;
+    }
+
+    this.validarDigitacion = function(){
+        //Metodo que valida la doble digitacion y determina
+        //el siguiente comportamiento
+
+        var valor1 = document.getElementById('valor1');
+        var sigElemento = parseInt(document.getElementById('sigElemento').value)+1;
+        var casilla = null;
+        var validador = new DDDobleDigitacionJS();
+
+
+        var casillaActual = document.getElementById('dd');
+
+
+        if(valor1.value != casillaActual.value){
+            alert("Los valores de las casillas son diferentes");
+            casillaActual.focus();
+            casillaActual.value = '';
+        }else{
+            casilla = validador.getNextTab(sigElemento);
+            //document.getElementById('cas'+sigElemento);
+            casillaActual.setAttribute('tabIndex', '-1');
+            toolTip();
+
+            casilla.select();
+
+            casilla.focus();
+        }
+    }
+
+    this.cambiarTabIndex = function(){
+
+        var valor1 = document.getElementById('valor1');
+        var sigElemento = document.getElementById('sigElemento');
+        var casilla = null;
+
+        var casillaActual = document.getElementById('dd');
+
+
+        if(valor1.value == casillaActual.value){
+            casillaActual.setAttribute('tabIndex', sigElemento.value);
+        }
+    }
+
+    this.verificarVacio = function(){
+        var nomcasilla = document.getElementById('nombreCasilla');
+        var sigElemento = document.getElementById('sigElemento');
+
+        var casillaActual = document.getElementById('dd');
+        var casillaOriginal = document.getElementById(nomcasilla);
+
+        if(casillaActual.value == ''){
+
+            casillaActual.focus();
+        }
+    }
+
+    this.getNextTab = function(tabindexCasilla){
+        var nextTab = tabindexCasilla;
+        var casilla = null;
+
+        for(i=0; i<document.forms[0].elements.length; i++){
+            casilla = document.forms[0].elements[i];
+
+            if(casilla.tabIndex == nextTab){
+                return casilla;
+            }
+        }
+    }
+
+}
+
+iniciarValidacion = function(){
+    var validador = new DDDobleDigitacionJS();
+    setTimeout(validador.validarDigitacion, 100);
+
+}
+
+cambiarTabIndex = function(){
+    var validador = new DDDobleDigitacionJS();
+    validador.cambiarTabIndex();
+}
+
+verificarVacio = function(){
+    var validador = new DDDobleDigitacionJS();
+    setTimeout(validador.verificarVacio, 100);
+
+}
+

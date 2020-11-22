@@ -1,0 +1,1043 @@
+/*
+ *  Se adiciona el archivo mascaratexto.js para formatear los numeros en las casillas
+ *  con el formato ###,### (separados de miles con la coma )
+ */ 
+document.write("<SCRIPT src=\"/WebEntradasalida/visor/js/general/mascaratexto.js\" type=\"text/javascript\"></script>");
+
+//Constructor principal de la clase
+DMediadorJS = function DMediadorJS(mappEventos, forma){
+   //Arreglos para registrar las validaciones de documento
+   this.arrEventosCasillaIni = new Array();
+   this.arrEventosCasillaFin = new Array();
+   this.activaciones = new DActivacionesJS();
+
+    /**Indica si el comportamiento de la casilla ha sido definido en la matriz con el evento y el manejador
+     * especificados. El evento y el manejador son opcionales, si llegan en null no se tienen en cuenta, de tal manera que las
+     * validaciones que se pueden hacer son:
+     *
+     * ï¿½Hay un comportamiento para la casilla?
+     * ï¿½El comportamiento de la casilla incluye el evento dado?
+     * ï¿½El comportamiento de la casilla incluye para ese evento el manejador dado?
+     */
+   this.casillaDefinida = function (idCasilla, evento, manejador) {
+    var definida = false;
+    var strComp = '';
+    var strEvento = '';
+    var strManejadores = '';
+
+    for (var i=0;i<this.eventos.length && !definida;i++) {
+      strComp = this.eventos[i];
+      //Evalua si esta la casilla
+      if (strComp.substring(0, strComp.indexOf(':')) == idCasilla) {
+        definida = true;
+        //ï¿½Se debe validar el evento?
+        if (evento) {
+          //Evento inicial, pe: '24:3{4->5->6}'  es decir ':3{'
+          strEvento = (strComp.indexOf(':' + evento + '{') != -1) ? ':' + evento + '{' : '';
+          //Evento intermedio '24:2{4->5->6}3{6->7}'  es decir '}3{'
+          strEvento = (strEvento == '' && strComp.indexOf('}' + evento + '{') != -1) ? '}' + evento + '{' : strEvento;
+
+          //Si el evento esta
+          if (strEvento != '') {
+              //ï¿½Se debe validar el manejador?
+              if (manejador) {
+                //Indentifica el inicio y fin de los manejadores del evento.
+                var indIni = strComp.indexOf(strEvento) + strEvento.length;
+                var indFin = indIni;
+                while (strComp.charAt(indFin) != '}') {
+                  indFin++;
+                }
+                strManejadores = strComp.substring(indIni - 1, indFin + 1);
+                //Si el manejador no esta
+                if (strManejadores.indexOf('{' + manejador + '->') == -1 &&
+                    strManejadores.indexOf('{' + manejador + '[') == -1 &&
+                    strManejadores.indexOf('->' + manejador + '[') == -1 &&
+                    strManejadores.indexOf('->' + manejador + '->') == -1 &&
+                    strManejadores.indexOf('{' + manejador + '}') == -1) {
+                  definida = false;
+                }
+              }
+          }
+          //Si el evento NO esta
+          else {
+            definida = false;
+          }
+        }
+      }
+    }
+
+    return definida;
+   }
+
+    //Modifica la cadena de comportamiento de una casilla en el arreglo eventos.
+    this.modificarComportamientoCasilla = function(posCasilla, idEvento, idManejador, paramManejador) {
+      var cadEventos = new Array(':' + idEvento + '{','}' + idEvento + '{');
+      var cadManejador = idManejador + ((paramManejador != '')?'[' + paramManejador + ']':'');
+
+      if (this.eventos[posCasilla].indexOf(cadEventos[0]) != -1) {
+        this.eventos[posCasilla] = this.eventos[posCasilla].replace(cadEventos[0], cadEventos[0] + cadManejador + '->');
+      } else if (this.eventos[posCasilla].indexOf(cadEventos[1]) != -1) {
+        this.eventos[posCasilla] = this.eventos[posCasilla].replace(cadEventos[1], cadEventos[1] + cadManejador + '->');
+      } else {
+        this.eventos[posCasilla] += idEvento + '{' + cadManejador + '}';
+      }
+    }
+
+   /**
+    * Adiciona un comportamiento en todas las casillas que aplique.
+    */
+   this.adicionarComportamiento = function (idEvento, idManejador, paramManejador) {
+      
+	   for (var i=0; i < this.eventos.length; i++) {
+    	    	this.modificarComportamientoCasilla(i, idEvento, idManejador, paramManejador);
+      }
+   }
+
+   /**
+    * Adiciona un comportamiento en una casilla especifica.
+    */
+   this.adicionarComportamientoCasilla = function (idCasilla, idEvento, idManejador, paramManejador) {
+      var i = 0;
+      while (this.eventos[i].substring(0, this.eventos[i].indexOf(':')) != idCasilla) {
+        i++;
+      }
+      this.modificarComportamientoCasilla(i,idEvento, idManejador, paramManejador);
+   }
+
+    /**
+     * Ajusta el comportamiento de los change a un blur adicionando un manejador al inicio que
+     * identifica si hubo cambios en el valor de la casilla. pe:
+     *
+     * 43:2{0->4->10} se convierte en 43:1{56->0->4->10}
+     *
+     * Esto es necesario solo en IE.
+     */
+   this.manejarChangeIE = function() {
+      var idCasilla = '';
+      var defChange = new Array(':2{','}2{');
+      var ajuste = new Array(':1{56->','}1{56->');
+
+      for (var i=0; i < this.eventos.length; i++) {
+          for (var j=0; j < defChange.length; j++) {
+            this.eventos[i] = (this.eventos[i].indexOf(defChange[j]) != -1)?
+              this.eventos[i].replace(defChange[j], ajuste[j])
+              :this.eventos[i];
+          }
+      }
+   }
+
+   /**
+    * Controla el uso del evento blur en el formulario.
+	*/
+   this.controlarBlur = function() {
+      var defBlur = new Array(':1{','}1{');
+
+      for (var i=0; i < this.eventos.length; i++) {
+          for (var j=0; j < defBlur.length; j++) {
+            if (this.eventos[i].indexOf(defBlur[j]) != -1) {
+				mostrarError('Esta manejando el evento blur en la casilla: ' + this.eventos[i].substring(0, this.eventos[i].indexOf(':')) + '. Este evento es de uso interno.');
+			}
+          }
+      }
+   }
+
+   /**
+    * Muestra el mensaje de entrada al Visor.
+	*/
+   this.mostrarMensajeEntrada = function() {
+      var unaFabricaMensajes = new parent.DFabricaMensajes();
+      var DVisor = parent.DVisor;
+      var formato = DVisor.contexto.getIdFormato();
+      var observaciones = "";
+      //TODO En la definicion se deberia saber si se redondea o no.
+      if(formato != 532 && formato != 520 && formato != 540 && formato != 690 && formato != 50){
+	var observaciones = "<br>Observaciones:<br>-Todas las casillas que contengan cifras de dinero serán redondeadas al mil mas cercano.";
+      }
+
+       if(formato != 1 && formato > 19){
+           var unMensaje = unaFabricaMensajes.getMensaje(0,parent.COD_TIPO_INFO, "DILIGENCIAMIENTO DE FORMULARIOS","Esta pantalla le permite diligenciar los formularios que la DIAN ofrece.<br>"+observaciones,"","");
+           miGestorMensajes.limpiarMensajes();
+           miGestorMensajes.agregarMensaje(unMensaje);
+           miGestorMensajes.mostrarMensaje();
+       }
+   }
+
+   this.definirCompGenerico = function(){
+   	   this.mostrarMensajeEntrada();
+   	   this.controlarBlur();
+       //Maneja change en IE
+	   var IE = document.all;
+       if (IE) {
+          this.manejarChangeIE();
+       }
+
+	  //Adiciona comportamiento para resaltar casilla actual.
+      this.adicionarComportamiento('7','33','in');
+      this.adicionarComportamiento('1','33','out');
+      
+      //Adiciona comportamiento para manejo de mascara del texto de la casilla actual 
+      //Evento keydown(8), manejador DManejadorIsAllowKeyPress(67)      
+      this.adicionarComportamiento('8','67','in'); 
+      
+      //Adiciona comportamiento para manejo de mascara del texto de la casilla actual 
+      //Evento keyUp(10), manejador DManejadorObtenerKeyPress(68)
+      this.adicionarComportamiento('10','68','in'); 
+      
+      
+      //Inicializacion generica
+      for(var i=0;i<this.forma.elements.length;i++){
+         var casilla = this.forma.elements[i];
+         var esCasilla = casilla.id.indexOf('cas')!=-1;
+         var esDescripcion = casilla.id.indexOf('des')!=-1;
+         var esCheckBox = casilla.type=='checkbox';
+         var numCasilla = getNumber(casilla);
+         var esCasilla = casilla.id.indexOf('cas')!=-1;
+         var esDescripcion = casilla.id.indexOf('des')!=-1;
+
+         //Inicializa las casillas
+         if (esCasilla || esDescripcion) {
+            initialize(casilla);
+         }
+         //Comportamiento para checks
+         if (esCheckBox && !this.casillaDefinida(numCasilla, null)) {
+            this.eventos.push(numCasilla + ':3{13->10}');
+         }
+         //Inicializaciï¿½n para casillas que solo necesitan ayuda sin bï¿½squeda.
+         //Valida que el elemento sea una casilla que la variable del texto de ayuda exista y que no haya
+         //un comportamiento de busquedas para  la casilla.
+         if (esCasilla) {
+           try{
+              //Hay una ayuda para la casilla
+              eval('cas' + numCasilla + 'Ayuda');
+              //Si hay comportamiento definido para la casilla
+              if (this.casillaDefinida(numCasilla,null,null)) {
+		if (!this.casillaDefinida(numCasilla,'15','18')) {
+                	this.adicionarComportamientoCasilla(numCasilla, '15', '18', ';;;;3');
+		}
+              }
+              //No hay comportamientos para la casilla
+              else {
+                //3 es layout de solo ayuda
+                this.eventos.push(numCasilla + ':15{18[;;;;3]}');
+              }
+
+           } catch(e) {
+              //No hay ayuda para esta casilla, la variable de nombre 'cas' + numCasilla + 'Ayuda' no existe
+           }
+         }
+         //Adiciona comportamiento para avanzar a la siguiente casilla con ENTER
+         if (esCasilla) {
+            if (this.casillaDefinida(numCasilla,null,null)) {
+              if (!this.casillaDefinida(numCasilla,'9','53')) {
+                this.adicionarComportamientoCasilla(numCasilla, '9', '53', '');
+              }
+            }
+            //No hay comportamientos para la casilla
+            else {
+              this.eventos.push(numCasilla + ':9{53}');
+            }
+         }
+         //Jsutificaciï¿½n a la derecha de casillas numï¿½ricas
+         if (esCasilla) {
+            if (casilla.getAttribute('tdato') == 'EN') {
+              casilla.style.textAlign = 'right';
+            }
+         }
+      }
+   }
+
+   //Forma de la hoja actual
+   this.forma = forma;
+   //Arreglo con el mapping de los eventos
+   this.eventos=mappEventos;
+   this.definirCompGenerico();
+   this.analizador= new DAnalizadorMappingJS(this.eventos);
+
+   this.update = function(controlador) {
+      var prefijoNombre = controlador.getTipo();
+
+      var fachadaVisor = parent.fachadaVisor;
+      var doc = controlador.getDocumento();
+      var hojaActual = fachadaVisor.getHojaActual() + 1;
+      var copiaActual = fachadaVisor.getCopiaActual() + 1;
+
+      // El codigo a continuacion sirve para obtener un arreglo de todas
+      // las casillas que pertenecen a una ocurrencia de un grupo
+      var casillas = new Array();
+      var grupo = doc.getGrupoByID(hojaActual);
+      if (grupo != null) {
+          var ocurrencia = grupo.getOcurrencia(copiaActual);
+          if (ocurrencia != null) {
+              casillas = ocurrencia.getCasillas();
+          }
+      }
+
+      for(var i=0; i<casillas.length; i++){
+        var casilla = casillas[i];
+        var nomcasilla = prefijoNombre + casilla.getId();
+        var casForm = document.getElementById(nomcasilla);
+        if (casForm) {
+            var valCasDoc = casilla.getValor();
+            //Si en la forma la casilla tiene un valor diferente al del documento,
+            //actualiza el documento
+            //--if (casForm.value != valCasDoc) {
+            if (casForm.getValor() != valCasDoc) {
+                //--casForm.value = valCasDoc;
+            	casForm.setValor(valCasDoc);
+            }
+        }
+      }
+   }
+
+   //Recorre las casillas y eventos para la adiciï¿½n de los eventos.
+   this.addListeners = function() {
+      var casillas = this.analizador.getCasillas();
+      var cadDec = '';
+      var cadObj = '';
+      var DVisor = parent.DVisor;
+      
+
+      //Recorre las casillas con eventos en el mapping
+      for (var i=0;i<casillas.length;i++){
+         var eventosCas = this.analizador.getEventos(casillas[i]);
+         //Recorre los eventos de una casillas especifica
+         for(var j=0;j<eventosCas.length;j++){
+            var manejadoresEvCas = this.analizador.getManejadores(casillas[i],eventosCas[j]);
+            
+                   
+            var evCas = new DEventoCasilla(casillas[i],eventosCas[j],manejadoresEvCas);
+            
+                       
+            /**Define el curso que debe seguir el evento creado:
+             * Si el evento es el 11 (load), se debe manejar como validador de documento al inicio.
+             * Si el evento es el 22 (unload), se debe manejar como validador de documento al final.
+             * En cualquier otro caso se adiciona el evento a la casilla correspondiente.
+             */
+            switch (eventosCas[j]) {
+            
+            	case "11":
+                    var evCasAux = new parent.DEventoCasillaLiviano(evCas.getNumCasilla(),evCas.getNumEvento(),
+                    evCas.getManejadores());
+                    this.arrEventosCasillaIni.push(evCasAux);
+                    break;
+                case "22":
+                    var evCasAux = new parent.DEventoCasillaLiviano(evCas.getNumCasilla(),evCas.getNumEvento(),
+                    evCas.getManejadores());
+                    this.arrEventosCasillaFin.push(evCasAux);
+                    break;
+                default:
+                    this.addListener(evCas);
+            }
+
+         }
+         
+         /*if(document.getElementById("cas"+casillas[i]).getAttribute("patron")){
+     		this.adicionarMascara("cas"+casillas[i]);
+         }*/
+         
+      }
+      DVisor.validadorDocumentoIni.addValidacionesGrupo(ID_GRUPO, this.arrEventosCasillaIni);
+      DVisor.validadorDocumentoFin.addValidacionesGrupo(ID_GRUPO, this.arrEventosCasillaFin);
+
+      //estos dos metodos tienen por objeto adicionar un observador al
+      //documento y actualizar el observador
+      DVisor.controlador.clearObservadores();
+      DVisor.controlador.addObserver(this);
+      DVisor.controladorDescripciones.clearObservadores();
+      DVisor.controladorDescripciones.addObserver(this);
+
+      /**
+       * Ejecuta las validaciones iniciales de casillas (evento 11), si es necesario parametrizar
+       * su ejecuciï¿½n podrï¿½a hacerse a travï¿½s del contexto del visor.
+       */
+      DVisor.validarInicioDoc();
+
+      //Aqui se agregan las activaciones si es que hay tales
+      this.activaciones.activar();
+   }
+
+   //Ubica las casillas y solicita a Evento la adiciï¿½n de un evento.
+   this.addListener = function(eventoCasilla){
+      var htmlElement;
+      //Es una casilla sencilla
+      
+      if(this.forma[eventoCasilla.getNombreCasilla()]){
+         addEvent(eventoCasilla);
+      }
+      //Es una casilla columna, y se requiere asignar el evento a
+      //todos sus items.
+      else{
+         var flag = true;
+         var itCont=1;
+            //Nombre de la casilla que pertenece a una columna
+            do{
+               var numCas = eventoCasilla.getNumCasilla() + '_' + itCont;
+               var nomCas = eventoCasilla.getNombreCasilla() + '_' + itCont;
+
+               //con este if controlamos el numero de casillas columnas a las cuales queremos
+               //vincular eventos. Esto remplaza una clausula try {...} catch() {...} anterior
+               if(this.forma[nomCas]){
+                  var evCas = new DEventoCasilla(numCas, eventoCasilla.getNumEvento(), eventoCasilla.getManejadores());
+                  addEvent(evCas);
+                  itCont++;
+               } else { flag  = false; }
+
+
+            }while(flag);
+      }
+   }
+
+   /*this.adicionarMascara = function(nombreCasilla){
+	      var htmlElement;
+	      //Es una casilla sencilla
+	      if(this.forma[nombreCasilla]){
+	    	  
+	    	var unaMascara = new Mask(document.getElementById(nombreCasilla).getAttribute("patron"),document.getElementById(nombreCasilla).getAttribute("tipoPatron"));
+	     	document.getElementById(nombreCasilla).setMascara(unaMascara);
+	      }
+   }*/
+   
+}
+
+/* Clase que maneja la definiciï¿½n de un evento de una casilla.
+ */
+DEventoCasilla = function(casilla,evento,manejadores){
+   this.casilla=casilla;
+   this.evento=evento;
+   this.manejadores=manejadores;
+
+   this.getNombreCasilla = function(){
+      return 'cas'+this.casilla;
+   }
+
+   this.getNumCasilla = function(){
+      return this.casilla;
+   }
+
+   this.getEvento = function(){
+      return EVENTOS.get(this.evento);
+   }
+
+   //Obtiene el evento pero le agrega el prefijo on para
+   //compatibilidad con Internet Explorer
+   this.getIEEvento = function(){
+      return 'on'+EVENTOS.get(this.evento);
+   }
+
+   //Retorna el nombre del objeto que contiene el manejador inicial
+   this.getNomManejador = function(){
+      return this.getEvento()+casilla;
+   }
+
+   this.getManejadores = function(){
+      return this.manejadores;
+   }
+
+   this.getNumEvento = function(){
+      return this.evento;
+   }
+
+   this.setEventos = function(arrEventos){
+     EVENTOS = arrEventos;
+   }
+
+   this.setManejadores = function(arrManejadores){
+     MANEJADORES = arrManejadores;
+   }
+
+   /* Genera el cï¿½digo que instancia los Menjadores, asï¿½:
+    * 'var change24 = new DValEntero(new DActDocumento());'
+    */
+   this.getCadenaDecoradores = function(){
+
+      //Cadena que contiene el codigo para instanciar los manejadores
+      var cadDec = 'var ' + this.getEvento() + casilla + ' = ';
+      //Recorre los manejadores de un evento de una casilla
+      for(var k=0;k<manejadores.length;k++){
+         var cadParam = manejadores[k];
+         if(manejadores[k].indexOf('[')!=-1){
+            var cadNumMan = cadParam.substring(0,cadParam.indexOf('['));
+            cadParam = (k<manejadores.length-1?',':'null,') + "'" + cadParam.substring(cadParam.indexOf('[')+1,cadParam.indexOf(']')) + "'" ;
+            //Cadena que contiene el codigo para iniciar el manejador que recibe una expresiï¿½n
+            var subCadDec = 'new ' + MANEJADORES.get(cadNumMan) + '(' + cadParam + ')';
+         }else{
+            //Cadena que contiene el codigo para iniciar un manejador tï¿½pico
+            var subCadDec = 'new ' + MANEJADORES.get(manejadores[k]) + '()';
+         }
+         //Si la cadena ya contiene el manejador inicial
+         if(cadDec.charAt(cadDec.length-1) == ';'){
+            cadDec=cadDec.substring(0,cadDec.lastIndexOf('JS(')+3) + subCadDec +
+            cadDec.substring(cadDec.lastIndexOf('JS(')+3, cadDec.length);
+         }
+         //Se registra el manejador inicial
+         else {
+            cadDec = cadDec + subCadDec + ';';
+         }
+      }
+      return cadDec;
+   }
+}
+
+/**
+ * Funcion para el manejo de activaciones de casillas
+ */
+function DActivacionesJS() {}
+DActivacionesJS.prototype = {
+
+  /**
+   * Obtiene la matriz de activaciones y realiza las activaciones respectivas
+   */
+  activar: function () {
+    var matActivacion = obtenerMatrizActivacion();
+    matActivacion = this.evaluarSentencia(matActivacion);
+
+//    var matActPost = DVisor.contexto.getParametro(DContextoJS.MATRIZ_ACTIVACION_POST);
+//    if (isObject(matActPost) && matActPost.constructor == Array) {
+//
+//    }
+
+    for(var i=0;i<matActivacion.length;i++) {
+      var exp = matActivacion[i];
+      //var condicion = this.parseCondicion(exp.substring(0,exp.indexOf(')')+1));
+      var condicion = this.parseCondicion(exp.substring(0,exp.indexOf('?')));
+      var razon = this.parseRazon(exp.substring(exp.indexOf('?')+1, exp.length));
+      var parseString = condicion + razon + '}';// + condicion + '{';
+      eval(parseString);
+    }
+  },
+
+  /**
+   * Verifica si una casilla columna fue referenciada de forma general (sin referencia a item),
+   * en la condiciï¿½n, en la razï¿½n o en ambas.
+   * - Si la condiciï¿½n referencia una casilla simple pero en la razï¿½n hay casillas columna genera activaciones
+   * iterando sobre los items en las casillas de la razï¿½n.
+   * - Si la condiciï¿½n referencia una casilla columna genera activaciones iterando sobre los items tanto en
+   * las casillas de la condiciï¿½n como en las casillas de la razï¿½n.
+   * Las casillas columnas referenciadas de manera general deben ser compatibles, debe tener el mismo nï¿½mero
+   * de items para generar activaciones equivalentes.
+   */
+  evaluarSentencia: function(matActivacion){
+    var activaciones = new Array();
+
+    for(var i=0;i<matActivacion.length;i++) {
+      var cambio = false;
+      var exp = matActivacion[i];
+      var expCondicion = exp.substring(0,exp.indexOf('?'));
+      var expRazon = exp.substring(exp.indexOf('?')+1, exp.length);
+
+      // Verifica que no haya referencia a items individuales
+      if(expCondicion.indexOf("_")== -1 && expRazon.indexOf("_")== -1){
+        var numItems = this.getItemsCasColumna(expCondicion, true);
+        var numItemsRazon = this.getItemsCasColumna(expRazon, false);
+
+        // Es una casilla columna, crea activaciones para cada item en condiciï¿½n y razï¿½n.
+        if(numItems != -1){
+          var condicion = this.ubicarCasillasColumna(expCondicion);
+
+          if(numItemsRazon != -1) {
+            var razon = this.ubicarCasillasColumna(expRazon);
+            // Agrega nuevos elementos a la matriz para los items siguientes.
+            for(var j=1; j<=numItems; j++){
+              activaciones.push(condicion.replace(/[_It]+/g,"_"+j)+"?"+razon.replace(/[_It]+/g,"_"+j));
+              cambio = true;
+            }
+	  }
+        }
+        // Es una casilla simple, verifica si en la razï¿½n hay casillas columna.
+        // Deja la condiciï¿½n intacta y crea activaciones para cada item en la razï¿½n.
+        else {
+          if(numItemsRazon != -1){
+            var razon = this.ubicarCasillasColumna(expRazon);
+            // Agrega nuevos elementos a la matriz para los items siguientes.
+            for(var j=1; j<=numItemsRazon; j++){
+              activaciones.push(expCondicion+"?"+razon.replace(/[_It]+/g,"_"+j));
+              cambio = true;
+            }
+          }
+        }
+      }
+      if (!cambio){
+        activaciones.push(exp);
+      }
+    }
+    return activaciones;
+  },
+
+  /**
+   * Obtiene el nï¿½mero de items para la primera casilla en la expresiï¿½n
+   * -1 si no es casilla columna o no existen items en el documento.
+   */
+  getItemsCasColumna: function(expresion, condicion){
+    var numItems = -1;
+    if (expresion.indexOf('#')!=-1) {
+      var indIni = expresion.indexOf('#')+1;
+      var indFin = indIni;
+      var val = expresion.charAt(indIni);
+
+      while(val.isDigit() || val == '.') {
+        val = expresion.charAt(indFin++);
+      }
+      var cadenaCasilla = expresion.substring(indIni,indFin-1);
+      var arrCasilla = cadenaCasilla.split(/[.]/);
+
+      var casilla = null;
+      var numGrupo = null;
+      var numOcurrencia = null;
+      var numCasilla = null;
+
+      switch(arrCasilla.length) {
+      // Es del tipo #98
+      case 1:
+        numCasilla = arrCasilla[0];
+        casilla = getCasillaFormato(numCasilla);
+        break;
+      // Es del tipo #1.98
+      case 2:
+        numGrupo = arrCasilla[0];
+        numCasilla = arrCasilla[1];
+        casilla = getCasillaFormatoAbsoluto(numGrupo, numCasilla);
+        break;
+      // Es del tipo #1.1.98
+      case 3:
+        numGrupo = arrCasilla[0];
+        numOcurrencia = arrCasilla[1];
+        numCasilla = arrCasilla[2];
+        casilla = getCasillaFormatoAbsoluto(numGrupo, numCasilla);
+        break;
+      }
+      if(casilla){
+        if(casilla.className == "DFormatoCasillaColumnaJS"){
+          // Si analiza la condiciï¿½n busca en el modelo
+          if(condicion){
+            if(numGrupo != null && numOcurrencia != null){
+              numItems =  parent.DVisor.controlador.getNumItemsFromCasAbsoluto(numGrupo, numOcurrencia, numCasilla);
+            }
+            else {
+              numItems =  parent.DVisor.controlador.getNumItemsFromCas(numCasilla);
+            }
+            // No existen items de la casilla columna en el documento, pero se trata de una casilla
+            // columna en la hoja actual, asume la activaciï¿½n para los items que existen en la vista.
+            if(numItems == -1 && document.getElementById('cas' + numCasilla + '_1')){
+              numItems = 0;
+              while(document.getElementById('cas' + numCasilla + '_' + (numItems+1))){
+                numItems++;
+              }
+            }
+          }
+          // Si analiza la razï¿½n busca en la vista
+          else {
+            numItems=0;
+            while (document.getElementById('cas' + numCasilla + '_' + (numItems+1))) {
+              numItems++;
+            }
+          }
+        }
+        else {
+          numItems = -1;
+        }
+      }
+    }
+    return numItems;
+  },
+
+  /**
+   * Anexa el comodï¿½n de item para cada casilla en la expresiï¿½n que ha sido referenciada
+   * como casilla general.
+   */
+  ubicarCasillasColumna: function(expresion){
+    if (expresion.indexOf('#')!=-1) {
+      var regexp = /#[0-9]+/g;
+      var resultado = expresion.match(regexp);
+      var idCasillas = new Array();
+
+      for (var i = 0; i < resultado.length; i++){
+        if (!contieneValor(resultado[i], idCasillas)){
+          idCasillas.push(resultado[i]);
+        }
+      }
+
+      for (var j=0;j<idCasillas.length;j++) {
+        // Agrega un comodï¿½n It, donde serï¿½n insertados los items
+        // de la casilla columna
+        expresion = expresion.replace(new RegExp(idCasillas[j], "g"), idCasillas[j]+"_It");
+      }
+    }
+    return expresion;
+  },
+
+  /**
+   * Analiza independientemente cada parte de una sentencia del tipo #2.1.1_4 == 5,
+   * separada por operadores lï¿½gicos ||, &&.
+   * @param condicion la cadena a reemplazar
+   * @return La cadena reemplazada
+   */
+  parseCondicion: function(condicion) {
+    var expresion = 'if (';
+    if (condicion.indexOf('#')!=-1) {
+      var regexpOps = /\|\||\&\&+/g;
+      var sentencias = condicion.split(regexpOps);
+      var operadores = condicion.match(regexpOps);
+
+      for (var i=0; i<sentencias.length; i++) {
+        var expSentencia = parseSentenciaCondicion(sentencias[i]);
+        expSentencia += ') ';
+        if (operadores != null && i < operadores.length) {
+          expSentencia += operadores[i];
+        }
+        expresion += ' (' + expSentencia;
+      }
+    }
+    else {
+      expresion += condicion;
+    }
+    return expresion + ') {';
+  },
+
+  /**
+   * A la razon por ahora no se le hace parsing
+   */
+  parseRazon: function(razon) {
+    return razon;
+  }
+}
+
+/**
+ * Hace el reemplazo asumiendo el lado izquierdo de la igualdad de los valores tipo #2.1.1_4 #24
+ * @param condicion la cadena a reemplazar
+ * @return La cadena reemplazada
+ */
+function parseSentenciaCondicion(condicion) {
+  var expresion = '';
+  var regexp = /#[0-9_.]+/g;
+  var args = condicion.split(regexp);
+  var idCasillas = condicion.match(regexp);
+  //Aqui se traduce de # a lo respectivo
+  // Cï¿½modin de condiciï¿½n, es utilizado cuando es un rango dentro de casillas columna
+  var comodinCondicion = 'cond';
+  var opIgualdad = (args[1].indexOf("==") != -1) ? true : false;
+  // El rango de casillas columna puede ser ï¿½nicamente la primera casilla que encontremos
+  idCasillas[0] = parseRangoCasilla(idCasillas[0], comodinCondicion, opIgualdad);
+  for (var j=1;j<idCasillas.length;j++) {
+    idCasillas[j] = procTokenCasilla(idCasillas[j], opIgualdad);
+  }
+
+  var expresionCondicion = '';
+  //Se asume que por los parentesis siempre va a haber menos tokens de casillas
+  for (var j=1; j < args.length; j++) {
+    var regexParentesis = /[()]+/g;
+    // Eliminamos los parï¿½ntesis de los argumentos de la condiciï¿½n
+    args[j] = args[j].replace(regexParentesis, '');
+    if (j<args.length-1) {
+      expresionCondicion += args[j] + idCasillas[j];
+    } else {
+      expresionCondicion += args[j];
+    }
+  }
+  expresion += idCasillas[0].replace(new RegExp(comodinCondicion, "g"), expresionCondicion);
+
+  return expresion;
+}
+
+/**
+ * @param casilla la casilla a rvisar el grupo
+ * @return -1 si la casilla no tiene grupo y el valor si si tiene asignado grupo
+ */
+function getGrupoParaCas(casilla) {
+  var idPunto = casilla.indexOf('.');
+  if (idPunto == -1) {
+    return idPunto;
+  }
+  return casilla.substring(0,idPunto)*1;;
+}
+
+/**
+ * Parsea la cadena de texto de la casilla.  Este soporta un casilla columna, ej: si la casilla 53
+ * es casilla columna --(#53==#49-#50+10)?(razon)-- entonces verifica cada uno de los items de la
+ * casilla 53 con la condiciï¿½n: #49-#50+10, dicha evaluaciï¿½n se realiza utilizando operadores OR (||)
+ *
+ * @param token Una cadena de texto del tipo #50 o #50_1 #1.50 #1.50_1
+ * @return la cadena de texto equivalente que obtiene esa casilla
+ * por ej. 50 50_1 1.50 1.50_1
+ */
+function parseRangoCasilla(token, comodinCondicion, opIgualdad) {
+ if (token.indexOf('#') != -1) {
+    var indIni = token.indexOf('#');
+    var indFin = indIni + 1;
+    var cadCas = '';
+    var val = token.charAt(indFin);
+    while(val.isDigit() || val == '_' || val == '.') {
+      cadCas += token.charAt(indFin);
+      val = token.charAt(indFin++);
+    }
+
+    // Aqui ya se tiene algo como 1.1.50_1 o algo como 50 o 50_1
+    var args = cadCas.split(/[.]/);
+    var str = '';
+    var numItemsCasilla = -1;
+
+    switch(args.length) {
+      case 1:
+        // Si no es una ï¿½nica casilla columna, entonces miramos si esta casilla tiene items
+        if (args[0].indexOf('_') == -1) {
+          numItemsCasilla = 0;
+          //numItemsCasilla = parent.DVisor.controlador.getNumItemsFromCas(args[0]);
+          while (document.getElementById('cas' + args[0] + '_' + (numItemsCasilla+1))) {
+            numItemsCasilla++;
+          }
+        }
+        // Si tiene items iteramos sobre cada uno de ellos y los colocamos en la parte izquierda de la
+        // expresiï¿½n de la condiciï¿½n
+        if (numItemsCasilla > 0) {
+          for (var i = 1; i <= numItemsCasilla; i++) {
+            str += (i == 1) ? '' : (opIgualdad) ? ' || ' : ' && ';
+            //--str += 'document.getElementById(\'cas' + args[0] + '_' + i + '\').value ' + comodinCondicion;
+            str += 'document.getElementById(\'cas' + args[0] + '_' + i + '\').getValor() ' + comodinCondicion;
+          }
+        } else {
+          //--str = 'document.getElementById(\'cas' + args[0] + '\').value ' + comodinCondicion;
+          str = 'document.getElementById(\'cas' + args[0] + '\').getValor() ' + comodinCondicion;
+        }
+        break;
+      case 2:
+        //Error o se asume para todas las copias
+        break;
+      case 3:
+        var idCas = (args[2].indexOf('_')!=-1) ? args[2].substring(0, args[2].indexOf('_')) : args[2]*1;
+        var item = (args[2].indexOf('_')!=-1) ? args[2].substring(args[2].indexOf('_')+1) : -1;
+
+        numItemsCasilla = parent.DVisor.controlador.getNumItemsFromCasAbsoluto(args[0], args[1], idCas);
+        var isCasillaColumna = (numItemsCasilla > -1);
+        if (isCasillaColumna) {
+          for (var i = 1; i < numItemsCasilla; i++) {
+            str += (i == 1) ? '' : (opIgualdad) ? ' || ' : ' && ';
+            str += 'parent.DVisor.controlador.getValorCasillaAbsoluto(' + args[0] + ',' + args[1] + ',' + idCas + ',' + item+ ') ' + comodinCondicion;
+          }
+        } else {
+          str = 'parent.DVisor.controlador.getValorCasillaAbsoluto(' + args[0] + ',' + args[1] + ',' + idCas + ',' + item+ ') ' + comodinCondicion;
+        }
+        break;
+      default:
+        break;
+    }
+    return str;
+  }
+  return token;
+}
+
+/**
+ *
+ * @param token Una cadena de texto del tipo #50 o #50_1 #1.50 #1.50_1
+ * @return la cadena de texto equivalente que obtiene esa casilla
+ * por ej. 50 50_1 1.50 1.50_1
+ */
+function procTokenCasilla(token, opIgualdad) {
+  if (token.indexOf('#') != -1) {
+    var indIni = token.indexOf('#');
+    var indFin = indIni + 1;
+    var cadCas = '';
+    var val = token.charAt(indFin);
+    while(val.isDigit() || val == '_' || val == '.') {
+      cadCas += token.charAt(indFin);
+      val = token.charAt(indFin++);
+    }
+
+    // Aqui ya se tiene algo como 1.1.50_1 o algo como 50 o 50_1
+    var args = cadCas.split(/[.]/);
+    var str = '';
+    var numItemsCasilla = -1;
+    var comodinCondicion = '|cond|';
+
+    switch(args.length) {
+      case 1:
+        numItemsCasilla = parent.DVisor.controlador.getNumItemsFromCas(args[0]);
+        var isCasillaColumna = (numItemsCasilla > -1);
+        if (isCasillaColumna) {
+          for (var i = 1; i < numItemsCasilla; i++) {
+            str += (i == 1) ? '' : (opIgualdad) ? ' || ' : ' && ';
+            //--str += 'document.getElementById(\'cas' + args[0] + '_' + i + '\').value ' + comodinCondicion;
+            str += 'document.getElementById(\'cas' + args[0] + '_' + i + '\').getValor() ' + comodinCondicion;
+          }
+        } else {
+          //--str = 'document.getElementById(\'cas' + args[0] + '\').value';
+        	str = 'document.getElementById(\'cas' + args[0] + '\').getValor()';
+        }
+        break;
+      case 2:
+        //Error o se asume para todas las copias
+        break;
+      case 3:
+        var idCas = (args[2].indexOf('_')!=-1) ? args[2].substring(0, args[2].indexOf('_')) : args[2]*1;
+        var item = (args[2].indexOf('_')!=-1) ? args[2].substring(args[2].indexOf('_')+1) : -1;
+
+        numItemsCasilla = parent.DVisor.controlador.getNumItemsFromCasAbsoluto(args[0], args[1], idCas);
+        var isCasillaColumna = (numItemsCasilla > -1);
+        if (isCasillaColumna) {
+          for (var i = 1; i < numItemsCasilla; i++) {
+            str += (i == 1) ? '' : (opIgualdad) ? ' || ' : ' && ';
+            str += 'parent.DVisor.controlador.getValorCasillaAbsoluto(' + args[0] + ',' + args[1] + ',' + idCas + ',' + item+ ') ' + comodinCondicion;
+          }
+        } else {
+          str = 'parent.DVisor.controlador.getValorCasillaAbsoluto(' + args[0] + ',' + args[1] + ',' + idCas + ',' + item+ ')';
+        }
+        break;
+      default:
+        break;
+    }
+    return str;
+  }
+  return token;
+}
+
+/**
+ * Funcion que habilita la escritura o no en las casillas en una hoja
+ * @param casillas Arreglo con los nombres de las casillas (p.ej. cas20, des22, etc..) a activar o desactivar
+ * @param activable
+ */
+function habilitar(casillas, estaActivo, esRadical) {
+  for(var i=0;i<casillas.length;i++) {
+    var objCas = document.getElementById(casillas[i]);
+    if (objCas) {
+      var esDescripcion = casillas[i].indexOf('des')!=-1;
+      if (esDescripcion){
+        if (esRadical && !estaActivo) {
+          //--objCas.value = "";
+        	objCas.setValor("");
+          var casilla = parent.DVisor.controladorDescripciones.getValorCasilla(getNumber(objCas), getItem(objCas));
+          if (casilla != null) {
+            parent.DVisor.controladorDescripciones.setValorCasilla(getNumber(objCas), getItem(objCas), "");
+          }
+        }
+      }
+      else {
+        if (esRadical) {
+          if(!estaActivo) {
+              //--objCas.value = "";
+          	objCas.setValor("");
+            var casilla = parent.DVisor.controlador.getValorCasilla(getNumber(objCas), getItem(objCas));
+            if (casilla != null) {
+              parent.DVisor.controlador.setValorCasilla(getNumber(objCas), getItem(objCas), "");
+            }
+          }
+          else {
+            objCas.readOnly = estaActivo;
+          }
+          objCas.disabled = !estaActivo;
+        }
+        else {
+          var bgBlanco = 'rgb(255, 255, 255) none repeat scroll 0% 0%';
+          var bgGris = 'rgb(212, 212, 212) none repeat scroll 0% 0%';
+          objCas.bgOriginal = (!objCas.bgOriginal)?
+                          (objCas.style.background=='')?bgBlanco:objCas.style.background
+                          :objCas.bgOriginal;
+          if (!estaActivo) {
+            objCas.style.background = bgGris;
+          } else {
+            objCas.style.background = objCas.bgOriginal;
+          }
+          objCas.disabled = false;
+
+          if (objCas.type == "checkbox") {
+            objCas.disabled = !estaActivo;
+          } else {
+            objCas.readOnly = !estaActivo;
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ *
+ */
+function parseCasillas(exp) {
+  var casillas = new Array();
+  exp = exp.replace(/^\s*|\s*$/g,"");
+  var args = exp.split(/,/);
+  for (var i=0; i<args.length;i++) {
+    var nomCas = 'cas';
+    var desCas = 'des';
+    var id = args[i].indexOf('-');
+    var prefijo = "";
+    var sufijo = "";
+    var itItems = false;
+    //Estas dos aqui son como definiciones dummy para el recorte al final
+    var ini = 1;
+    var fin = ini;
+    if (id != -1) {
+      //Esto es medio truco asumiendo que el # esta en la posicion 1
+      ini = args[i].substring(1,id);
+      fin = args[i].substring(id+2, args[i].length);
+      var idColIni = ini.indexOf('_');
+      var idColFin = fin.indexOf('_');
+
+      // Estas condiciones validan que sean rangos estrictos tipo
+      // #30_1-#30_2 y no cosas como #40-#40_2
+      if (idColIni == -1 && idColFin == -1) {
+        // Aqui solo los vuelvo numeros para el conteo y ya
+        ini*=1;
+        fin*=1;
+      } else if (idColIni != -1 && idColFin != -1) {
+        var nomCasIni = ini.substring(0,idColIni);
+        var nomCasFin = fin.substring(0,idColFin);
+        if (nomCasIni == nomCasFin) {
+          prefijo = nomCasIni + '_';
+          ini = ini.substring(idColIni+1)*1;
+          fin = fin.substring(idColFin+1)*1;
+          itItems = true;
+        }
+        else {
+          sufijo = ini.substring(idColIni);
+          ini = nomCasIni*1;
+          fin = nomCasFin*1;
+        }
+      }
+    } else {
+      ini = args[i].substring(1);
+      if(ini.indexOf('_') != -1){
+        var idCol = ini.indexOf('_');
+        sufijo = ini.substring(idCol);
+        ini = ini.substring(0,idCol);
+      }
+      ini *= 1;
+      fin = ini;
+    }
+    while (ini<=fin) {
+      var strCas = (itItems)? prefijo + ini : ini + sufijo;
+      casillas.push(nomCas + strCas);
+      casillas.push(desCas + strCas);
+      ini++;
+    }
+  }
+  return casillas;
+}
+
+/**
+ * @param exp
+ */
+function a(exp) {
+  habilitar(parseCasillas(exp), true, false);
+}
+
+/**
+ * @param exp
+ */
+function d(exp) {
+  habilitar(parseCasillas(exp), false, false);
+}
+
+/**
+ * Activar radical usa el disabled
+ */
+function ar(exp) {
+  habilitar(parseCasillas(exp), true, true);
+}
+
+/**
+ * Activar radical usa el disabled
+ */
+function dr(exp) {
+  habilitar(parseCasillas(exp), false, true);
+}
+
+

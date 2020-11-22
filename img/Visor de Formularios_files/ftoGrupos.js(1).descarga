@@ -1,0 +1,373 @@
+//<<modelo.formato.ftoGrupos.js>>
+Import("modelo.formato.ftoSecciones");
+
+DFormatoGrupoJS = function DFormatoGrupoJS(idGrupo, seRepite){
+   this.id;
+
+  /**Si el Id no es numerico no se acepta*/
+  idGrupo = Number(idGrupo);
+  if (!isNaN(idGrupo) && idGrupo > 0 )
+  	this.id = idGrupo;
+
+   this.repetible = false;
+
+   if (seRepite == true || seRepite == "true"  || seRepite == "S")
+   	this.repetible = true;
+
+   this.casillas = new Array();
+
+   /**
+    * Arreglo de los Ids. de las caillas obligatorias
+    */
+   this.idCasObligatorias = new Array();
+
+   /**
+    * Arreglo de los Ids. de las casillas llave
+    */
+   this.idCasLlave = new Array();
+
+   this.secciones = new Array();
+
+   this.cabecera;
+   this.pie;
+
+
+   /**referencia que apunta a una seccion. Esta seccion es a la cual se agregan por defecto las casillas. */
+   this.seccionActual;
+
+   //-- Parte del Constructor
+  this.getId = function(){
+    return this.id;
+  }
+
+  this.setRepetible = function(){
+    this.repetible = true;
+  }
+
+  this.isRepetible = function(){
+    return this.repetible;
+  }
+
+//--------------------- CASILLAS --------------------------------------------------------
+/**Agrega una casilla. Recibe como parametro un objeto DFormatoCasilla.
+	No permite Repetición de Id*/
+   this.addCasilla = function(casilla) {
+     // La casilla no debe ser nula, el objeto tiene que ser una instancia del Formato de Casilla simple o compuesta y debe tener Id.
+      if (casilla && (casilla.className == DFormatoCasillaJS.prototype.className || casilla.className == DFormatoCasillaColumnaJS.prototype.className )
+      	&& casilla.getId()){
+
+        casilla.setGrupo(this);
+/*        if (this.seccionActual == null)
+        	this.addSeccion();*/
+
+        //Si la Casilla que se agrega no tiene seccion, la casilla se agrega a la seccion actual
+        if (!casilla.getSeccion() && this.seccionActual)
+        	this.seccionActual.addCasilla(casilla);
+        //El Formato no permite casillas repetidas
+      	var existe = false;
+        var casillaTemp;
+        for (var c = 0; c < this.casillas.length; c++){
+           casillaTemp = this.casillas[c];
+           if (casilla.getId() == casillaTemp.getId()){
+
+             	if (casilla.getSeccion() != casillaTemp.getSeccion())
+                    casillaTemp.getSeccion().removeCasilla(casillaTemp.getId());
+            	this.casillas[c] = casilla;
+            	existe = true;
+                break;
+           }
+        }//-- for()
+        if (!existe)
+        	this.casillas.push(casilla);
+
+        //Si la casilla es obligatoria la agrega al arreglo de casillas obligatorias
+        if (casilla.isObligatoria())
+        	this.idCasObligatorias.push(casilla.getId());
+        //Si la casilla es llave la agrega al arreglo de casillas llave
+        if (casilla.isLlave())
+        	this.idCasLlave.push(casilla.getId());
+      }//-- if()
+   }//-- addCasilla()
+
+
+/*
+   this.removeCasilla = function(idCasilla) {
+
+      for (var c = 0; c < this.casillas.length; c++){
+         if (this.casillas[c].getId() == idCasilla){
+           	var casilla = casillas[c];
+                if (casilla.getSeccion())
+                	casilla.getSeccion().removeCasilla(idCasilla);
+             	casilla.setGrupo(null);
+             	this.casillas.splice(c, 1);
+         }
+      }
+      return this.casillas.length;
+   }//-- removeCasilla()
+*/
+
+   /**Obtiene una casilla segn su Id*/
+   this.getCasilla = function(idCasilla){
+      idCasilla = Number(idCasilla);
+      var casilla = null;
+      for (var c = 0; c < this.casillas.length; c++){
+         if (this.casillas[c].getId() == idCasilla){
+            casilla = this.casillas[c];
+            break;
+         }
+      }
+      return casilla;
+   }//-- getCasilla()
+
+   /**Retorna un arreglo con los Ids de las casillas que contiene la seccion*/
+   this.getIdCasillas = function(){
+      var idCasillas = new Array();
+
+      for (var c = 0; c < this.casillas.length; c++){
+         idCasillas.push(this.casillas[c].getId());
+      }
+      return idCasillas;
+   }//-- getIdCasillas()
+
+   this.getIdCasillasObligatorias = function(){
+   	return this.idCasObligatorias;
+   }
+
+   this.getIdCasillasLlave = function(){
+       return this.idCasLlave;
+   }
+
+   this.getNumCasillas = function(){
+      return this.casillas.length;
+   }//-- getNumCasillas()
+
+//-------------------------------- SECCIONES -------------------------------------------
+  /**Agrega una seccion, pero no permite repeticion de Id. Si encuentra el mismo Id, reemplaza la sección*/
+  this.addSeccionSinRepeticion = function(seccion){
+    //El objeto tiene que existir, ser de tipo Formato de Sección y debe tener Id.
+    if (seccion && seccion.className == DFormatoSeccionJS.prototype.className
+    	&& seccion.getId()){
+
+        seccion.setGrupo(this);
+        var existe = false;
+        var seccionTmp;
+        for (var s = 0; s < this.secciones.length; s++){
+           seccionTmp = this.secciones[s];
+           //Si existe una seccion con el mismo Id se reemplaza
+           if (seccion.getId() == seccionTmp.getId()){
+            	this.secciones[s] = seccion;
+            	existe = true;
+                break;
+           }//Para evitar dos Secciones tipo Cabecera o pie repetidos
+           else if ((seccionTmp.getTipo() == DFormatoSeccionJS.SECCION_CABECERA
+           	||seccionTmp.getTipo() == DFormatoSeccionJS.SECCION_PIE)
+                && (seccionTmp.getTipo() == seccion.getTipo())){
+
+                	this.secciones[s] = seccion;
+                        existe = true;
+                        break;
+           }//-- else if
+        }//-- for()
+        if (!existe)
+        	this.secciones.push(seccion);
+
+	this.addCasillasSeccionAGrupo(seccion);
+        //Cada vez que se seccion se convierte en la actual
+        this.seccionActual = seccion;
+
+        if (seccion.getTipo() == DFormatoSeccionJS.SECCION_CABECERA)
+        	this.cabecera = seccion;
+
+        if (seccion.getTipo() == DFormatoSeccionJS.SECCION_PIE)
+        	this.pie = seccion;
+
+        if (this.cabecera && this.cabecera.getTipo() != DFormatoSeccionJS.SECCION_CABECERA)
+        	this.cabecera = null;
+
+        if (this.pie && this.pie.getTipo() != DFormatoSeccionJS.SECCION_PIE)
+        	this.pie = null;
+
+    }//-- if()
+  }//-- addSeccionSinRepeticion()
+
+  /**Agraga las casillas de una sección al arreglo de casillas del grupo cuando se agrega una seccion*/
+  this.addCasillasSeccionAGrupo= function(seccion){
+    if (seccion && seccion.className == DFormatoSeccionJS.prototype.className
+    	&& seccion.getId()){
+        var idCasillas = seccion.getIdCasillas();
+        var casillaTmp;
+        for (var c = 0; c < idCasillas.length; c++){
+        	casillaTmp = seccion.getCasilla(idCasillas[c]);
+                this.addCasilla(casillaTmp);
+    	}//-- for()
+    }//-- if()
+  }//-- addCasillasSeccionAGrupo()
+
+  /*Agrega una Seccion.
+     -Si recibe como parametro un objeto DFormatoSeccion lo adiciona.
+
+     -Si no recibe nada como parametro, entonces adiciona por defecto
+        una Seccion cuyo ID sera el numero de secciones +1
+  */
+  this.addSeccion = function(){
+     //si recibe 1 o mas secciones recorren el arreglo de
+     //argumentos e introduce cada Seccion en el array
+     if(arguments.length > 0){
+        for(var i=0; i< arguments.length; i++){
+          	this.addSeccionSinRepeticion(arguments[i]);
+                //this.secciones.push(arguments[i]);
+        }
+     }else{
+        //si no recibe ningun parametro(comportamiento por defecto),
+        //debe crear una Secciones y agregarla al grupo
+        var idSeccion = this.secciones.length+1;
+        var SeccionNva = new DFormatoSeccionJS(idSeccion);
+        this.addSeccionSinRepeticion(SeccionNva);
+        //this.secciones.push(SeccionNva);
+     }
+  }//-- addSeccion()
+
+  /**Ubica el puntero de la seccion actual en una sección especifica*/
+  this.irASeccion = function(idSeccion){
+    var flag = false;
+    var seccion = this.getSeccion(idSeccion);
+    if (seccion){
+    	this.seccionActual = seccion;
+        flag = true;
+    }
+    return flag;
+  }//-- irASeccion
+
+  /**Ubica el puntero de la seccion actual en la cabecera*/
+  this.irACabecera = function(){
+    var flag = false;
+    if (this.cabecera){
+    	this.seccionActual = this.cabecera;
+        flag = true;
+    }
+    return flag;
+  }//-- irACabecera
+
+  /**Ubica el puntero de la seccion actual en la cabecera*/
+  this.irAPie = function(){
+    var flag = false;
+    if (this.pie){
+    	this.seccionActual = this.pie;
+        flag = true;
+    }
+    return flag;
+  }//-- irAPie
+
+  this.sinSeccion = function(){
+    this.seccionActual = null;
+  }
+  /**Obtiene una Seccion segn su Id*/
+  this.getSeccion = function(idSeccion){
+    	idSeccion = Number(idSeccion);
+  	var seccion = null;
+        for(var i=0; i < this.secciones.length; i++){
+           if(this.secciones[i].getId() == idSeccion){
+              seccion=this.secciones[i];
+              this.seccionActual = seccion;
+              break;
+           }
+        }
+        return seccion;
+  }//-- getSeccion()
+
+  /**Obtiene la Seccion Cabecera*/
+  this.getSeccionCabecera = function(){
+	return this.cabecera;
+/*  	var seccion = null;
+        for(var i=0; i < this.secciones.length; i++){
+           if(this.secciones[i].getTipo() == DFormatoSeccionJS.SECCION_CABECERA){
+              seccion=this.secciones[i];
+              break;
+           }
+        }
+        return seccion;*/
+  }//-- getSeccionCabecera()
+
+  /**Obtiene la Seccion Pie*/
+  this.getSeccionPie = function(){
+  	return this.pie;
+/*    	var seccion = null;
+        for(var i=0; i < this.secciones.length; i++){
+           if(this.secciones[i].getTipo() == DFormatoSeccionJS.SECCION_PIE){
+              seccion=this.secciones[i];
+              break;
+           }
+        }
+        return seccion;*/
+  }//-- getSeccionCabecera()
+
+  /**Retorna el número de secciones actual*/
+  this.getNumeroSecciones = function(){
+    return this.secciones.length;
+  }
+
+  //Remueve una Seccion segun su ID
+  this.removeSeccion = function(idSeccion){
+     for(var i=0; i < this.secciones.length; i++){
+        if(this.secciones[i].getId() == idSeccion)
+        	var seccion = this.secciones[i];
+                this.addSeccion();
+                //Mueve las casillas a una sección nueva para que no queden sin Sección
+                this.moverCasillasSeccion(seccion,this.SeccionActual);
+           	seccion.setGrupo(null);
+           	this.secciones.splice(i,1);
+     }
+     return this.secciones.length;
+  }//-- removeSeccion()
+
+  this.moverCasillasSeccion = function(seccionOrigen, seccionDestino){
+  	var flag = false;
+    	if (seccionOrigen && seccionOrigen.className == DFormatoSeccionJS.prototype.className
+            && seccionDestino && seccionOrigen.className == DFormatoSeccionJS.prototype.className){
+
+	  	var idCasillas = seccionOrigen.getIdCasillas();
+        	var casillaTmp;
+        	var idCasillaTmp;
+      		for (var c = 0; c < this.idCasillas.length; c++){
+                	idCasillaTmp = idCasillas[c];
+        		casillaTmp = seccionOrigen.getCasilla(idCasillaTmp);
+                	seccionDestino.addCasilla(casillaTmp);
+                	seccionOrigen.removeCasilla(idCasillaTmp);
+      		}//-- for()
+                flag = true;
+      	}
+      	return flag;
+  }//-- moverCasillasSeccion()
+
+  //retorna un arreglo que contiene las identificaciones
+  //de las secciones del grupo
+  this.getIdSecciones = function(){
+     var idSecciones = new Array();
+     for(var i=0; i < this.secciones.length; i++){
+        idSecciones.push(this.secciones[i].getId());
+     }
+     return idSecciones;
+  }
+
+  this.getAllSecciones = function(){
+    return this.secciones;
+  }
+}//-- DFormatoGrupoJS
+
+DFormatoGrupoJS.prototype.className = "DFormatoGrupoJS";
+
+DFormatoGrupoJS.prototype.toString=function(){
+  return this.toXml();
+}//-- toString()
+
+/**
+ * Convierte el contenido del grupo en un flujo Xml
+ */
+DFormatoGrupoJS.prototype.toXml=function(){
+    var xmlGrupo = "\t<gr id=\""+this.id+ "\" rep=\""+ this.repetible + "\">";
+    for (var i=0; i < this.secciones.length; i++){
+    	xmlGrupo += "\n" +this.secciones[i].toString();
+    }
+    xmlGrupo += "\n\t</gr>";
+    return xmlGrupo;
+}//-- toXml()

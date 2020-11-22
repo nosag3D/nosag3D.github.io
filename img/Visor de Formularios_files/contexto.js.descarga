@@ -1,0 +1,156 @@
+DContextoJS = function DContextoJS(tipoEntrada, modo, idFormato, versionFormato, idDocumento, repeticionDocumento){
+    this.tipoEntrada;
+    this.modo;
+    this.idFormato;
+    this.versionFormato;
+    this.idDocumento;
+    this.repeticionDocumento;
+
+    /** */
+    this.roles;
+
+    if (tipoEntrada)
+        this.tipoEntrada = tipoEntrada;
+    if (modo)
+        this.modo = modo;
+    if (idFormato)
+        this.idFormato = idFormato;
+    if (versionFormato)
+        this.versionFormato = versionFormato;
+    if (idDocumento)
+        this.idDocumento = idDocumento;
+    if (repeticionDocumento)
+        this.repeticionDocumento = repeticionDocumento;
+    this.parametros = new Hashtable();
+
+    this.getTipoEntrada = function() {
+        return this.tipoEntrada;
+    }
+
+    this.getModo = function() {
+        return this.modo;
+    }
+
+    this.getIdFormato = function() {
+        return this.idFormato;
+    }
+
+    this.getVersionFormato = function() {
+        return this.versionFormato;
+    }
+
+    this.getIdDocumento = function() {
+        return this.idDocumento;
+    }
+
+    this.getRepeticionDocumento = function() {
+        return this.repeticionDocumento;
+    }
+
+    this.addParametro = function(parametro, valor) {
+        this.parametros.put(parametro,valor);
+    }
+
+    this.getParametro = function(parametro) {
+        return this.parametros.get(parametro);
+    }
+
+    this.getListaParametros = function() {
+        return this.parametros.keys();
+    }
+
+    this.isPersonaDeclarante = function(){
+        return (this.getParametro('CTX_SEG_ORGANIZACION') == DContextoJS.CODIGO_ORGANIZACION_DECLARANTE);
+    }
+
+    this.isPersonaOrganizacion = function(){
+        return (this.getParametro('CTX_SEG_ORGANIZACION') != DContextoJS.CODIGO_ORGANIZACION_DECLARANTE &&
+                this.getParametro('CTX_SEG_ORGANIZACION') != DContextoJS.CODIGO_ORGANIZACION_DIAN &&
+                this.getParametro('CTX_SEG_IDE_PERSONA') != this.getParametro('CTX_SEG_IDE_PERSONA_ORGANIZACION'));
+    }
+
+    this.isPersonaUsuarioDIAN = function(){
+        return (this.getParametro('CTX_SEG_ORGANIZACION') == DContextoJS.CODIGO_ORGANIZACION_DIAN);
+    }
+
+    /**
+     * Compara la lista de roles contra los que trae el Contexto para decir si al
+     * menos hay uno igual.
+     */
+    this.isRol = function(roles) {
+      var rolesCtx = this.getRoles();
+      var length = rolesCtx.length;
+
+      for(var index = 0; index<length; index++)
+      {
+          var lengthRol = roles.length;
+          var rolCtx = rolesCtx[index];
+
+          for(var indexRol = 0; indexRol<lengthRol; indexRol++)
+          {
+              if(rolCtx == roles[indexRol]){
+                return true
+              }
+          }
+      }
+
+      return false;
+    }
+
+    /**
+     * Devuelve el array de roles que trae el Contexto.
+     */
+    this.getRoles = function() {
+        var roles = this.getParametro('CTX_SEG_ROLES');
+        if(roles == '')
+           return null;
+        return roles.split(",");
+    }
+
+}
+
+/** Constanates de contexto del visor, deben estar soncronizadas con la clase de Java.*/
+DContextoJS.MODO_DILIGENCIAR = '0';
+DContextoJS.MODO_PRESENTAR = '1';
+DContextoJS.MODO_PAGAR_LINEA = '2';
+DContextoJS.MODO_PAGAR_BANCO = '3';
+DContextoJS.MODO_CORRECCION = '4';
+DContextoJS.MODO_LECTURA = '5';
+DContextoJS.MODO_LIQUIDAR_PAGO = '6';
+
+/** Aqui se definen las constantes de las variables contenidas en el visor */
+DContextoJS.DOCUMENTO_XML = "DOCUMENTO_XML";
+DContextoJS.DOCUMENTO_DESC = "DOCUMENTO_DESC";
+DContextoJS.VALIDACIONES = "VALIDACIONES";
+DContextoJS.RESUMEN_DOCTO = "RESUMEN_DOCTO";
+DContextoJS.ID_IMPUESTO = "ID_IMPUESTO";
+DContextoJS.NOMBRE_IMPUESTO = "NOMBRE_IMPUESTO";
+DContextoJS.PERIODO = "PERIODO";
+DContextoJS.ID_TIPO_CONTRIBUYENTE = "ID_TIPO_CONTRIBUYENTE";
+DContextoJS.ID_TIPO_DECLARANTE = "ID_TIPO_DECLARANTE";
+DContextoJS.NUM_CUOTA = "NUM_CUOTA";
+DContextoJS.TOTAL_CUOTAS = "TOTAL_CUOTAS";
+DContextoJS.FRACCION_ANNO = "FRACCION_ANNO";
+DContextoJS.NUM_UNICO_OBLIGACION = "NUM_UNICO_OBLIGACION";
+DContextoJS.MODO_DILIGENCIAMIENTO_NEGOCIO = "MODO_DILIGENCIAMIENTO_NEGOCIO";
+
+DContextoJS.CODIGO_ORGANIZACION_DIAN = "1";
+DContextoJS.CODIGO_ORGANIZACION_DECLARANTE = "2";
+
+DContextoJS.CTX_SEG_CERTIFICADO = "CTX_SEG_CERTIFICADO";
+DContextoJS.CTX_SEG_IDE_PERSONA = "CTX_SEG_IDE_PERSONA";
+DContextoJS.CTX_SEG_IDE_PERSONA_ORGANIZACION = "CTX_SEG_IDE_PERSONA_ORGANIZACION";
+DContextoJS.CTX_SEG_NIT_ORGANIZACION = "CTX_SEG_NIT_ORGANIZACION";
+DContextoJS.CTX_SEG_NIT_USUARIO = "CTX_SEG_NIT_USUARIO";
+DContextoJS.CTX_SEG_NOMBRE_RAZON_SOCIAL_ORGANIZACION = "CTX_SEG_NOMBRE_RAZON_SOCIAL_ORGANIZACION";
+DContextoJS.CTX_SEG_NOMBRE_RAZON_SOCIAL_USUARIO = "CTX_SEG_NOMBRE_RAZON_SOCIAL_USUARIO";
+DContextoJS.CTX_SEG_ORGANIZACION = "CTX_SEG_ORGANIZACION";
+DContextoJS.CTX_SEG_TIPODOCUMENTO = "CTX_SEG_TIPODOCUMENTO";
+DContextoJS.CTX_SEG_NUM_IDENT_VIGENTE = "CTX_SEG_NUM_IDENT_VIGENTE";
+DContextoJS.CTX_SEG_NUM_DIGITO_VERIF_NIT = "CTX_SEG_NUM_DIGITO_VERIF_NIT";
+DContextoJS.CTX_SEG_NOM_PRIMER_APELLIDO = "CTX_SEG_NOM_PRIMER_APELLIDO";
+DContextoJS.CTX_SEG_NOM_SEGUNDO_APELLIDO = "CTX_SEG_NOM_SEGUNDO_APELLIDO";
+DContextoJS.CTX_SEG_NOM_PRIMER_NOMBRE = "CTX_SEG_NOM_PRIMER_NOMBRE";
+DContextoJS.CTX_SEG_NOM_OTROS_NOMBRES = "CTX_SEG_NOM_OTROS_NOMBRES";
+
+DContextoJS.CERTIFICADO_EN_ORGANIZACION = "CERTIFICADO_EN_ORGANIZACION";

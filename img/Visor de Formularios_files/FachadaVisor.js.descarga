@@ -1,0 +1,443 @@
+/**
+ * Solo hay una estructura por el buzon y solo un estado de formulario
+ * @TODO PASAR CIERTAS FUNCIONES A FORMULARIO
+ */
+FachadaVisor = function FachadaVisor(formato) {
+    //Estos tres indican la posicion actual en todo momento.
+    //En Muisca todo se cuenta desde uno
+    this.hoja = 0;
+    this.copia = 0;
+    this.pagina = 0;
+    this.estadodocumento="Listo";
+
+    this.hojasFormulario = new Array();
+
+    var idGrupos = formato.getIdGrupos();
+    for (var i=0;i<idGrupos.length;i++) {
+        var grupo = formato.getGrupo(idGrupos[i]);
+        var hoja = new HojaFormulario(grupo.getId(), grupo.isRepetible());
+        var idSecciones = grupo.getIdSecciones();
+        for (var j=0;j<idSecciones.length;j++) {
+            var seccion = grupo.getSeccion(idSecciones[j]);
+            hoja.addSeccion(seccion.getNombre(), seccion.getId());
+        }
+        this.hojasFormulario.push(hoja);
+    }
+}
+
+//Definicion de los metodos
+FachadaVisor.prototype = {
+  /**
+   *
+   */
+  getHojaActual: function() {
+    return this.hoja;
+  },
+
+  /**
+   *
+   * getCopiaActual me da la ocurrencia de la pagina dentro de la hoja
+   */
+  getCopiaActual: function() {
+    return this.copia;
+  },
+
+  /**
+   *
+   */
+  getPaginaActual: function() {
+      return this.pagina;
+  },
+
+
+  /**
+  *   Devuelve el estado del documento y lo muestra en la barra de navegación.
+  */
+  getEstadoDoc: function() {
+     return this.estadodocumento;
+ },
+
+ 
+ /**
+ *   Establece el estado del documento y lo muestra en la barra de navegación.
+ */
+ setEstadoDoc: function(estado) {
+    this.estadodocumento=estado;
+},
+
+  
+  
+  
+  /**
+   *
+   */
+  getNumeroCopiasHoja: function (hoja) {
+      numeroHoja = parseInt(hoja);
+      numeroCopias = this.hojasFormulario[numeroHoja].getNumCopias();
+      return numeroCopias;
+  },
+
+  /**
+   *
+   */
+  irAUltimaPaginaDeHojaActual: function() {
+      var hoja = this.hojasFormulario[this.hoja];
+      var numCopiasHoja = hoja.getNumCopias() - 1;
+      var paginaAir = this.pagina;
+      if (numCopiasHoja > this.copia) {
+          paginaAir = this.pagina + (numCopiasHoja - this.copia);
+      }
+      return this.goToPagina(paginaAir);
+  },
+
+   /**
+   * Cambia el estado de la hoja y de la copia para ajustarse a la pagina
+   * actual. Si la pagina no existe, no modifica el estado del cursor.
+   * Retorna verdadero si modifico el estado, de lo contrario retorna false
+   * @param pagina
+   */
+  goToPagina: function(pagina) {
+    if (pagina != this.pagina) {
+        var numeroHojas = this.hojasFormulario.length;
+        var numPagina = 0;
+        for (var i = 0;i < numeroHojas;i++) {
+            var copias = this.hojasFormulario[i].getCopias();
+            var numCopias = copias.length;
+            for (j = 0;j < numCopias;j++) {
+                if (numPagina == pagina) {
+                    this.hoja = i;
+                    this.copia = j;
+                    this.pagina = pagina;
+                    //                alert("Hoja " + this.hoja + " Copia " + this.copia + " Pagina " + this.pagina + " ");
+                    return true;
+                }
+                numPagina++;
+            }
+        }
+    }
+    return false;
+  },
+
+  /**
+   *
+   */
+  isHojaActualCopiable: function() {
+      var numHojaActual = this.getHojaActual();
+      var hoja = this.hojasFormulario[numHojaActual];
+      return hoja.isCopiable();
+  },
+
+  /**
+   *
+   */
+  isCopiaActualEliminable: function() {
+      var numHojaActual = this.getHojaActual();
+      var hoja = this.hojasFormulario[numHojaActual];
+      return hoja.isEliminable();
+  },
+
+  /**
+   * @TODO volver privado
+   */
+  getNumPaginaAvance: function(siguiente) {
+    var numeroHojas = this.hojasFormulario.length;
+    var numeroPaginas = this.getTotalPaginas();
+    var numPagina = 0;
+    for (var i = 0;i < numeroHojas;i++) {
+        var copias = this.hojasFormulario[i].getCopias();
+        var numCopias = copias.length;
+        for (var j = 0;j < numCopias;j++) {
+            if (numPagina == this.pagina) {
+                if(siguiente) {
+                    var paginaProxima = numPagina + 1;
+                    if (paginaProxima < numeroPaginas) {
+                        return paginaProxima;
+                    }
+                } else {
+                    var paginaProxima = numPagina - 1;
+                    if (paginaProxima >= 0) {
+                        return paginaProxima;
+                    }
+                }
+            }
+            numPagina++;
+        }
+    }
+    return this.pagina;
+  },
+
+  /**
+   * Retorna la pagina anterior, si no hay pagina anterior retorna
+   * el mismo valor
+   * @todo UNIR ESTE CON EL OTRO EN UNA SOLA FUNCION OJO
+   */
+  getNumPaginaAnterior: function() {
+      return this.getNumPaginaAvance(false);
+  },
+
+  /**
+   * Retorna la pagina siguiente, si no hay pagina siguiente el
+   * valor de la pagina actual.
+   */
+  getNumPaginaSiguiente: function() {
+      return this.getNumPaginaAvance(true);
+  },
+
+  /**
+   *
+   */
+  hasPaginaSiguiente: function() {
+      var numPaginaSiguiente = this.getNumPaginaSiguiente();
+      return (numPaginaSiguiente != this.pagina);
+  },
+
+  /**
+   *
+   */
+  hasPaginaAnterior: function() {
+      var numPaginaAnterior = this.getNumPaginaAnterior();
+      return (numPaginaAnterior != this.pagina);
+  },
+
+  /**
+   * Si es posible avanza a la pagina siguiente en el modelo
+   * retorna si avanzo o no la misma
+   */
+  avanzarPagina: function() {
+
+      var formato = DVisor.formato;
+      var documento = DVisor.docCopia;
+      var idGrupo = this.getHojaActual()+1;
+
+      DVisor.validadorDocumentoFin.getLogErrores().clearLogErrores();
+
+      //Ejecuta validación para la hoja actual
+      DVisor.validarFinHoja(idGrupo);
+
+      //Si la validación fue exitosa
+      if (DVisor.validadorDocumentoFin.validacionExitosa()) {
+        // Verifica casillas requeridas
+        if(DVisor.isGrupoValido(documento, formato, idGrupo)){
+          //Si hay página siguiente
+          if (this.hasPaginaSiguiente()) {
+              var numPaginaSiguiente = this.getNumPaginaSiguiente();
+              this.goToPagina(numPaginaSiguiente);
+              return true;
+          }
+          else {
+            //Es la última página
+            DVisor.dialogomensaje.showModal('Error', 'Esta es la última página del documento.', 3);
+            return false;
+          }
+        }
+      }
+      //Si la validación no fue exitosa presenta los errores
+      var mensajeError = DVisor.validadorDocumentoFin.getTextoLogErrores();
+      DVisor.dialogomensaje.showModal('Error', escape(mensajeError), 3);
+      return false;
+  },
+
+  /**
+   * Si es posible retrocede a la pagina anterior en el modelo
+   * retorna si retrocedio o no la misma
+   */
+  retrocederPagina: function() {
+      if (this.hasPaginaAnterior()) {
+          var numPaginaAnterior = this.getNumPaginaAnterior();
+          this.goToPagina(numPaginaAnterior);
+          return true;
+      }
+      return false;
+  },
+
+  /**
+   *
+   */
+  creaCopiaHojaActual: function () {
+      if (this.isHojaActualCopiable()) {
+
+        var formato = DVisor.formato;
+        var documento = DVisor.docCopia;
+        var numeroHoja = this.getHojaActual();
+        var numeroCopia = this.getCopiaActual();
+
+        if(isItemsCompletos(formato, documento, numeroHoja+1, numeroCopia+1)){
+
+          DVisor.validadorDocumentoFin.getLogErrores().clearLogErrores();
+          //Ejecuta validación para la hoja actual
+          DVisor.validarFinHoja(numeroHoja+1);
+
+          //Si la validación fue exitosa
+          if (DVisor.validadorDocumentoFin.validacionExitosa()) {
+            // Verifica casillas requeridas
+            if(DVisor.isGrupoValido(documento, formato, numeroHoja+1)){
+              addCopiaCabeceraPie(numeroHoja+1, numeroCopia+1);
+              this.hojasFormulario[numeroHoja].addCopia();
+              return true;
+            }
+          }
+
+          //Si la validación no fue exitosa presenta los errores
+          var mensajeError = DVisor.validadorDocumentoFin.getTextoLogErrores();
+          DVisor.dialogomensaje.showModal('Error', escape(mensajeError), 3);
+          return false;
+        }
+        else {
+          mostrarError("Antes de continuar, debe diligenciar todas las secciones de la copia actual.");
+        }
+      }
+      else {
+        var numHojaWeb = numeroHoja + 1;
+        mostrarError("La hoja actual no es copiable " + "Hoja No. " + numHojaWeb);
+      }
+      return false;
+  },
+
+  /**
+   * Elimina la pagina actual del arreglo de hojas
+   */
+  eliminarPaginaActual: function() {
+      if (this.isCopiaActualEliminable()) {
+          var formato = DVisor.formato;
+          var documento = DVisor.docCopia;
+          var numeroHoja = this.getHojaActual();
+          var numeroCopia = this.getCopiaActual();
+
+          if(!isOcurrenciaDiligenciada(formato, documento, numeroHoja+1, numeroCopia+1)){
+            // Aqui se elimina del modelo
+            var grupo = DVisor.docCopia.getGrupoByID(numeroHoja+1);
+            grupo.removeOcurrencia(numeroCopia+1);
+
+            this.retrocederPagina();
+            return this.hojasFormulario[numeroHoja].delCopia(numeroCopia);
+          }
+      }
+      return false;
+  },
+
+  /**
+   *
+   */
+  getTotalPaginas: function() {
+      var numeroHojas = this.hojasFormulario.length;
+      var numPaginas = 0;
+      for (var i = 0;i < numeroHojas;i++) {
+          var copias = this.hojasFormulario[i].getCopias();
+          var numCopias = copias.length;
+          for (j = 0;j < numCopias;j++) {
+              numPaginas++;
+          }
+      }
+      return numPaginas;
+  },
+
+  /**
+   * Retorna el numero de hojas actual del visor
+   */
+  getNumeroHojas: function() {
+      return this.hojasFormulario.length;
+  },
+
+
+  /**
+   * Este construye la barra de la izquierda, el menu de navegacion
+   * se debe recargar para actualizarla tras una eliminacion o adicion
+   */
+  cargarEstructuraNavegacion: function() {
+      ssmItems = new Array();
+      var encabezado = "";
+      var enlace = "";
+      var nombrePagina = "h0";
+      var numeroHojas = this.hojasFormulario.length;
+      //Aqui se pintan las hojas del formulario
+      var numPagina = 0;
+      for (var i = 0;i < numeroHojas;i++) {
+          nombreHoja = this.hojasFormulario[i].getNombre();
+          ssmItems.push([nombreHoja]); //encabezado];
+          // Aqui se pintan las paginas
+          var copias = this.hojasFormulario[i].getCopias();
+          var numCopias = copias.length;
+          for (j = 0;j < numCopias;j++) {
+              var n = i + 1;
+              //Este pathDocumento viene de la definicion global en VisorFormulario
+              var enlace = pathDocumento + nombrePagina + n + "." + extension;
+              //El ultimo parametro es la pagina actual
+              var numPaginaWeb = numPagina + 1;
+              ssmItems.push([encabezadoPagina + numPaginaWeb, enlace, "Principal","","","",numPagina]);
+              numPagina++;
+          }
+      }
+  },
+
+  /**
+   * Este metodo se encarga de la navegacion usando
+   * el mecanismo de secciones
+   * ssmItemsSec es el arreglo global que maneja las secciones
+   */
+  cargarEstructuraSecciones: function() {
+      ssmItemsSec = new Array();
+      var nombrePagina = "h0";
+      var numeroHojas = this.hojasFormulario.length;
+      var numPagina = 0;
+      for (var i = 0;i < numeroHojas;i++) {
+          var secciones = this.hojasFormulario[i].getSecciones();
+          var copias = this.hojasFormulario[i].getCopias();
+          var numSecciones = secciones.length;
+          var numCopias = copias.length;
+          for (var j = 0;j < numSecciones;j++) {
+              var nombreSeccion = secciones[j].getNombre();
+              var anclaSeccion = secciones[j].getAncla();
+              ssmItemsSec.push([nombreSeccion]);
+              var enlace = pathDocumento + nombrePagina + j + "." + extension;
+              //Numero de la pagina inicial donde inicia la seccion
+              //Se requiere un acumulador de paginas aqui
+              for (var k = 0; k < numCopias; k++) {
+                  //numPag es un truco para que la numeracion salga correctamente en la vista
+                  var numPag = numPagina + k;
+                  var enlace = pathDocumento + nombrePagina + numPag + "." + extension +
+                      "#" + anclaSeccion;
+                  // El ultimo parametro es la pagina actual (la pagina a la que va al hacer actualizarLink()
+                  var numPaginaWeb = numPag + 1;
+                  //Aqui agrego un parametro extra para saber el ancla, esto no me gusta ni pio
+                  ssmItemsSec.push([encabezadoPagina + numPaginaWeb, enlace, "Principal","","","", numPag, anclaSeccion]);
+              }
+          }
+          numPagina += numCopias;
+      }
+  },
+
+  /**
+   * Carga la estructura de navegacion y la estructura de secciones
+   */
+  cargarEstructuras: function() {
+      this.cargarEstructuraNavegacion();
+      this.cargarEstructuraSecciones();
+  },
+
+  /**
+   * Carga las ocurrencias por grupo una vez ha sido cargado
+   * el documento principal.
+   */
+  cargarCopias: function() {
+    var grupos = DVisor.controlador.getDocumento().getGrupos();
+    for (i=0; i<grupos.length; i++) {
+      var grupo = grupos[i];
+      for (var j=1; j< grupo.getNumeroOcurrencias(); j++){
+        this.obtenerHoja(grupo.getId()).addCopia();
+      }
+    }
+  },
+
+  obtenerHoja: function(idHoja) {
+    var numeroHojas = this.hojasFormulario.length;
+    for (var i=0; i<numeroHojas; i++) {
+      var hoja = this.hojasFormulario[i];
+      if (hoja.getNombre() == idHoja){
+        return hoja;
+      }
+    }
+    return null;
+  }
+
+};
+

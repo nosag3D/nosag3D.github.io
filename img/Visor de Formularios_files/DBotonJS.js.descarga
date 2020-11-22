@@ -1,0 +1,1619 @@
+DBotonJS = function DBotonJS() {
+    this.getNombre = function() {
+            return this.nombre;
+    }
+
+    this.getImagen1 = function() {
+            return this.idImagen1;
+    }
+
+    this.getTitulo = function() {
+            return this.idTitulo;
+    }
+
+    this.getImagen2 = function() {
+            return this.idImagen2;
+    }
+
+    this.setHtml = function(arrAttBoton) {
+      var nombre  = arrAttBoton[BOTON.get('nombre')];
+      var imagen1 = arrAttBoton[BOTON.get('imagen1')];
+      var titulo  = arrAttBoton[BOTON.get('titulo')];
+      var imagen2 = arrAttBoton[BOTON.get('imagen2')];
+      var clase = arrAttBoton[BOTON.get('clase')];
+     
+      /*
+       *  Manejar mapa de procesos
+       */
+       if (nombre=='Firmar'  &&  ( DVisor.controlador.getEstadoActualDoc() == ESTADO_DOC_ENTRANTE || DVisor.controlador.getEstadoActualDoc() == ESTADO_DOC_PRESENTADO  || fachadaVisor.getEstadoDoc()=='Listo' )  ){
+       imagen2 = 'bot-prohibido.gif'; 
+       clase='';
+       } else if (nombre=='Presentar'  &&  ( DVisor.controlador.getEstadoActualDoc() != ESTADO_DOC_PROCESO_FIRMA || DVisor.controlador.getEstadoActualDoc() == ESTADO_DOC_PRESENTADO) ){
+           imagen2 = 'bot-prohibido.gif'; 
+           clase='';
+       } else if (nombre=='GuardarTMP'  &&   ( DVisor.controlador.getEstadoActualDoc()== ESTADO_DOC_PROCESO_FIRMA  || DVisor.controlador.getEstadoActualDoc()== ESTADO_DOC_PRESENTADO  || DVisor.controlador.getEstadoActualDoc()== ESTADO_DOC_VALIDADO ) ){
+           imagen2 = 'bot-prohibido.gif'; 
+           clase='';
+       } else if (nombre=='GuardarDEF'  &&   ( DVisor.controlador.getEstadoActualDoc() == ESTADO_DOC_ENTRANTE || DVisor.controlador.getEstadoActualDoc()== ESTADO_DOC_VALIDADO || fachadaVisor.getEstadoDoc()=='Listo' ) ){
+           imagen2 = 'bot-prohibido.gif'; 
+           clase='';
+       } else if (nombre=='GuardarDocumentoDefinitivo'  &&   DVisor.controlador.getEstadoActualDoc() == ESTADO_DOC_VALIDADO ){
+           imagen2 = 'bot-prohibido.gif'; 
+           clase='';
+       } else if (nombre=='LiquidacionPago'  &&   ( DVisor.controlador.getEstadoActualDoc() != ESTADO_DOC_PRESENTADO  &&  DVisor.controlador.getEstadoActualDoc() != ESTADO_DOC_VALIDADO)  ){
+    	   imagen2 = 'bot-prohibido.gif'; 
+    	   clase='';
+       } else if (nombre=='generarPdf2'  &&    DVisor.controlador.getEstadoActualDoc() == ESTADO_DOC_ENTRANTE     ){
+           imagen2 = 'bot-prohibido.gif'; 
+           clase='';
+       } else if (nombre=='pagoEnLinea'  &&   DVisor.controlador.getEstadoActualDoc() != ESTADO_DOC_VALIDADO  &&   DVisor.controlador.getEstadoActualDoc() != ESTADO_DOC_PRESENTADO ){
+           imagen2 = 'bot-prohibido.gif'; 
+           clase='';
+       }       
+       
+        var html = "";
+        html = html + "<a href=\"#\" onMouseOut=\"MM_swapImgRestore()\" onClick='return false;' onMouseOver=\"MM_swapImage('"
+        html = html + nombre + "','','" + PATH_IMAGENES_VISOR;
+        html = html + "/" + imagen2 +  "',1)\" > "
+        html = html + " <img id=\"" + nombre + "\" name=\"";
+        html = html + nombre + "\" title=\"" + titulo;
+        html = html + "\" border=\"0\" src=\"" + PATH_IMAGENES_VISOR + "/" + imagen1;
+        //Este if es para el caso de los botones que deciden por otros botones (ver guardar presentar formulario 350)
+        
+        if (clase == '') {
+        	html =   html + "\"  > "
+        } else {
+        
+	        if (typeof eval(clase) == 'object') {
+	          html = html + "\" onClick=\"" + clase + ".manejar(); return false;\" > "
+	        } else {
+	          html = html + "\" onClick=\"new " + clase + "().manejar(); return false;\" > "
+	        }
+	        
+        } 
+        
+        html = html + "</a> "
+        return html;
+    }
+
+    this.manejar = function() {
+        alert("manejar" + this.nombre);
+    }
+
+}
+
+DAdicionaCopiaHojaJS.prototype = new DBotonJS();
+DAdicionaCopiaHojaJS.prototype.constructor=DAdicionaCopiaHojaJS;
+function DAdicionaCopiaHojaJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+      if(fachadaVisor.isHojaActualCopiable()) {
+        this.html=  this.setHtml.call(this,arrAttBoton);
+      }
+      else {
+          this.html=  " &nbsp;";
+      }
+      return this.html;
+    }
+
+    this.manejar=function(){
+        crearCopiaHojaActual();
+    }
+}
+
+
+DEliminaCopiaHojaJS.prototype = new DBotonJS();
+DEliminaCopiaHojaJS.prototype.constructor=DEliminaCopiaHojaJS;
+function DEliminaCopiaHojaJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+      if(fachadaVisor.isHojaActualCopiable() && fachadaVisor.getCopiaActual()+1 > 1) {
+        this.html=  this.setHtml.call(this,arrAttBoton);
+      }
+      else {
+          this.html=  " &nbsp;"
+      }
+      return this.html;
+    }
+
+    this.manejar=function(){
+        borrarCopiaHojaActual();
+    }
+}
+
+DHojaAnteriorJS.prototype = new DBotonJS();
+DHojaAnteriorJS.prototype.constructor=DHojaAnteriorJS;
+function DHojaAnteriorJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+      if (fachadaVisor.getPaginaActual()<=0) {
+           this.html= "&nbsp;"
+      }
+      else {
+        this.html=  this.setHtml.call(this,arrAttBoton);
+      }
+      return this.html;
+    }
+
+    this.manejar=function(){
+        paginaAnterior();
+    }
+}
+
+DhojaSiguienteJS.prototype = new DBotonJS();
+DhojaSiguienteJS.prototype.constructor=DhojaSiguienteJS;
+function DhojaSiguienteJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+      if ((fachadaVisor.getPaginaActual() + 1)==fachadaVisor.getTotalPaginas()) {
+           this.html = "&nbsp;"
+      }
+      else {
+        this.html=  this.setHtml.call(this,arrAttBoton);
+      }
+      return this.html;
+    }
+
+    this.manejar=function(){
+        paginaSiguiente()
+    }
+}
+
+DGuardarDocumentoTemporalJS.prototype = new DBotonJS();
+DGuardarDocumentoTemporalJS.prototype.constructor=DGuardarDocumentoTemporalJS;
+
+this.enproceso = false;
+this.sincambios= false;
+
+
+function DGuardarDocumentoTemporalJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar=function(){
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+      
+        
+        if (estadoActualDoc != ESTADO_DOC_PROCESO_FIRMA) {
+        	
+        	if (!this.enproceso ){
+        		
+        		this.enproceso=true;
+        	
+        	/*
+        	 * Implementacion mensaje espera mientras guarda
+        	 */
+
+            var guardarTemp = new DGuardarDocumentoJS()
+            var isOk = guardarTemp.estaBienDiligenciado();
+            
+            
+            if (isOk  ){
+	        	var unaFabricaMensajes = new parent.DFabricaMensajes();
+	            var unMensaje = unaFabricaMensajes.getMensaje(0,parent.COD_TIPO_INFO, "GUARDANDO DOCUMENTO","Procesando su solicitud. Por favor espere...<br><br>Tenga en cuenta que el tiempo del proceso puede depender de la velocidad de su conexión. ","","");
+	            miGestorMensajes.limpiarMensajes();
+	            miGestorMensajes.agregarMensaje(unMensaje);
+	            miGestorMensajes.mostrarMensaje();
+            } 
+            
+            var guardarDocTmp = new DGuardarDocTemporalJS(null);
+            guardarDocTmp.manejar(null);
+            
+            miGestorMensajes.cerrarlayer('divMensaje');
+            
+            /*
+             *  Se cambia el estado en la barra de navegación
+             */
+
+            if (isOk &&  DVisor.controlador.getIsDocGuardado()  ){
+	            
+            	var iDFormato = getAsString(DVisor.contexto.getIdFormato()); 
+            	if ( iDFormato !="120" || iDFormato !="130" || iDFormato !="540" || iDFormato !="520" || iDFormato !="690" || iDFormato !="320" ){
+            	    if (DVisor.controlador.getEstadoActualDoc()== ESTADO_DOC_TEMPORAL)
+            		    fachadaVisor.setEstadoDoc('Guardado');
+	               buildBarraNavegacion();
+                  }
+            
+            } 
+            this.enproceso=false;	
+            
+            
+           }  else {
+        	   
+           }
+        }
+        else {
+            DVisor.dialogomensaje.showModal('Error', 'EL DOCUMENTO ESTA EN ESTADO DE FIRMA Y NO PUEDE SER MODIFICADO.', 3);
+        }
+        
+      
+    }
+}
+
+DGuardarDocumentoDefinitivoJS.prototype = new DBotonJS();
+DGuardarDocumentoDefinitivoJS.prototype.constructor=DGuardarDocumentoDefinitivoJS;
+this.enproceso = false;
+function DGuardarDocumentoDefinitivoJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar=function(){
+    
+        var guardarTemp = new DGuardarDocumentoJS()
+        var isOk = guardarTemp.estaBienDiligenciado();
+        
+        var guardarDocDef = new DGuardarDocDefinitivoJS(null);
+        guardarDocDef.manejar(null);
+        
+        //Se cambia el estado en la barra de navegación
+   //     var estadoDocumento = DVisor.controlador.getEstadoActualDoc();
+        //if (DVisor.controlador.getEstadoActualDoc() == ESTADO_DOC_VALIDADO ){
+        //    fachadaVisor.setEstadoDoc('Definitivo');
+        //    buildBarraNavegacion();
+        //} 
+    }
+}
+
+DVorlverMatirzJS.prototype = new DBotonJS();
+DVorlverMatirzJS.prototype.constructor=DVorlverMatirzJS;
+function DVorlverMatirzJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar=function(){
+      var irMatriz = new DAuxBotonContinuar('WebDiligenciamiento/DefConsIntegral.faces');
+      irMatriz.ir();
+    }
+}
+
+/**
+ * Por medio de este boton se firma el documento diligenciado para presentarlo a la DIAN
+ */
+DPresentarFirmadoJS.prototype = new DBotonJS();
+DPresentarFirmadoJS.prototype.constructor=DPresentarFirmadoJS;
+function DPresentarFirmadoJS(arrAttboton) {
+    var arrAttBoton = arrAttboton;
+    var DVisor = parent.DVisor;
+    var docXMLFirmadoContrib = '';
+    var docXMLFirmadoRevisor = '';
+    var isAutoadhesivo = false;
+    var operacion = "";
+    var isFirmaRevisor = null;
+    var unaFabricaMensajes = new DFabricaMensajes();
+    var ventanaLogueo = null;
+    var ventanaFirma = null;
+    this.sinCeros = false;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    
+    this.manejar = function () {
+    	   	
+    	if(this.validarPresentacionCeros()){
+    		this.presentar();
+    	}else
+    	    {
+    	        var fabricaMensajes = new DFabricaMensajes();
+	            var mensaje = fabricaMensajes.getMensaje(0, COD_TIPO_CONFIRMACION, "AVISO IMPORTANTE","La declaración se encuentra diligenciada en ceros (0). Desea continuar?","","");
+	            miGestorMensajes.setObjEventoListener('onClickBtnSI', this);
+	            miGestorMensajes.limpiarMensajes();
+	            miGestorMensajes.agregarMensaje(mensaje);
+	            miGestorMensajes.mostrarMensaje();
+    	}
+   }
+    this.validarPresentacionCeros=function(){
+    	
+    	 
+    	var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+     	msjInvAcc.addInvocacion("diligenciamiento.verificacion.DCmdAccVerificacionHibridaEnVisor","inicializarVerificacionHibrida",
+                              new Array("long","int","int","long","int","int"),
+                              new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                            		    getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                            		    getAsString(DVisor.contexto.getIdFormato()),
+                            		    "0","0","0"),
+                              new Array("getRespuestas"));
+      DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+      
+      return this.sinCeros;
+    }   
+
+    this.confirmarSI=function(){
+    	miGestorMensajes.cerrarlayer('divMensaje');
+     	this.presentar();
+    	
+    }
+    this.presentar = function() {
+
+        var idFormato = getAsString(DVisor.contexto.getIdFormato());
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        var roles = new Array(185, 201, 309, 281, 230, 234, 244, 241, 248, 252, 256, 260, 264, 268,
+                              272, 276, 281, 305, 287, 291, 295, 299, 303, 336, 219, 436, 439, 377);
+
+        if (estadoActualDoc != ESTADO_DOC_PRESENTADO) {
+
+            if (
+                DVisor.contexto.isRol(roles)) {
+
+                if (idFormato == "520") {
+                    this.presentar520();
+                }
+                else if (idFormato == "540") {
+                    this.presentar540();
+                }
+                else if (idFormato == "320") {
+                    this.presentar320();
+                }
+                else if (idFormato == "120" || idFormato == "130") {
+                    this.presentar120();
+                }
+                else {
+
+                    if (idFormato == "110"
+                        || idFormato == "210" || idFormato == "300"
+                        || idFormato == "350" || idFormato == "420"
+                        || idFormato == "490" || idFormato == "520"
+                        || idFormato == "532" || idFormato == "540"
+                        || idFormato == "690" || idFormato == "10006"
+                        || idFormato == "219" || idFormato == "320"
+                        || idFormato == "410" || idFormato == "400"	) {
+                        var fabricaMensajes = new DFabricaMensajes();
+                        
+                        if (idFormato == "350")
+                           var mensaje = fabricaMensajes.getMensaje(0, COD_TIPO_INFO, "AVISO IMPORTANTE","Con esta gestión usted presenta formalmente ante la DIAN la declaración. Una vez surtido este trámite, al documento generado por el Servicio Informático Electrónico se le incluye la leyenda <b> \"RECIBIDO\"</b>." + 
+                        		                                                      "<br>Tenga en cuenta que la declaración de <b>RETENCION EN LA FUENTE</b> que se presente sin pago total no producirá efecto legal alguno, "+
+                        		                                                      "salvo que el agente retenedor sea titular de un saldo a favor igual o superior a ochenta y dos mil (82.000) UVT susceptible de compensar con el saldo a pagar de la respectiva declaración de retención en la fuente. (Articulo 15 de la Ley 1430 del 29 de diciembre de 2010)","","");
+                        else
+                        	var mensaje = fabricaMensajes.getMensaje(0, COD_TIPO_INFO, "AVISO IMPORTANTE","Con esta gestión usted presenta formalmente ante la DIAN la declaración. Una vez surtido este trámite, al documento generado por el Servicio Informático Electrónico se le incluye la leyenda <b>\"RECIBIDO\"</b>.","","");
+                                               
+                        miGestorMensajes.limpiarMensajes();
+                        miGestorMensajes.agregarMensaje(mensaje);
+                        miGestorMensajes.mostrarMensaje();
+                    }
+                    this.presentarGen();
+                }
+            }
+            else {
+                mostrarError('USTED NO ESTA AUTORIZADO PARA PRESENTAR DECLARACIÓN.');
+            }
+        }
+        else {
+            mostrarError('YA HA PRESENTADO UNA DECLARACIÓN, NO ES PERMITIDO DILIGENCIAR DE NUEVO, DEBE PRESENTAR UNA CORRECCIÓN.');
+        }
+    
+        /*
+         * Habilitar el botón Liquidar
+         */                            
+            
+            var estadoDocumento = DVisor.controlador.getEstadoActualDoc();
+            
+            if (DVisor.controlador.getEstadoActualDoc()== ESTADO_DOC_PRESENTADO ){
+               fachadaVisor.setEstadoDoc('Presentado');
+               buildBarraNavegacion();
+            } 
+    
+    
+    
+    }
+    
+    this.presentarGen = function() {
+
+        
+        //Define el m\uFFFDodo inicializar y los getters a invocar
+        var metodoInicializar = "inicializarDiligenciamiento";
+        var arrGetters = new Array("getEstadoDoc", "getEsPresentado", "getTieneFirmasCompletas", "getPasaValidaciones");
+        var arrTipParamsIni = new Array("long","int","int","int","int","int","long");
+        var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                                        getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                                        getAsString(DVisor.contexto.getIdFormato()),
+                                        getAsString(DVisor.contexto.getVersionFormato()),
+                                        getAsString(DVisor.getValorCasilla(1,-1)),
+                                        getAsString(DVisor.contexto.getParametro("PERIODO")),
+                                        getAsString(DVisor.getValorCasilla(5,-1)));
+
+        var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+        msjInvAcc.addInvocacion("diligenciamiento.documentos.DCmdAccDiligenciarDocPresentado",
+                                metodoInicializar,
+                                arrTipParamsIni,
+                                arrValParamsIni,
+                                arrGetters);
+        
+            operacion = "presentar";
+            
+            DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+        
+    }
+
+    this.presentar520 = function() {
+
+      
+      //Define el m\uFFFDodo inicializar y los getters a invocar
+      var metodoInicializar = "inicializarDiligenciamiento";
+      var arrGetters = new Array("getEstadoDoc", "getEsPresentado", "getTieneFirmasCompletas", "getPasaValidaciones");
+      var arrTipParamsIni = new Array("long","int","int","int","int","int","long", "long", "int","int");
+      var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                                      getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                                      getAsString(DVisor.contexto.getIdFormato()),
+                                      getAsString(DVisor.contexto.getVersionFormato()),
+                                      getAsString(DVisor.getValorCasilla(1,-1)),
+                                      getAsString(DVisor.contexto.getParametro("PERIODO")),
+                                      getAsString(DVisor.getValorCasilla(5,-1)),
+                                      getAsString(DVisor.contexto.getParametro("NUM_RADICACION")),
+                                      "1",
+                                      getAsString(DVisor.contexto.getParametro("MODO_DILIGENCIAMIENTO_NEGOCIO")));
+
+      var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+      msjInvAcc.addInvocacion("operacionaduanera.planvallejo.DCmdAccDiligenciarDoc520_6Presentado",
+                              metodoInicializar,
+                              arrTipParamsIni,
+                              arrValParamsIni,
+                              arrGetters);
+      
+          operacion = "presentar";
+        
+          DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+    }
+
+  this.presentar540 = function() {
+
+      
+      //Define el m\uFFFDodo inicializar y los getters a invocar
+      var metodoInicializar = "inicializarDiligenciamiento";
+      var arrGetters = new Array("getEstadoDoc", "getEsPresentado", "getTieneFirmasCompletas", "getPasaValidaciones");
+      var arrTipParamsIni = new Array("long","int","int","int","int","int","long", "long", "int", "int");
+      var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                                      getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                                      getAsString(DVisor.contexto.getIdFormato()),
+                                      getAsString(DVisor.contexto.getVersionFormato()),
+                                      getAsString(DVisor.getValorCasilla(1,-1)),
+                                      getAsString(DVisor.contexto.getParametro("PERIODO")),
+                                      getAsString(DVisor.getValorCasilla(5,-1)),
+                                      "0", "1", "3");
+
+      var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+      msjInvAcc.addInvocacion("operacionaduanera.traficopostal.DCmdAccPresentar540",
+                              metodoInicializar,
+                              arrTipParamsIni,
+                              arrValParamsIni,
+                              arrGetters);
+      
+          operacion = "presentar";
+          
+          DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+    }
+
+  this.presentar320 = function() {
+
+      
+      //Define el m\uFFFDodo inicializar y los getters a invocar
+      var metodoInicializar = "inicializar";
+      var arrGetters = new Array("getCodEstado", "getPresentado", "getTieneFirmas", "getPasaValidaciones");
+      var arrTipParamsIni = new Array("long","int","int","int","int","int","long", "int");
+      var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                                      getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                                      getAsString(DVisor.contexto.getIdFormato()),
+                                      getAsString(DVisor.contexto.getVersionFormato()),
+                                      getAsString(DVisor.getValorCasilla(1,-1)),
+                                      getAsString(DVisor.contexto.getParametro("PERIODO")),
+                                      getAsString(DVisor.getValorCasilla(5,-1)),
+                                      "3");
+
+      var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+      msjInvAcc.addInvocacion("diligenciamientomasivo.juegosdesuerteyazar.DCmdAccPresentar320",
+                              metodoInicializar,
+                              arrTipParamsIni,
+                              arrValParamsIni,
+                              arrGetters);
+      
+          operacion = "presentar";
+          
+          DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+    }
+  this.presentar120 = function() {
+      var version = getAsString(DVisor.contexto.getVersionFormato());
+
+      var metodoInicializar = "inicializarDiligenciamiento";
+      var arrGetters = new Array("getEstadoDoc", "getEsPresentado", "getTieneFirmasCompletas", "getPasaValidaciones");
+      var arrTipParamsIni = new Array("long","int","int","int","int","int","long", "long", "int", "int");
+      var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                                      getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                                      getAsString(DVisor.contexto.getIdFormato()),
+                                      getAsString(DVisor.contexto.getVersionFormato()),
+                                      getAsString(DVisor.getValorCasilla(1,-1)),
+                                      getAsString(DVisor.contexto.getParametro("PERIODO")),
+                                      getAsString(DVisor.getValorCasilla(5,-1)),
+                                      "0",
+                                      "1", "3");
+
+      var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+      msjInvAcc.addInvocacion("diligenciamientomasivo.documentos.DCmdAccPresentar120",
+                              metodoInicializar,
+                              arrTipParamsIni,
+                              arrValParamsIni,
+                              arrGetters);
+          operacion = "presentar";
+          DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+    }
+
+
+    this.manejarRespuesta = function(msjRespuesta) {
+        respuestaMensaje = true;
+        var DMensajeJS = parent.DMensajeJS;
+        var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+        if (execState) {
+
+            var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+
+            
+           var NombreAccion = msjRespuesta.getParametro(DMensajeJS.NOMBRE_ACCION);
+           var NombreInicializar = msjRespuesta.getParametro(DMensajeJS.NOMBRE_INICIALIZAR);
+            
+            
+            if ( NombreAccion == 'diligenciamiento.verificacion.DCmdAccVerificacionHibridaEnVisor' && NombreInicializar =='inicializarVerificacionHibrida' ){
+            	
+                var enceros = respuestas[0];
+               
+                if (enceros == '1' ){
+                	this.sinCeros = false;
+                }else{
+                	this.sinCeros = true;
+                }
+            	
+            } else {
+            
+            if (respuestas[2] == true) {
+
+                if (respuestas[3] == true) {
+                    if (respuestas[1] == true) {
+                        DVisor.controlador.setEstadoActualDoc(respuestas[0]);
+                      
+
+                        var ventana = window.open("/WebDiligenciamiento/DefComprobanteDocFirmadoPopUp.faces?numDocumento="+getAsString(DVisor.getValorCasilla(4,-1))+"&numRepeticion="+getAsString(DVisor.controlador.getNumRepeticionDoc()), "comprobante","width=700,height=200,scrollbars=yes");
+                        ventana.moveTo(0,0);
+                    }
+                    else {
+                        mostrarErrorServidor(msjRespuesta, 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO.');
+                    }
+                }
+                else {
+                    DVisor.dialogomensaje.showModal('Error', 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO PORQUE NO HA CUMPLIDO LAS VALIDACIONES.', 3);
+                }
+            }
+            else {
+                DVisor.dialogomensaje.showModal('Error', 'SU DECLARACIÓN DEBE ESTAR FIRMADA POR TODOS LOS AUTORIZADOS Y OBLIGADOS A FIRMAR SELECCIONADOS, PARA PODER SER PRESENTADA.', 3);
+            }
+            
+        } // Implementacion
+        }
+        else {
+            
+            
+            mostrarErrorServidor(msjRespuesta, 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO.');
+        }
+    }
+}
+
+
+    function mostrarErrorServidor(msjRespuesta, error){
+          var DMensajeJS = parent.DMensajeJS;
+          var mensajeError = "";
+          mensajeError += msjRespuesta.getParametro(DMensajeJS.MENSAJE_ERROR);
+          var mensajeDetallado = "";
+          mensajeDetallado += msjRespuesta.getParametro(DMensajeJS.MENSAJE_DETALLADO);
+
+
+
+          var mensajeFinal = error;
+          if ((mensajeError !== null) && (mensajeError != '') && (mensajeError != 'undefined')) {
+            mensajeFinal += escape('\n' + mensajeError);
+          }
+          if ((mensajeDetallado !== null) && (mensajeDetallado != '') && (mensajeDetallado != 'undefined')) {
+            mensajeFinal += escape('\n' + mensajeDetallado);
+          }
+          DVisor.dialogomensaje.showModal('Error', unescape(mensajeFinal) , 3);
+  }
+
+/**
+ * Por medio de este boton se firma el documento diligenciado para presentarlo a la DIAN
+ */
+DPresentarFirmadoNoValidaFirmasJS.prototype = new DBotonJS();
+DPresentarFirmadoNoValidaFirmasJS.prototype.constructor=DPresentarFirmadoNoValidaFirmasJS;
+function DPresentarFirmadoNoValidaFirmasJS(arrAttboton) {
+    var arrAttBoton = arrAttboton;
+    var DVisor = parent.DVisor;
+    var docXMLFirmadoContrib = '';
+    var docXMLFirmadoRevisor = '';
+    var isAutoadhesivo = false;
+    var operacion = "";
+    var isFirmaRevisor = null;
+    var unaFabricaMensajes = new DFabricaMensajes();
+    var ventanaLogueo = null;
+    var ventanaFirma = null;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar = function () {
+
+        this.presentar();
+    }
+
+    this.presentar = function() {
+
+        var idFormato = getAsString(DVisor.contexto.getIdFormato());
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        var roles = new Array(185, 201, 309, 281, 230, 234, 244, 241, 248, 252, 256, 260, 264, 268, 272, 276,
+                              281, 305, 287, 291, 295, 299, 303, 336, 219, 436, 439, 413, 377, 381, 382);
+        if (estadoActualDoc != ESTADO_DOC_PRESENTADO) {
+
+            if (
+                DVisor.contexto.isRol(roles)) {
+
+                if (idFormato == "110"
+                    || idFormato == "210" || idFormato == "300"
+                    || idFormato == "350" || idFormato == "420"
+                    || idFormato == "490" || idFormato == "520"
+                    || idFormato == "532" || idFormato == "540"
+                    || idFormato == "690" || idFormato == "10006"
+                    || idFormato == "219" || idFormato == "1109"
+                    || idFormato == "1072" || idFormato == "1087"
+                    || idFormato == "320") {
+                    var fabricaMensajes = new DFabricaMensajes();
+                    
+                    if (idFormato == "350")
+                        var mensaje = fabricaMensajes.getMensaje(0, COD_TIPO_INFO, "AVISO IMPORTANTE","Con esta gestión usted presenta la declaración ante la DIAN y el documento generado a través de este servicio informático electrónico tendrá la leyenda <b>\"RECIBIDO\"</b>." + 
+                     		                                                      "<br>Tenga en cuenta que según lo dispuesto por la Ley 1066 de 29-07-2006 cuando la declaración de <b>RETENCION EN LA FUENTE</b> se presenta y no se realiza el pago, no se entenderá "+
+                     		                                                      "cumplido el deber de presentar la declaración tributaria. Literal e) Art. 580 del Estatuto Tributario.","","");
+                     else
+                     	var mensaje = fabricaMensajes.getMensaje(0, COD_TIPO_INFO, "AVISO IMPORTANTE","Con esta gestión usted presenta la declaración ante la DIAN y el documento generado a través de este servicio informático electrónico tendrá la leyenda <b>\"RECIBIDO\"</b>.","","");
+                    
+                    miGestorMensajes.limpiarMensajes();
+                    miGestorMensajes.agregarMensaje(mensaje);
+                    miGestorMensajes.mostrarMensaje();
+                }
+                this.presentarGen();
+
+            }
+            else {
+                mostrarError('USTED NO ESTA AUTORIZADO PARA PRESENTAR DECLARACIÓN.');
+            }
+        }
+        else {
+            mostrarError('YA HA PRESENTADO UNA DECLARACIÓN, NO ES PERMITIDO DILIGENCIAR DE NUEVO, DEBE PRESENTAR UNA CORRECCIÓN.');
+        }
+    }
+
+    this.presentarGen = function() {
+
+        
+        //Define el m\uFFFDodo inicializar y los getters a invocar
+        var metodoInicializar = "inicializarDiligenciamientoValidaFirmas";
+        var arrGetters = new Array("getEstadoDoc", "getEsPresentado", "getTieneFirmasCompletas", "getPasaValidaciones");
+        var arrTipParamsIni = new Array("long","int","int","int","int","int","long", "String");
+        var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                                        getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                                        getAsString(DVisor.contexto.getIdFormato()),
+                                        getAsString(DVisor.contexto.getVersionFormato()),
+                                        getAsString(DVisor.getValorCasilla(1,-1)),
+                                        getAsString(DVisor.contexto.getParametro("PERIODO")),
+                                        getAsString(DVisor.getValorCasilla(5,-1)), "false");
+
+        var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+        msjInvAcc.addInvocacion("diligenciamiento.documentos.DCmdAccDiligenciarDocPresentado",
+                                metodoInicializar,
+                                arrTipParamsIni,
+                                arrValParamsIni,
+                                arrGetters);
+        
+            operacion = "presentar";
+            
+            DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+        
+    }
+
+    this.manejarRespuesta = function(msjRespuesta) {
+        respuestaMensaje = true;
+        var DMensajeJS = parent.DMensajeJS;
+        var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+        if (execState) {
+
+            var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+
+            if (respuestas[2] == true) {
+
+                if (respuestas[3] == true) {
+                    if (respuestas[1] == true) {
+                        DVisor.controlador.setEstadoActualDoc(respuestas[0]);
+                      
+
+                        var ventana = window.open("/WebDiligenciamiento/DefComprobanteDocFirmadoPopUp.faces?numDocumento="+getAsString(DVisor.getValorCasilla(4,-1))+"&numRepeticion="+getAsString(DVisor.controlador.getNumRepeticionDoc()), "comprobante","width=700,height=200,scrollbars=yes");
+                        ventana.moveTo(0,0);
+                    }
+                    else {
+                        
+                        mostrarErrorServidor(msjRespuesta, 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO.');
+                    }
+                }
+                else {
+                    DVisor.dialogomensaje.showModal('Error', 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO PORQUE NO HA CUMPLIDO LAS VALIDACIONES.', 3);
+                }
+            }
+            else {
+                DVisor.dialogomensaje.showModal('Error', 'SU DECLARACIÓN DEBE ESTAR FIRMADA POR TODOS LOS AUTORIZADOS Y OBLIGADOS A FIRMAR SELECCIONADOS, PARA PODER SER PRESENTADA.', 3);
+            }
+        }
+        else {
+            
+            mostrarErrorServidor(msjRespuesta, 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO.');
+        }
+    }
+}
+
+
+/**
+ * Boton que se usa para presentar documentos de correccion manual.
+ */
+DPresentarCorreccionManualJS.prototype = new DBotonJS();
+DPresentarCorreccionManualJS.prototype.constructor=DPresentarCorreccionManualJS;
+function DPresentarCorreccionManualJS(arrAttboton) {
+    var arrAttBoton = arrAttboton;
+    var DVisor = parent.DVisor;
+    var docXMLFirmadoContrib = '';
+    var docXMLFirmadoRevisor = '';
+    var isAutoadhesivo = false;
+    var operacion = "";
+    var isFirmaRevisor = null;
+    var unaFabricaMensajes = new DFabricaMensajes();
+    var ventanaLogueo = null;
+    var ventanaFirma = null;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar = function () {
+
+        this.presentar();
+    }
+
+    this.presentar = function() {
+
+        var idFormato = getAsString(DVisor.contexto.getIdFormato());
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        var roles = new Array(226);
+
+        if (estadoActualDoc != ESTADO_DOC_PRESENTADO) {
+
+            if (DVisor.contexto.isRol(roles)/*rolUsu == 226*/) {
+                this.presentarGen();
+            }
+            else {
+                mostrarError('USTED NO ESTA AUTORIZADO PARA PRESENTAR DECLARACIÓN.');
+            }
+        }
+        else {
+            mostrarError('YA HA PRESENTADO UNA DECLARACIÓN, NO ES PERMITIDO DILIGENCIAR DE NUEVO, DEBE PRESENTAR UNA CORRECCIÓN.');
+        }
+    }
+
+    this.presentarGen = function() {
+        var metodoInicializar = "inicializarDiligenciamiento";
+        var arrGetters = new Array("getEstadoDoc", "getEsPresentado", "getTieneFirmasCompletas", "getPasaValidaciones");
+        var arrTipParamsIni = new Array("long","int","int","int","int","long");
+        var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),
+                                        getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                                        getAsString(DVisor.contexto.getIdFormato()),
+                                        getAsString(DVisor.contexto.getVersionFormato()),
+                                        getAsString(DVisor.getValorCasilla(1,-1)),
+                                        getAsString(DVisor.getValorCasilla(5,-1)));
+
+        var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+        msjInvAcc.addInvocacion("gestionmasiva.correccion.DCmdAccDiliDocPresentadoModoCorreccion",
+                                metodoInicializar,
+                                arrTipParamsIni,
+                                arrValParamsIni,
+                                arrGetters);
+            operacion = "presentar";
+            DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+    }
+
+    this.manejarRespuesta = function(msjRespuesta) {
+        respuestaMensaje = true;
+        var DMensajeJS = parent.DMensajeJS;
+        var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+        if (execState) {
+
+            var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+            if (respuestas[3] == true) {
+                if (respuestas[1] == true) {
+                    DVisor.controlador.setEstadoActualDoc(respuestas[0]);
+                    window.open("/WebDiligenciamiento/DefComprobanteDocFirmadoPopUp.faces?numDocumento="+getAsString(DVisor.getValorCasilla(4,-1))+"&numRepeticion="+getAsString(DVisor.controlador.getNumRepeticionDoc()), "comprobante","width=700,height=200,scrollbars=yes");
+                }
+                else {
+                    
+                    mostrarErrorServidor(msjRespuesta, 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO.');
+                }
+            }
+            else {
+                DVisor.dialogomensaje.showModal('Error', 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO PORQUE NO HA CUMPLIDO LAS VALIDACIONES.', 3);
+            }
+        }
+        else {
+            
+            mostrarErrorServidor(msjRespuesta, 'EL DOCUMENTO NO HA PODIDO SER PRESENTADO.');
+        }
+    }
+}
+
+
+/**
+ * Por medio de este boton se firma el documento diligenciado para presentarlo a la DIAN
+ */
+DFirmarJS.prototype = new DBotonJS();
+DFirmarJS.prototype.constructor=DFirmarJS;
+function DFirmarJS(arrAttboton) {
+    var arrAttBoton = arrAttboton;
+    var DVisor = parent.DVisor;
+    var ventanaPopup;
+    
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar = function () {
+
+        var haCambiado = new DGuardarDocumentoJS().haCambiado();
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        if (estadoActualDoc != ESTADO_DOC_PRESENTADO) {
+
+            if (!haCambiado) {
+                if (estadoActualDoc == ESTADO_DOC_TEMPORAL || estadoActualDoc == ESTADO_DOC_PROCESO_FIRMA) {
+
+                    this.adicionarAutoAdhesivo();
+                }
+                else {
+                    mostrarError('PARA FIRMAR EL DOCUMENTO PRIMERO DEBE ESTAR EN BORRADOR.');
+                }
+            }
+            else {
+                mostrarError('EL DOCUMENTO HA CAMBIADO DEBE GUARDAR ANTES DE FIRMAR.');
+            }
+        }
+        else {
+            mostrarError('YA HA PRESENTADO UNA DECLARACIÓN, NO ES PERMITIDO DILIGENCIAR DE NUEVO, DEBE PRESENTAR UNA CORRECCIÓN.');
+        }
+    }
+
+    this.adicionarAutoAdhesivo = function() {
+
+      //Define el metodo inicializar y los getters a invocar
+      var metodoInicializar = "inicializar";
+      var arrGetters = new Array("generacionExitosa");
+      var arrTipParamsIni = new Array("long","int","int","int","long");
+      var arrValParamsIni = new Array(getAsString(DVisor.getValorCasilla(4,-1)),//Id Num. formulario
+                                      getAsString(DVisor.contexto.getIdFormato()),
+                                      getAsString(DVisor.contexto.getVersionFormato()),
+                                      getAsString(DVisor.controlador.getNumRepeticionDoc()),
+                                      getAsString(DVisor.getValorCasilla(5,-1))); // Nit. contribuyente
+
+      var msjInvAcc = DVisor.obtenerDMensajeEjecAccion();
+      msjInvAcc.addInvocacion("entradasalida.formatos.DCmdAccAddAutoadhesivoFormato",
+                              metodoInicializar,
+                              arrTipParamsIni,
+                              arrValParamsIni,
+                              arrGetters);
+
+      if (msjInvAcc.validarMensaje()) {
+
+          DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+      }
+
+    }
+
+    this.firmarXML = function() {
+        var idDocumento = getAsString(DVisor.getValorCasilla(4,-1));
+        var idFormato = getAsString(DVisor.contexto.getIdFormato());
+        ventanaPopup = window.open("/WebDiligenciamiento/DefGestionFirmasPopup.faces?numeroDocumento="+idDocumento+"&idFormato="+idFormato,"gestionFirmas","width=600,height=400,scrollbars=yes,modal=yes");
+    
+    }
+
+    this.manejarRespuesta = function(msjRespuesta) {
+        respuestaMensaje = true;
+        var DMensajeJS = parent.DMensajeJS;
+        var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+        if (execState) {
+
+            var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+                                                   
+            if (respuestas[0] == false)
+            	mostrarErrorServidor(msjRespuesta, '* ERROR EN LA GENERACION DEL AUTOADHESIVO *\n\nSe presentó un error al generar el Autoadhesivo. Intente nuevamente firmar el documento.');
+            else     
+
+            	this.firmarXML();
+        }
+        else {
+            mostrarErrorServidor(msjRespuesta, '* ERROR EN LA GENERACION DEL AUTOADHESIVO *\n\nSe presentó un error al generar el Autoadhesivo. Intente nuevamente firmar el documento.');
+        }
+    }
+}
+
+/**
+ * Invocado por la ventana de trámite de firmas,
+ * actualiza el nuevo estado del documento.
+ */
+function onTramiteFirmas(){
+  var obtenerEstado = new DObtenerEstadoDocumentoJS(null);
+  obtenerEstado.manejar(null);
+  /*
+   * Habilitar el botón de firma
+   */                            
+      
+      var estadoDocumento = DVisor.controlador.getEstadoActualDoc();
+      
+      if (DVisor.controlador.getEstadoActualDoc()== ESTADO_DOC_PROCESO_FIRMA ){
+      fachadaVisor.setEstadoDoc('Aut.y/o Firm.');
+      buildBarraNavegacion();
+      } else 
+    	  if (DVisor.controlador.getEstadoActualDoc()== ESTADO_DOC_TEMPORAL ){
+    	      fachadaVisor.setEstadoDoc('Guardado');
+    	      buildBarraNavegacion();
+    		  
+    	  }
+}
+
+/**
+ * Boton para firmar y formalizar una corrección sugerida.
+ */
+DFirmaDirectaJS.prototype = new DBotonJS();
+DFirmaDirectaJS.prototype.constructor=DFirmaDirectaJS;
+function DFirmaDirectaJS(arrAttboton) {
+    var arrAttBoton = arrAttboton;
+    var DVisor = parent.DVisor;
+    var ventanaPopup;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar = function () {
+
+        var haCambiado = new DGuardarDocumentoJS().haCambiado();
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        if (!haCambiado) {
+            if (estadoActualDoc == ESTADO_DOC_CORRECCION_SUGERIDA) {
+
+                this.firmarArchivo();
+            }
+            else if (estadoActualDoc == ESTADO_DOC_PRESENTADO) {
+              mostrarError('EL DOCUMENTO YA HA SIDO FORMALIZADO.');
+            }
+            else {
+              mostrarError('PARA FORMALIZAR EL DOCUMENTO DEBE SER UNA CORRECCIÓN SUGERIDA.');
+            }
+        }
+        else {
+            mostrarError('EL DOCUMENTO HA CAMBIADO DEBE GUARDAR ANTES DE FIRMAR.');
+        }
+    }
+
+    this.firmarArchivo = function() {
+
+        var xmlDoc = DVisor.docCopia.toXml();
+        var numDocumento = DVisor.getValorCasilla(4,-1);
+        var numRepeticion = DVisor.controlador.getNumRepeticionDoc();
+        ventanaPopup = window.open("/WebDiligenciamiento/DefFirmaCorrecManualPopUp.faces?numRepeticion="+numRepeticion+"&numDocumento="+numDocumento+"","","width=415,height=300,scrollbars=yes");
+    }
+}
+
+
+/**
+ * Boton para firmar y formalizar una corrección sugerida.
+ */
+DFirmaSimpleJS.prototype = new DBotonJS();
+DFirmaSimpleJS.prototype.constructor=DFirmaSimpleJS;
+function DFirmaSimpleJS(arrAttboton) {
+    var arrAttBoton = arrAttboton;
+    var DVisor = parent.DVisor;
+    var ventanaPopup;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar = function () {
+
+        var haCambiado = new DGuardarDocumentoJS().haCambiado();
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        if (!haCambiado) {
+            if (estadoActualDoc == ESTADO_DOC_TEMPORAL) {
+
+                this.firmarArchivo();
+            }
+            else if (estadoActualDoc == ESTADO_DOC_PRESENTADO) {
+              mostrarError('EL DOCUMENTO YA HA SIDO PRESENTADO.');
+            }
+            else {
+              mostrarError('PARA FIRMAR EL DOCUMENTO DEBE HABER SIDO GUARDADO TEMPORALMENTE.');
+            }
+        }
+        else {
+            mostrarError('EL DOCUMENTO HA CAMBIADO DEBE GUARDAR ANTES DE FIRMAR.');
+        }
+    }
+
+    this.firmarArchivo = function() {
+
+        var xmlDoc = DVisor.docCopia.toXml();
+        var numDocumento = DVisor.getValorCasilla(4,-1);
+        var numRepeticion = DVisor.controlador.getNumRepeticionDoc();
+        ventanaPopup = window.open("/WebDiligenciamiento/DefFirmaCorrecManualPopUp.faces?numRepeticion="+numRepeticion+"&numDocumento="+numDocumento+"","","width=415,height=300,scrollbars=yes");
+    }
+}
+
+/**
+ * Boton para firmar y formalizar una corrección sugerida.
+ */
+DFirmaSimpleContabilidadJS.prototype = new DBotonJS();
+DFirmaSimpleContabilidadJS.prototype.constructor=DFirmaSimpleContabilidadJS;
+function DFirmaSimpleContabilidadJS(arrAttboton) {
+    var arrAttBoton = arrAttboton;
+    var DVisor = parent.DVisor;
+    var ventanaPopup;
+
+    this.getHtml=function(){
+      this.html=  this.setHtml.call(this,arrAttBoton);
+      return this.html;
+    }
+
+    this.manejar = function () {
+
+        var haCambiado = new DGuardarDocumentoJS().haCambiado();
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        if (!haCambiado) {
+            if (estadoActualDoc == ESTADO_DOC_TEMPORAL) {
+
+                this.firmarArchivo();
+            }
+            else if (estadoActualDoc == ESTADO_DOC_PRESENTADO) {
+              mostrarError('EL DOCUMENTO YA HA SIDO PRESENTADO.');
+            }
+            else {
+              mostrarError('PARA FIRMAR EL DOCUMENTO DEBE HABER SIDO GUARDADO TEMPORALMENTE.');
+            }
+        }
+        else {
+            mostrarError('EL DOCUMENTO HA CAMBIADO DEBE GUARDAR ANTES DE FIRMAR.');
+        }
+    }
+
+    this.firmarArchivo = function() {
+
+        var xmlDoc = DVisor.docCopia.toXml();
+        var numDocumento = DVisor.getValorCasilla(4,-1);
+        var numRepeticion = DVisor.controlador.getNumRepeticionDoc();
+        ventanaPopup = window.open("/WebDiligenciamiento/DefFirmaFormContabilidadPopUp.faces?numRepeticion="+numRepeticion+"&numDocumento="+numDocumento+"","","width=415,height=300,scrollbars=yes");
+    }
+}
+
+/**
+ * Invocado por la ventana de formalización de corrección sugerida.
+ */
+function onFormalizarSugerida(){
+  DVisor.controlador.setEstadoActualDoc(ESTADO_DOC_PRESENTADO);
+}
+
+/**
+ * A través de este botón se liquida el documento y abre la página para ver el recibo.
+ */
+DGenerarReciboPagoJS.prototype = new DBotonJS();
+DGenerarReciboPagoJS.prototype.constructor=DGenerarReciboPagoJS;
+function DGenerarReciboPagoJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+        this.html=  this.setHtml.call(this,arrAttBoton);
+        return this.html;
+    }
+
+    this.manejar=function(){
+        var logeo = DVisor.contexto?DVisor.contexto.getParametro("CTX_SEG_CERTIFICADO"):false;
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        if (estadoActualDoc == ESTADO_DOC_VALIDADO || estadoActualDoc == ESTADO_DOC_PRESENTADO) {
+            
+
+            this.liquidar();
+        } else {
+            
+            mostrarError('PARA LIQUIDAR EL DOCUMENTO DEBE SER DEFINITIVO O PRESENTADO.');
+        }
+    }
+
+    this.liquidar=function() {
+        var auxBotliq = new DAuxBotonContinuar("/WebDiligenciamiento/DefLiquidarDocumento.faces");
+        auxBotliq.adicionarParametro("numDocumento", getAsString(DVisor.getValorCasilla(4,-1)));// Casilla 4 de Numero de Formulario
+        auxBotliq.adicionarParametro("idFormato", getAsString(DVisor.contexto.getIdFormato()));
+        auxBotliq.adicionarParametro("numRepeticion", getAsString(DVisor.controlador.getNumRepeticionDoc()));
+        auxBotliq.adicionarParametro("numPeriodo", getAsString(DVisor.contexto.getParametro(DContextoJS.PERIODO)));
+        auxBotliq.adicionarParametro("annoGravable", getAsString(DVisor.getValorCasilla(1,-1)));// Anno grabable
+        auxBotliq.adicionarParametro("numCuota", getAsString(DVisor.contexto.getParametro(DContextoJS.NUM_CUOTA)));
+        auxBotliq.adicionarParametro("totalCuotas", getAsString(DVisor.contexto.getParametro(DContextoJS.TOTAL_CUOTAS)));
+        auxBotliq.adicionarParametro("conceptoLiquidacion", getAsString(DVisor.contexto.getParametro("CONCEPTO")));
+        auxBotliq.adicionarParametro("estadoDoc", DVisor.controlador.getEstadoActualDoc());
+        auxBotliq.adicionarParametro("tipoDeclarante", getAsString(DVisor.contexto.getParametro(DContextoJS.ID_TIPO_DECLARANTE)));
+        auxBotliq.ir();
+    }
+}
+
+/**
+ * A través de este botón se liquida el documento y abre la página para ver el recibo.
+ */
+DGenerarReciboPagoGenericoJS.prototype = new DBotonJS();
+DGenerarReciboPagoGenericoJS.prototype.constructor=DGenerarReciboPagoGenericoJS;
+function DGenerarReciboPagoGenericoJS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+        this.html=  this.setHtml.call(this,arrAttBoton);
+        return this.html;
+    }
+
+    this.manejar=function(){
+        var logeo = DVisor.contexto?DVisor.contexto.getParametro("CTX_SEG_CERTIFICADO"):false;
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        if (estadoActualDoc == ESTADO_DOC_VALIDADO || estadoActualDoc == ESTADO_DOC_PRESENTADO) {
+            this.liquidar();
+        } else {
+            mostrarError('PARA LIQUIDAR EL DOCUMENTO DEBE SER DEFINITIVO O PRESENTADO.');
+        }
+    }
+
+    this.liquidar=function() {
+        var auxBotliq = new DAuxBotonContinuar("/WebDiligenciamiento/DefLiquidarDocumento.faces");
+        auxBotliq.adicionarParametro("numDocumento", getAsString(DVisor.getValorCasilla(4,-1)));// Casilla 4 de Numero de Formulario
+        auxBotliq.adicionarParametro("idFormato", getAsString(DVisor.contexto.getIdFormato()));
+        auxBotliq.adicionarParametro("numRepeticion", getAsString(DVisor.controlador.getNumRepeticionDoc()));
+        auxBotliq.adicionarParametro("numPeriodo", getAsString(DVisor.contexto.getParametro(DContextoJS.PERIODO)));
+        auxBotliq.adicionarParametro("annoGravable", getAsString(DVisor.getValorCasilla(1,-1)));// Anno grabable
+        auxBotliq.adicionarParametro("numCuota", getAsString(DVisor.contexto.getParametro(DContextoJS.NUM_CUOTA)));
+        auxBotliq.adicionarParametro("totalCuotas", getAsString(DVisor.contexto.getParametro(DContextoJS.TOTAL_CUOTAS)));
+        auxBotliq.adicionarParametro("conceptoLiquidacion", getAsString(DVisor.contexto.getParametro("CONCEPTO")));
+        auxBotliq.adicionarParametro("estadoDoc", DVisor.controlador.getEstadoActualDoc());
+        auxBotliq.adicionarParametro("tipoDeclarante", getAsString(DVisor.contexto.getParametro(DContextoJS.ID_TIPO_DECLARANTE)));
+        auxBotliq.adicionarParametro("liquidacionGenerica","true");
+        auxBotliq.ir();
+    }
+}
+
+
+/**
+ * Botón para la generación de PDF
+ */
+DGenerarPDFJS.prototype = new DBotonJS();
+DGenerarPDFJS.prototype.constructor=DGenerarPDFJS;
+function DGenerarPDFJS(arrAttboton){
+  var arrAttBoton = arrAttboton;
+  var configuracionGenPdf = new Hashtable();
+
+  /**
+   *
+   */
+  this.getHtml=function(){
+    this.html=  this.setHtml.call(this,arrAttBoton);
+    return this.html;
+  }
+
+  /**
+   *
+   */
+  this.defaultConfig = function() {
+    var config = new Hashtable();
+    config.put(DGenerarPDFJS.reqCrc32, true);
+    var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+    config.put('estado', estadoActualDoc);
+    return config;
+  }
+
+  /**
+   * Esta es un metodo abstracto para configurar la generacion de pdfs
+   * @return Un Hashtable con los parametros de configuracion del pdf
+   */
+  this.configurarPdf = function() {
+    return this.defaultConfig();
+  }
+
+  this.manejar=function() {
+    var unaFabricaMensajes = new DFabricaMensajes();
+    var unMensaje = null;
+    //Si ya se guardo el documento
+    if (new DGuardarDocumentoJS().haCambiado()) {
+      unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GENERACION ARCHIVO PDF","Ha habido cambios, para evitar inconsistencias debe antes guardar el documento","","");
+    } else {
+      if(DVisor.docCopia.getId()) {
+	var mensajePdf = "GENERACION ARCHIVO PDF";
+
+	unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_PASSWORD, mensajePdf, "Debe digitar una clave para acceder al archivo PDF:","","");
+	//este es el truco para que llame la funcion de abajo
+	miGestorMensajes.setObjEventoListener('onClickBtnSI', this);
+      } else {
+	unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_ADVERTENCIA, "GENERACION ARCHIVO PDF","Debe antes guardar el documento","","");
+      }
+    }
+    miGestorMensajes.limpiarMensajes();
+    miGestorMensajes.agregarMensaje(unMensaje);
+    miGestorMensajes.mostrarMensaje();
+  }
+
+  /**
+   * Al confirmar se muestra un mensaje con la clave para el PDF
+   */
+  this.confirmarSI = function () {
+      var claveOk = false;
+      var clave = document.getElementById('clave');
+      var reclave = document.getElementById('reclave');
+      var textoValidacion = document.getElementById('textoValidacion');
+
+      if(clave != null && clave.value.length > 0){
+         if (reclave != null && reclave.value.length > 0) {
+             if (clave.value ==  reclave.value) {
+                 claveOk = true;
+             } else {
+                textoValidacion.value = "La clave y su confimacion deben ser iguales.";
+             }
+         } else {
+            textoValidacion.value = "Debe reescribir la clave para su confirmación";
+         }
+      } else {
+          textoValidacion.value = "Debe digitar una clave";
+      }
+      if (!claveOk) {
+          clave.value = "";
+          reclave.value = "";
+      } else {
+          textoValidacion.value = "";
+      }
+      if(claveOk) {
+        var config = this.configurarPdf();
+        config.put('password', clave.value);
+        miGestorMensajes.cerrarlayer('divMensaje');
+        focus();
+        this.generarPDF(DVisor.controlador.getId(), DVisor.controlador.getNumRepeticionDoc(), config);
+      }
+    }
+
+  /**
+   * Está función llama al servlet que genera el PDF
+   */
+  this.generarPDF = function(idDocumento, numRepeticion, config) {
+	  var fabricaMensajes = new DFabricaMensajes();
+	  // Servlet PDF
+	  var URL_SERVLET_PDF = '/WebEntradasalida/dservletpersistenciapdf';
+
+	  // Creamos una forma dummy
+	  var forma = new DAuxBotonContinuar(URL_SERVLET_PDF);
+	  // Mostramos un mensaje mientras se genera el PDF
+	  var mensaje = fabricaMensajes.getMensaje(0, COD_TIPO_INFO, "GENERACION ARCHIVO PDF","Cargando el PDF del documento, por favor espere...","","");
+	  miGestorMensajes.limpiarMensajes();
+	  miGestorMensajes.agregarMensaje(mensaje);
+	  miGestorMensajes.mostrarMensaje();
+
+	  // Adicionamos los parámetros a la forma
+	  forma.adicionarParametro('idDocumento', idDocumento);
+	  forma.adicionarParametro('numRepeticion', numRepeticion);
+	  //El visor siempre deberia generar el crc (casilla 999)
+	  var reqCrc32 = true;
+	  var marcas = config.get("marcas");
+	  var estado = config.get("estado");
+	  var password = config.get("password");
+	  var numCopias = config.get("numCopias")
+
+	  var idFormato = DVisor.contexto.getIdFormato();
+	  if(idFormato != 1 && (idFormato < 10  || idFormato >19)){
+		  forma.adicionarParametro("idFormato", getAsString(idFormato));
+	  }else{
+		  forma.adicionarParametro("idFormato", "1");
+	  }
+
+	  if (reqCrc32) {
+		  forma.adicionarParametro('reqCrc32', reqCrc32);
+	  }
+	  if (marcas) {
+		  forma.adicionarParametro('marcas', marcas);
+	  }
+	  if (estado) {
+		  forma.adicionarParametro('estado', estado);
+	  }
+	  if (password) {
+		  forma.adicionarParametro('password', password);
+	  }
+	  if (numCopias) {
+		  forma.adicionarParametro('numCopias', numCopias);
+	  }
+	  // Ejecutamos la forma
+	  forma.ir();
+	  // Borramos los mensajes
+	  miGestorMensajes.limpiarMensajes();
+  }
+}
+
+DGenerarPDFJS.reqCrc32 = 'reqCrc32';
+DGenerarPDFJS.marcas = 'marcas';
+DGenerarPDFJS.estado = 'estado';
+DGenerarPDFJS.password = 'password';
+DGenerarPDFJS.origen = 'origen';
+
+/**
+ * ----------------------------------------------------------------------------
+ *                 CLASES AUXILIARES PARA IMPLEMENTACION DE BOTONES
+ * ----------------------------------------------------------------------------
+ */
+
+/**
+ * ----------------------------------------------------------------------------
+ *                 CLASES AUXILIARES PARA IMPLEMENTACION DE BOTONES
+ * ----------------------------------------------------------------------------
+ */
+
+
+/**
+ * Clase auxiliar para salir del visor y dar el control a patantallas de Faces.
+ */
+function DAuxBotonContinuar(destino){
+
+    var forma = document.createElement("form");
+    forma.id = "redirecting_form";
+    forma.method = "get";
+    forma.action = destino;
+
+    this.adicionarParametro = function(id, valor) {
+      var parametro = document.createElement("input");
+      parametro.id = id;
+      parametro.name = id;
+      parametro.type = "hidden";
+      parametro.value = valor;
+      forma.appendChild(parametro);
+    }
+
+    this.ir = function() {
+      var oldForm = document.getElementById('redirecting_form');
+      if (oldForm) {
+        document.body.replaceChild(forma, oldForm);
+      } else {
+        document.body.appendChild(forma);
+      }
+      document.forms["redirecting_form"].submit();
+    }
+}
+
+
+////////////**************** Recibo de Pago 110 *************/////////////
+
+/**
+ * A través de este botón se liquida el documento y abre la página para ver el recibo.
+ */
+DGenerarReciboPago110JS.prototype = new DBotonJS();
+DGenerarReciboPago110JS.prototype.constructor=DGenerarReciboPagoJS;
+function DGenerarReciboPago110JS(arrAttboton){
+    var arrAttBoton = arrAttboton;
+
+    this.getHtml=function(){
+        this.html=  this.setHtml.call(this,arrAttBoton);
+        return this.html;
+    }
+
+    this.manejar=function(){
+        var logeo = DVisor.contexto?DVisor.contexto.getParametro("CTX_SEG_CERTIFICADO"):false;
+
+        var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+        if (estadoActualDoc == ESTADO_DOC_VALIDADO || estadoActualDoc == ESTADO_DOC_PRESENTADO) {
+            //Muestra el mensaje de LIQUIDANDO....
+            //DMensajeEspera();
+//--------------
+
+    var tipoContribuyente = DVisor.contexto.getParametro('ID_TIPO_DECLARANTE');
+	  var numCuota = 1;
+    var unaFabricaMensajes = new DFabricaMensajes();
+
+	  var numCuota = 1;
+    var texto = "Recuerde que si es persona Juridica ";
+      texto += 'debe seleccionar el número de cuota que desea cancelar.' +
+      ' Por favor seleccione el <b>número de cuota</b> apropiado:'+
+      '<br>';
+
+    var unMensaje = null;
+
+	  var textoSel ='<center><Select name=numCuota value=1 id=numCuota onChange=selNumCuota(this.value)><br>';
+	  textoSel += '  <option value=1>1</option><br>';
+	  if(tipoContribuyente == 1 || tipoContribuyente == 3){
+			  textoSel += '  <option value=2>2</option><br>';
+			}
+		if(tipoContribuyente == 3){
+			  textoSel += '  <option value=3>3</option><br>';
+			  textoSel += '  <option value=4>4</option><br>';
+			  textoSel += '<option value=5>5</option><br>';
+			}
+	  textoSel += '</Select></center>';
+
+
+	  var textoAc = '<br>¿Desea continuar?';
+	  texto += textoSel + textoAc;
+	  miGestorMensajes.setObjEventoListener('onClickBtnNO', this);
+
+  	unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_CONFIRMACION, "SELECCION DE CUOTA A PAGAR",texto,"","");
+	  miGestorMensajes.setObjEventoListener('onClickBtnSI', this);
+
+     miGestorMensajes.limpiarMensajes();
+     miGestorMensajes.agregarMensaje(unMensaje);
+     miGestorMensajes.mostrarMensaje();
+
+
+
+        } else {
+            //cerrarMensajeEspera();
+            mostrarError('PARA LIQUIDAR EL DOCUMENTO DEBE SER DEFINITIVO O PRESENTADO.');
+        }
+    }
+
+  this.confirmarSI = function() {
+  	  miGestorMensajes.cerrarlayer('divMensaje');
+      this.liquidar();
+    }
+
+  this.confirmarNO = function() {
+  	   miGestorMensajes.cerrarlayer('divMensaje');
+  	}
+
+    this.liquidar=function() {
+        var auxBotliq = new DAuxBotonContinuar("/WebDiligenciamiento/DefLiquidarDocumento.faces");
+        auxBotliq.adicionarParametro("numDocumento", getAsString(DVisor.getValorCasilla(4,-1)));// Casilla 4 de Numero de Formulario
+        auxBotliq.adicionarParametro("numRepeticion", getAsString(DVisor.controlador.getNumRepeticionDoc()));
+        auxBotliq.adicionarParametro("numPeriodo", getAsString(DVisor.contexto.getParametro(DContextoJS.PERIODO)));
+        auxBotliq.adicionarParametro("annoGravable", getAsString(DVisor.getValorCasilla(1,-1)));// Anno grabable
+        auxBotliq.adicionarParametro("numCuota", getAsString(DVisor.contexto.getParametro(DContextoJS.NUM_CUOTA)));
+        auxBotliq.adicionarParametro("totalCuotas", getAsString(DVisor.contexto.getParametro(DContextoJS.TOTAL_CUOTAS)));
+        auxBotliq.adicionarParametro("conceptoLiquidacion", getAsString(DVisor.contexto.getParametro("CONCEPTO")));
+        auxBotliq.adicionarParametro("estadoDoc", DVisor.controlador.getEstadoActualDoc());
+        auxBotliq.adicionarParametro("tipoDeclarante", getAsString(DVisor.contexto.getParametro(DContextoJS.ID_TIPO_DECLARANTE)));
+        auxBotliq.adicionarParametro("idFormato", getAsString(DVisor.contexto.getIdFormato()));
+ 
+        auxBotliq.ir();
+    }
+}
+
+/**
+* Liquidación génerica con cuotas.
+*/
+DGenerarReciboPagoGenericoCuotasJS.prototype = new DBotonJS();
+DGenerarReciboPagoGenericoCuotasJS.prototype.constructor=DGenerarReciboPagoJS;
+function DGenerarReciboPagoGenericoCuotasJS(arrAttboton){
+	var arrAttBoton = arrAttboton;
+
+	this.getHtml=function(){
+		this.html=  this.setHtml.call(this,arrAttBoton);
+		return this.html;
+	}
+
+	this.manejar=function(){
+		var logeo = DVisor.contexto?DVisor.contexto.getParametro("CTX_SEG_CERTIFICADO"):false;
+
+		var estadoActualDoc = DVisor.controlador.getEstadoActualDoc();
+
+		if (estadoActualDoc == ESTADO_DOC_VALIDADO || estadoActualDoc == ESTADO_DOC_PRESENTADO) {
+			var tipoContribuyente = DVisor.contexto.getParametro('ID_TIPO_DECLARANTE');
+			var totalCuotas = DVisor.contexto.getParametro('TOTAL_CUOTAS');
+			var numCuota = 1;
+			var unaFabricaMensajes = new DFabricaMensajes();
+
+			var numCuota = 1;
+			var texto = "Recuerde que si es persona Juridica ";
+			texto += 'debe seleccionar el número de cuota que desea cancelar.' +
+			' Por favor seleccione el <b>número de cuota</b> apropiado:'+'<br>';
+
+			var unMensaje = null;
+
+			var textoSel ='<center><Select name=numCuota value=1 id=numCuota onChange=selNumCuota(this.value)><br>';
+			textoSel += '  <option value=1>1</option><br>';
+
+			for(var i = 2;i<=totalCuotas;i++){
+				textoSel += '  <option value='+i+'>'+i+'</option><br>';
+			}
+			
+			textoSel += '</Select></center>';
+
+
+			var textoAc = '<br>¿Desea continuar?';
+			texto += textoSel + textoAc;
+			miGestorMensajes.setObjEventoListener('onClickBtnNO', this);
+
+			unMensaje = unaFabricaMensajes.getMensaje(0,COD_TIPO_CONFIRMACION, "SELECCION DE CUOTA A PAGAR",texto,"","");
+			miGestorMensajes.setObjEventoListener('onClickBtnSI', this);
+
+			miGestorMensajes.limpiarMensajes();
+			miGestorMensajes.agregarMensaje(unMensaje);
+			miGestorMensajes.mostrarMensaje();
+
+
+
+		} else {
+			mostrarError('PARA LIQUIDAR EL DOCUMENTO DEBE SER DEFINITIVO O PRESENTADO.');
+		}
+	}
+
+	this.confirmarSI = function() {
+		miGestorMensajes.cerrarlayer('divMensaje');
+		this.liquidar();
+	}
+
+	this.confirmarNO = function() {
+		miGestorMensajes.cerrarlayer('divMensaje');
+	}
+
+	this.liquidar=function() {
+		var auxBotliq = new DAuxBotonContinuar("/WebDiligenciamiento/DefLiquidarDocumento.faces");
+		auxBotliq.adicionarParametro("numDocumento", getAsString(DVisor.getValorCasilla(4,-1)));// Casilla 4 de Numero de Formulario
+		auxBotliq.adicionarParametro("numRepeticion", getAsString(DVisor.controlador.getNumRepeticionDoc()));
+		auxBotliq.adicionarParametro("numPeriodo", getAsString(DVisor.contexto.getParametro(DContextoJS.PERIODO)));
+		auxBotliq.adicionarParametro("annoGravable", getAsString(DVisor.getValorCasilla(1,-1)));// Anno grabable
+		auxBotliq.adicionarParametro("numCuota", getAsString(DVisor.contexto.getParametro(DContextoJS.NUM_CUOTA)));
+		auxBotliq.adicionarParametro("totalCuotas", getAsString(DVisor.contexto.getParametro(DContextoJS.TOTAL_CUOTAS)));
+		auxBotliq.adicionarParametro("conceptoLiquidacion", getAsString(DVisor.contexto.getParametro("CONCEPTO")));
+		auxBotliq.adicionarParametro("estadoDoc", DVisor.controlador.getEstadoActualDoc());
+		auxBotliq.adicionarParametro("tipoDeclarante", getAsString(DVisor.contexto.getParametro(DContextoJS.ID_TIPO_DECLARANTE)));
+		auxBotliq.adicionarParametro("idFormato", getAsString(DVisor.contexto.getIdFormato()));
+		auxBotliq.adicionarParametro("liquidacionGenerica","true");
+		auxBotliq.ir();
+	}
+}
+
+function selNumCuota(numCuota){
+	   DVisor.contexto.addParametro(DContextoJS.NUM_CUOTA,numCuota);
+	}

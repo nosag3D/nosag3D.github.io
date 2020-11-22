@@ -1,0 +1,85 @@
+/**
+ * Define la funcionalidad basica de un Manejador de eventos para
+ * el visor.
+ */
+function DManejadorJS(manejador){
+
+   /* INICIALIZA CONSTRUCTOR
+    *
+    * Manejador a decorar */
+   //this.manejador = manejador;
+   /* Este Hash debe ser usdado para manejar las variables que necesite usar el manejador. */
+   this.variables=new Hashtable();
+   this.evento;
+
+   /* Inicia las variable requeridas por el manejador. */
+   this.iniciarVariables = function(){
+      /* Aqui se debe implementar la inicializacion de las variables requeridas para el proceso del evento. */
+   }
+
+   this.iniciarVariables();
+
+   /* FINALIZA EL CONSTRUCTOR */
+
+   this.manejar = function(objCas){
+      /* Aqui debe ir la logica necesaria para manejar
+       * el evento.
+       */
+   }
+   
+   this.setEvento= function(e){
+	   this.evento = e;
+   }
+   
+   this.getEvento= function(){
+	   return this.evento;
+   }
+
+   this.finalizarVariables = function(){
+      delete this.variables;
+   }
+
+}
+
+/**
+ * Define un validador de casillas de documento, actua sobre una objeto DCasillaJS.
+ */
+function DValidadorCasillaJS(validador){
+
+   /* INICIALIZA CONSTRUCTOR
+    *
+    * Manejador a decorar */
+   this.validador = validador;
+   /* Este Hash debe ser usdado para manejar las variables que necesite usar el manejador. */
+   this.variables=new Hashtable();
+
+   /* Inicia las variable requeridas por el manejador. */
+   this.iniciarVariables = function(){
+      /* Aqui se debe implementar la inicializacion de las variables requeridas para el proceso del evento. */
+   }
+
+   this.iniciarVariables();
+
+   /* FINALIZA EL CONSTRUCTOR */
+
+   this.validar = function(objCas){
+      /* Aqui debe ir la logica necesaria para
+       * validar la casilla del documento.
+       */
+   }
+
+   /**
+    * Indica si la validaci�n fue superada.
+    */
+   this.esValidado = function(){};
+
+   /**
+    * Retorna el mensaje error para la validaci�n.
+    */
+   this.getMensajeError = function(){};
+
+   this.finalizarVariables = function(){
+      delete this.variables;
+   }
+
+}

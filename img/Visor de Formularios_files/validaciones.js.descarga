@@ -1,0 +1,867 @@
+document.write("<SCRIPT src=\"/WebEntradasalida/visor/js/general/mascaratexto.js\" type=\"text/javascript\"></script>");
+//document.write("<SCRIPT src=\"/WebEntradasalida/visor/js/general/HTMLInputElement.js\" type=\"text/javascript\"></script>");
+document.write("<SCRIPT src=\"/WebEntradasalida/visor/js/general/prototipomascara.js\" type=\"text/javascript\"></script>");
+
+/* Extiende la clase String para manejar validaciones.
+ */
+String.prototype.isAlpha = function () {
+	   return (this >= 'a' && this <= 'z\uffff') ||
+	        (this >= 'A' && this <= 'Z\uffff') ||
+	        (this >= 'á' && this <= 'ú\uffff') ||
+	        (this >= 'Á' && this <= 'Ú\uffff') ||
+	        this =='ñ' ||
+	        this =='Ñ' ||
+	        this =='ü' ||
+	        this =='Ü';
+	};
+
+String.prototype.isDigit = function () {
+    return (this >= '0' && this <= '9');
+};
+
+String.prototype.isPoint = function () {
+    return (this == '.');
+};
+
+String.prototype.isColon = function () {
+    return (this >= ',');
+};
+
+String.prototype.isSpecialChar = function () {
+    return this == ' ' ||
+         this == '.' ||
+         this == ',' ||
+         this == ';' ||
+         this == ':' ||
+         this == '-' ||
+         this == '(' ||
+         this == ')' ||
+         this == '$' ||
+         this == '#' ||
+         this == '%' ||
+         this == '&' ||
+         this == '/';
+};
+
+/*
+   Exitende la clase Array para saber si un arreglo contiene un elemento
+*/
+Array.prototype.hasElement = function(id){
+   var haselement=false;
+
+   for(var i=0; i<this.length; i++){
+      if(this[i]==id){
+         return true;
+      }
+   }
+   return false;
+}
+
+function isFunction(a) {
+    return typeof a == 'function';
+}
+
+function isObject(a) {
+    return (a && typeof a == 'object') || isFunction(a);
+}
+
+function isArray(a) {
+   return (isObject(a) && a.constructor == Array);
+}
+
+/**
+ * Esta funcion compara dos elementos de tipo Entero
+ */
+ function compare(a,b) {
+    if (isNaN(a) && isNaN(b)) {
+      if (a<b) return -1;
+      if (a>b) return 1;
+      return 0;
+    } else {
+      return a*1 - b*1;
+    }
+ }
+
+/**
+ * Clase liviana que maneja la definiciï¿½n de un evento en una casilla.
+ */
+DEventoCasillaLiviano = function(casilla,evento,manejadores){
+   this.casilla=casilla;
+   this.evento=evento;
+   this.manejadores=manejadores;
+
+   this.getNumCasilla = function(){
+      return this.casilla;
+   }
+
+   this.getManejadores = function(){
+      return this.manejadores;
+   }
+
+   this.getNumEvento = function(){
+      return this.evento;
+   }
+}
+
+/* Extiende la clase Element para adicionar eventos genericamente
+ */
+function addEvent(eventoCasilla){
+
+   var casStr = "document.getElementById('" + eventoCasilla.getNombreCasilla() + "')";
+   var cadEjecucion  = eventoCasilla.getCadenaDecoradores();
+
+   if (document.getElementById(eventoCasilla.getNombreCasilla()).attachEvent) {
+      //Codigo para IE 4+
+      var funcEvento = "funcEvento" + eventoCasilla.getIEEvento();
+      cadEjecucion += "var " + funcEvento + "= function(event){try{"+eventoCasilla.getNomManejador()+
+         ".setEvento(event);}catch(e){};"+eventoCasilla.getNomManejador()+
+         ".manejar(" + casStr + ");}; " + casStr + "." + funcEvento + " = " + funcEvento+ "; " +
+         casStr + ".attachEvent('"+eventoCasilla.getIEEvento()+ "', " + funcEvento + ");";
+
+      /*cadEjecucion += casStr + ".attachEvent('"+eventoCasilla.getIEEvento()+
+	  "', function(event){try{"+eventoCasilla.getNomManejador()+
+         ".setEvento(event);}catch(e){};"+eventoCasilla.getNomManejador()+
+         ".manejar(" + casStr + ");});";*/
+
+   } else if(document.getElementById(eventoCasilla.getNombreCasilla()).addEventListener){
+      //Codigo para mozilla.
+      cadEjecucion += casStr + ".addEventListener('"+eventoCasilla.getEvento()+
+         "', function(event){var unEvento = event; try{"+eventoCasilla.getNomManejador()+
+         ".setEvento(unEvento);}catch(e){}; "+eventoCasilla.getNomManejador()+".manejar(" + casStr + ");}, false);";
+   }
+   //Ejecuta el codigo que crea manejadores y enlaza el evento
+   eval(cadEjecucion);
+}
+
+/* Reemplaza un evento vinculado a un elemento DOM.
+ */
+function replaceEvent(eventoCasilla){
+
+   var casStr = "document.getElementById('" + eventoCasilla.getNombreCasilla() + "')";
+   var cadEjecucion  = eventoCasilla.getCadenaDecoradores();
+
+   if (document.getElementById(eventoCasilla.getNombreCasilla()).attachEvent) {
+      //Codigo para IE 4+
+      var funcEvento = "funcEvento" + eventoCasilla.getIEEvento();
+      cadEjecucionDetach = cadEjecucion + casStr + ".detachEvent('"+eventoCasilla.getIEEvento()+
+	  "', document.getElementById('"+eventoCasilla.getNombreCasilla()+"'). "+ funcEvento + ");";
+      eval(cadEjecucionDetach);
+
+      cadEjecucion += "var " + funcEvento + "= function(event){try{"+eventoCasilla.getNomManejador()+
+         ".setEvento(event);}catch(e){};"+eventoCasilla.getNomManejador()+
+         ".manejar(" + casStr + ");}; " + casStr + "." + funcEvento + " = " + funcEvento+ "; " +
+         casStr + ".attachEvent('"+eventoCasilla.getIEEvento()+ "', " + funcEvento + ");";
+
+   } else if(document.getElementById(eventoCasilla.getNombreCasilla()).addEventListener){
+      //Codigo para mozilla.
+      cadEjecucion += casStr + ".addEventListener('"+eventoCasilla.getEvento()+
+         "', function(event){try{"+eventoCasilla.getNomManejador()+
+         ".setEvento(event);}catch(e){};"+eventoCasilla.getNomManejador()+".manejar(" + casStr + ");}, false);";
+   }
+   //Ejecuta el codigo que crea manejadores y enlaza el evento
+   eval(cadEjecucion);
+}
+
+/*  Reemplaza eventos asociados a un conjunto de casillas.
+ */
+function replaceEvents(mappEventos){
+
+  var analizador= new DAnalizadorMappingJS(mappEventos);
+  var casillas = analizador.getCasillas();
+
+  //Recorre las casillas con eventos en el mapping
+  for (var i=0;i<casillas.length;i++){
+    var eventosCas = analizador.getEventos(casillas[i]);
+    //Recorre los eventos de una casilla especifica
+    for (var j=0;j<eventosCas.length;j++){
+      var manejadoresEvCas = analizador.getManejadores(casillas[i],eventosCas[j]);
+      var evCas = new DEventoCasilla(casillas[i],eventosCas[j],manejadoresEvCas);
+      replaceEvent(evCas);
+    }
+  }
+}
+
+/**
+ * Determina si una casilla pertenece a los rango de casillas de cabecera/pie.
+ */
+function isCasillaCabeceraPie(idCasilla) {
+
+  if ((idCasilla >= 1 && idCasilla <= 20) ||
+    (idCasilla >= 980 && idCasilla <= 999)){
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Genera una nueva copia con casillas de cabecera/pie diligenciadas.
+ */
+function addCopiaCabeceraPie(idGrupo, idOcurrencia) {
+
+  var grupo = DVisor.controlador.getDocumento().getGrupo(idGrupo);
+  var ocurrencia = grupo.getOcurrencia(idOcurrencia);
+
+  // Casillas de cabecera
+  copiarRangoCasillas(grupo, ocurrencia, 1, 20);
+
+  // Casillas de pie
+  copiarRangoCasillas(grupo, ocurrencia, 980, 999);
+}
+
+/**
+ * Copia el valor en un rango de casillas de una ocurrencia en el documento
+ * a la ocurrencia siguiente (nueva copia).
+ */
+function copiarRangoCasillas(grupo, ocurrencia, idCasIni, idCasFin){
+
+  for (var idCasilla = idCasIni; idCasilla <= idCasFin; idCasilla++){
+    var casilla = ocurrencia.getCasilla(idCasilla);
+    if (casilla) {
+      var valor = DVisor.controlador.getValorCasillaAbsoluto(grupo.getId(), ocurrencia.getId(), idCasilla, -1);
+      var valorDes = DVisor.controladorDescripciones.getValorCasillaAbsoluto(grupo.getId(), ocurrencia.getId(), idCasilla, -1);
+      DVisor.controlador.setCasilla(grupo.getId(), ocurrencia.getId()+1, idCasilla, -1, valor);
+      DVisor.controladorDescripciones.setCasilla(grupo.getId(), ocurrencia.getId()+1, idCasilla, -1, valorDes);
+    }
+  }
+}
+
+function getNumber(objCas){
+   var numCas = objCas.id;
+   return numCas.indexOf('_')!=-1 ? numCas.substring(numCas.indexOf('s')+1, numCas.indexOf('_')) :
+                      numCas.substring(numCas.indexOf('s')+1);
+}
+
+
+//Si tiene item 'casX_Y' retorna Y sino -1
+function getItem(objCas){
+   var numItem = objCas.id;
+   return numItem.indexOf('_')!=-1 ? numItem.substring(numItem.indexOf('_')+1) : -1;
+}
+
+function evaluate(objCas){
+   //crea el evento para refrescar el valor y lo dispara.
+   if (objCas.dispatchEvent){
+      //Codigo para mozilla.
+      var evento = document.createEvent("Events");
+      evento.initEvent(EVENTOS.get('23'), true, true);
+      objCas.dispatchEvent(evento);
+   } else if(objCas.fireEvent) {
+      //Codigo para IE
+       objCas.fireEvent("on" + EVENTOS.get('23'));
+   }
+}
+
+
+/**
+ * Inicializa la casilla, busca el valor en el documento y lo pone en el
+ * objeto html.
+ * @param objCas El objeto html en el cual se pone el valor
+ */
+function initialize(objCas) {
+    var DVisor = window.parent.DVisor;
+    var controlador = DVisor.controlador;
+    var isCas = (objCas.id.indexOf('cas') != -1);
+    // Si es una descripcion se debe tomar del documento de descripciones
+    // XXX se debe tener cuidado pues aqui se asume el comportamiento que si no es
+    // casilla es descripcion ojo (Si no es des es cas)
+    if (!isCas) {
+      controlador = DVisor.controladorDescripciones;
+    }
+
+    var numCasilla = getNumber(objCas);
+    var numItem = getItem(objCas);
+    var valorCasilla = controlador.getValorCasilla(numCasilla, numItem);
+    
+    
+       
+      	//Se realiza una extensiòn de metodos a cada objeto debibo a que Internet Explorer 
+    	//solo soporta las extensiones de metodos sobre objetos de esta forma
+    	Object.extend(objCas,{
+    		getValor:function(){
+    		//alert(this.getAttribute("patron"));
+
+    			if(this.getAttribute("patron")){
+    				//alert("getValor....."+ this.quitarMascara());
+    				return this.quitarMascara(); 
+    			}else{
+    				return this.value;
+    			}
+
+    		},
+    		setValor:function(unValor){ 
+    			if(this.getAttribute("patron")){ 
+    				
+    				if(!this.getAttribute("tipoPatron")){
+    					alert("Se debe indicar el tipo de patrï¿½n para poder remover la mascara");
+    					return unValor;
+    				}
+
+    				if(this.getAttribute("tipoPatron") == TIPO_PATRON_NUMERICO){
+    					this.value = this.mascara.setNumber(unValor);
+    					return;
+    				}
+    				
+    			}else{
+    				//alert("setValor......" + unValor);
+    				this.value = unValor;
+    			}
+
+    		},
+    		quitarMascara:function(){ 
+    			var unValor = new String(this.value);
+    			
+    			//alert(this.getAttribute("tipoPatron"));
+
+    			if(!this.getAttribute("tipoPatron")){
+    				alert("Se debe indicar el tipo de patrï¿½n para poder remover la mascara");
+    				return unValor;
+    			}
+
+    			if(this.getAttribute("tipoPatron") == TIPO_PATRON_NUMERICO){
+
+    				while(unValor.indexOf(',') >= 0 )
+    					unValor = unValor.replace(',','');
+
+    				while(unValor.indexOf('.') >= 0 )
+    					unValor = unValor.replace('.','');
+    			
+    				while(unValor.indexOf('$') >= 0 )
+    					unValor = unValor.replace('$','');
+    			}
+    				
+    			return unValor;
+    		},
+    		setMascara:function(unaMascara){
+    			this.mascara = unaMascara;
+    		}
+    	});
+
+    if(objCas.getAttribute("patron")){
+    	
+    	var unaMascara = new Mask(objCas.getAttribute("patron"),objCas.getAttribute("tipoPatron"));
+     	objCas.setMascara(unaMascara);		
+    }
+    
+    
+    if (valorCasilla != null) {
+      if (objCas.type =='checkbox') {
+        //Es una casilla SI/NO
+        if (numItem == -1) {
+            objCas.checked = (valorCasilla == 'SI' || valorCasilla == 'true' || valorCasilla == '1');
+        } else {
+            //--objCas.checked = (objCas.value == valorCasilla);
+            objCas.checked = (objCas.getValor() == valorCasilla);
+        }
+      } else {
+        //--objCas.value = valorCasilla;
+        objCas.setValor(valorCasilla);
+      }
+    }
+}
+
+
+function isRequired(objCas){
+   return objCas.getAttribute('requerido')=='S'?true:false;
+}
+
+
+function validateRequired(objform){
+   var casFaltantes = new Array();
+   for(var i=0;i<objform.elements.length;i++){
+      if(objform.elements[i].id.indexOf('cas')!=-1){
+         //--if(isRequired(objform.elements[i]) && objform.elements[i].value==''){
+         if(isRequired(objform.elements[i]) && objform.elements[i].getValor()==''){
+            casFaltantes.push(getNumber(objform.elements[i]));
+         }
+      }
+   }
+   return casFaltantes;
+}
+
+/* Funciones de uso general para validar valores
+*/
+
+function esEntero(valor){
+    var ini = 0;
+    var car = new String();
+    if(valor.charAt(0) == '-')ini++;
+    for(var i=ini; i<valor.length;i++){
+       car = valor.charAt(i);
+       if(!car.isDigit())return false;
+    }
+    return true;
+}
+
+function esDecimal(valor){
+    var ini = 0;
+    var tienePunto = false;
+    var car = new String();
+    if(valor.charAt(0) == '-')ini++;
+    for(var i=ini; i<valor.length;i++){
+       car = valor.charAt(i);
+       if((car.isPoint() || car.isColon()) && !tienePunto){
+          tienePunto = true;
+       }else if(!car.isDigit())return false;
+    }
+    return true;
+}
+
+function esCadena(valor){
+   var car = new String();
+   for (var i=0;i<valor.length;i++){
+      car = valor.charAt(i);
+      if(!(car.isAlpha() || car.isSpecialChar()))return false;
+   }
+   return true;
+}
+
+function esAlfanumerico(valor){
+   var car = new String();
+   for (var i=0;i<valor.length;i++){
+      car = valor.charAt(i);
+      if(!(car.isAlpha() || car.isSpecialChar() || car.isDigit()))return false;
+   }
+   return true;
+}
+
+function deleteLeftCerous(valor) {
+   var newValor = "";
+   var control = false;
+   for (var i = 0; i < valor.length; i++) {
+      var car = valor.charAt(i);
+      if (control == false && car != "0") {
+         control = true;
+      }
+      if (control) {
+         newValor += car;
+      }
+   }
+   if (newValor*1 == 0) {
+    newValor = 0;
+   }
+   return newValor.toString();
+}
+
+function getAsString (val) {
+    return val+"";
+}
+
+/* Esta funciï¿½n se usa como definiciï¿½n de evento para lanzar eventos programaticamente
+ * en casillas readonly, cuyos valores son actualizados por cï¿½digo y por lo tanto no
+ * lanzan eventos como onchange, es usado por el mï¿½todo extendido evaluate de HTMLInputElement.
+ */
+function afterupdate(){
+   return;
+}
+
+
+/**
+ * Retorna el valor de una casilla a partir de una expresi\uFFFD como:
+ * #25
+ * El resultado es un arreglo, en el caso de que sea simple este arreglo es de longitud 1.
+ */
+function getValorCasillaFromExp(exp) {
+  var valor = new Array();
+  var nomCas = '';
+
+  if (exp.indexOf('#') == 0) {
+    nomCas = 'cas' + exp.substring(1,exp.length);
+    if (document.getElementById(nomCas)) {
+      //--valor.push(document.getElementById(nomCas).value);
+      valor.push(document.getElementById(nomCas).getValor());
+    } else {
+      var i = 1;
+      while (document.getElementById(nomCas + '_' + i)) {
+        //--valor.push(document.getElementById(nomCas + '_' + i).value);
+        valor.push(document.getElementById(nomCas + '_' + i).getValor());
+        i++;
+      }
+    }
+  } else {
+    valor.push(exp);
+  }
+
+  return valor;
+}
+
+
+/**
+ * Evalua si un valor se encuentra dentro de un arreglo, no tiene ver con casillas.
+ */
+function contieneValor(valor, arreglo) {
+  var esta = false;
+
+  for (var i=0; i<arreglo.length && !esta; i++) {
+    if (valor == arreglo[i]) esta = true;
+  }
+  return esta;
+}
+
+/**
+ * Evalua si un un valor escalar o el valor de una casilla incluyendo una columna se
+ * encuantra en otra casilla de columna.
+ *
+ * Ejemplos de origen: 30 , #25 (este ltimo puede ser secilla o columna)
+ * Ejemplosde casDestino: #40 (debe ser una columna)
+ */
+function en(origen, casDestino) {
+  var valOrigen = getValorCasillaFromExp(getAsString(origen));
+  var valCasDestino = getValorCasillaFromExp(getAsString(casDestino));
+  var contenidos = 0;
+
+  if (valOrigen.length >= 1 && valCasDestino.length >= 1) {
+    for (var i=0; i<valOrigen.length; i++) {
+      if (contieneValor(valOrigen[i], valCasDestino))contenidos++;
+    }
+  }
+
+  return contenidos == valOrigen.length?true:false;
+}
+
+/**
+ * Muestra un mensaje de aceptaci\uFFFD
+ */
+function mostrarOk(mensaje) {
+  parent.DVisor.dialogomensaje.showModal('Correcto', mensaje, 1);
+}
+
+
+/**
+ * Muestra un mensaje de ayuda
+ */
+function mostrarAyuda(mensaje) {
+  parent.DVisor.dialogomensaje.showModal('Ayuda', mensaje, 2);
+}
+
+/**
+ * Muestra un mensaje de eror
+ */
+function mostrarError(mensaje) {
+  parent.DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+}
+
+
+/**
+ * Retorna un arreglo de HTMLInputElement con de una casilla columna en la hoja actual
+ */
+function getArregloCasiilaColumna(numCasilla) {
+  var arreglo = new Array();
+  var i=1;
+  while (document.getElementById('cas' + numCasilla + '_' + i)) {
+    arreglo.push(document.getElementById('cas' + numCasilla + '_' + i));
+    i++;
+  }
+  return arreglo;
+}
+
+/**
+ * Implementacion alternativa de la funcion unescape que decodific a correctamente
+ * una cadena url-encoded, corrije el bug del + de la implementacion de Mozilla
+ */
+function unescapePlus(str) {
+    if (str) {
+	str += '';
+        while (true) {
+            var i = str.indexOf('+');
+            if (i < 0)
+                break;
+            str = str.substring(0,i) + '%20' + str.substring(i+1, str.length);
+        }
+        return unescape (str);
+    }
+    return str;
+}
+
+/**
+ * Reemplaza los caracteres especiales de un xml (segun lo especificado en XML 1.0
+ * @see http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
+ */
+function cambiarCaracteresAXml(str) {
+  str+='';
+  var val = str.replace(/&/g,"&amp;");
+  val = val.replace(/</g,"&lt;");
+  val = val.replace(/>/g,"&gt;");
+  val = val.replace(/\"/g,"&quot;");
+  val = val.replace(/\'/g,"&#39;");
+  // Este solo se hace en la carga por el lio del encode del +
+  val = val.replace(/\+/g,"&#43;");
+  return val;
+}
+
+/**
+ *
+ */
+function cambiarCaracteresDeXml(str) {
+  str+='';
+  var val = str.replace(/&amp;/g,"&");
+  val = val.replace(/&lt;/g,"<");
+  val = val.replace(/&gt;/g,">");
+  val = val.replace(/&quot;/g,"\"");
+  val = val.replace(/&#39;/g,"\'");
+  // Este solo se hace en la carga por el lio del encode del +
+  val = val.replace(/&#43;/g,"+");
+  return val;
+}
+
+/**
+ * Inicializa la el valor de la casilla en vista de acuerdo a su tipo de dato.
+ */
+function initializeView(objCas) {
+var tdato = objCas.getAttribute('tdato');
+  switch(tdato){
+   case 'EN':
+      //--objCas.value='0';
+	   objCas.setValor('0');
+      break;
+   case 'DE':
+      //--objCas.value='0.0';
+      objCas.setValor('0.0');
+      break;
+   case 'CA':
+      break;
+   case 'CL':
+      break;
+   case 'FE':
+      break;
+   case 'BO':
+      //--objCas.value='false';
+      objCas.setValor('false');
+      break;
+  }
+}
+
+/**
+ * Obtiene un DFormatoCasillaJS para el grupo correspondiente a la hoja actual
+ * y numCasilla especificado.
+ */
+function getCasillaFormato(numCasilla) {
+  // Se aumenta 1 pues fachadaVisor trabaja desde 0
+  var fachadaVisor = parent.fachadaVisor;
+  var numGrupo = fachadaVisor.getHojaActual() + 1;
+  return this.getCasillaFormatoAbsoluto(numGrupo, numCasilla);
+}
+
+/**
+ * Obtiene un DFormatoCasillaJS para el numGrupo y numCasilla especificados.
+ */
+function getCasillaFormatoAbsoluto(numGrupo, numCasilla){
+  var DVisor = parent.DVisor;
+  var formato = DVisor.formato;
+  var grupo = formato.getGrupo(numGrupo);
+  if(grupo){
+    var casilla = grupo.getCasilla(numCasilla);
+    return casilla;
+  }
+  return null;
+}
+
+/**
+ * Recorre todas las casillas en el formato/grupo y verifica que por lo menos una
+ * estï¿½ diligenciada para el grupo/ocurrencia.
+ * (Verifica que la copia no se encuentre diligenciada, antes de eliminarla).
+ */
+function isOcurrenciaDiligenciada(formato, documento, idGrupo, idOcurrencia){
+
+  var formatoGrupo = formato.getGrupo(idGrupo);
+  var grupo = documento.getGrupo(idGrupo);
+
+  if(formatoGrupo && grupo){
+    var ocurrencia = grupo.getOcurrencia(idOcurrencia);
+
+    if(ocurrencia){
+      var idCasillas = formatoGrupo.getIdCasillas();
+      for (var i=0;i<idCasillas.length;i++) {
+        var idCasilla = idCasillas[i];
+
+        if(!isCasillaCabeceraPie(idCasilla)) {
+          var casilla = ocurrencia.getCasilla(idCasilla);
+
+          if(casilla){
+            // Si es casilla columna verifica el valor por cada uno de los items.
+            if (casilla.className == "DCasillaColumnaJS"){
+              var arrValores = casilla.getValoresCasilla();
+
+              for (var j=0; j<arrValores.length; j++){
+                  if (arrValores[j]+'' != '') {
+                    return true;
+                }
+              }
+            }
+            else if (casilla.getValor()+'' != '') {
+              return true;
+            }
+          }
+        }
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Verifica que todos los items en una secciï¿½n se encuentren diligenciados
+ * (por lo menos una de las casillas) antes de permitir crear una nueva copia.
+ * Supone que hojas copiables definen secciones con casillas columna que se
+ * repetirï¿½n por cada copia.
+ * Recorre todas las casillas por secciï¿½n formato/grupo y verifica que
+ * por lo menos una estï¿½ diligenciada para el grupo/ocurrencia.
+ */
+function isItemsCompletos(formato, documento, idGrupo, idOcurrencia){
+
+  var itemsCompletos = true;
+  var formatoGrupo = formato.getGrupo(idGrupo);
+  var grupo = documento.getGrupo(idGrupo);
+
+  if(formatoGrupo && grupo){
+    var ocurrencia = grupo.getOcurrencia(idOcurrencia);
+
+    if(ocurrencia){
+
+      var secciones = formatoGrupo.getAllSecciones();
+      for (var i=0;i<secciones.length;i++) {
+        var casillas = secciones[i].getIdCasillas();
+
+        var numItems = -1;
+
+        // Ubica la primera casilla columna en la secciï¿½n para determinar el nï¿½mero de items.
+        var j=0;
+        while (j<casillas.length && numItems == -1){
+          var casilla = formatoGrupo.getCasilla(casillas[j]);
+          if(casilla.className == "DFormatoCasillaColumnaJS"){
+            numItems = 1;
+            while(window.frames['Iframe1'].document.getElementById('cas' + casillas[j] + '_' + numItems)){
+              numItems++;
+            }
+          }
+          j++;
+        }
+
+        for (var k=1;k<numItems && itemsCompletos; k++) {
+          var itemDiligenciado = false;
+
+          for (var l=0;l<casillas.length && !itemDiligenciado; l++) {
+            var casilla = formatoGrupo.getCasilla(casillas[l]);
+            if(casilla.className == "DFormatoCasillaColumnaJS"){
+              var casOcurrencia = ocurrencia.getCasilla(casilla.getId());
+              if(casOcurrencia && casOcurrencia.irA(k) && casOcurrencia.getValor()+'' != ''){
+                itemDiligenciado = true;
+              }
+            }
+          }
+          if(!itemDiligenciado){
+            itemsCompletos = false;
+          }
+        }
+      }
+    } else {
+      itemsCompletos = false;
+    }
+  } else {
+    itemsCompletos = false;
+  }
+  return itemsCompletos;
+}
+
+/**
+ * Coloca a un numero decimal que no tenga decimales la cantidad de decimales
+ * que se le deseen completar
+ */
+function CompletaValoresDecimales(objCas,cantidadDecimales) {
+
+    var valObjeto = '0';
+
+    var posPunto = -1;
+
+    //--if (objCas || objCas.value == '') {
+    if (objCas || objCas.getValor() == '') {
+      deleteComas(objCas);
+      //--valObjeto = objCas.value;
+      valObjeto = objCas.getValor();
+      valObjeto = (valObjeto == '') ? '0' : valObjeto;
+      posPunto = valObjeto.indexOf('.');
+    }
+    if (cantidadDecimales > 0) {
+      var valFinal;
+      var longTot = valObjeto.length;
+      var longDec = 0;
+      var valEntero = '0';
+      var valDecFin = '.';
+
+      if (posPunto != -1) {
+        valEntero = valObjeto.substr(0,posPunto);
+        valDecFin = valObjeto.substr(posPunto,longTot);
+      }
+      else {
+        valEntero = valObjeto;
+        valDecFin = '.';
+      }
+
+      longDec = valDecFin.length - 1;
+
+      for (var i = 0; i < (cantidadDecimales - longDec); i++) {
+        valDecFin+='0';
+      }
+      //--objCas.value=(valEntero + valDecFin);
+      objCas.setValor(valEntero + valDecFin);
+    }
+
+    return;
+}
+
+function deleteComas(objeto) {
+
+    //--var datoStr = objeto.value;
+    var datoStr = objeto.getValor();
+    var nuevoDato = "";
+
+    for (var i = 0; i < datoStr.length; i++) {
+
+      var caracter = datoStr.charAt(i);
+
+      if (caracter == "." || caracter == "-" || caracter == "0" ||
+          caracter == "1" ||  caracter == "2" || caracter == "3" ||
+          caracter == "4" || caracter == "5" || caracter == "6" ||
+          caracter == "7" || caracter == "8" || caracter == "9")
+
+         nuevoDato=nuevoDato + caracter;
+
+    }
+    //objeto.value=nuevoDato.toString();
+    objeto.setValor(nuevoDato.toString());
+
+    return;
+}
+
+
+/**
+ * Valida si el primer valor es mayor, menor o igual que el segundo y devuleve
+ * los siguientes valore de acuerdo a la comparacion
+ * Mayor = 1
+ * Menor = -1
+ * Igual = 0
+ */
+function validarMayMenEgual(val1, val2, tipoDato) {
+
+    var valor1;
+    var valor2;
+
+    if (tipoDato == 'EN') {
+      valor1 = parseInt(val1);
+      valor2 = parseInt(val2);
+    }
+    else if ('DE') {
+      valor1 = parseFloat(val1);
+      valor2 = parseFloat(val2);
+    }
+
+    var posicion = 0;
+
+    if (valor1 < valor2) {
+      posicion = -1;
+    }
+    else if (valor1 > valor2) {
+      posicion = 1;
+    }
+    return posicion;
+}
+

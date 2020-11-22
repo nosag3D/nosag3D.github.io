@@ -1,0 +1,24 @@
+/**
+ * Cla<e estatica global para utilidades de manejo de Strings
+ */
+
+//  Definicion tipica para clases estaticas globales
+//  (si es que se les puede llamar asi)
+var StringUtils = new Object();
+
+/**
+ * Implementacion alternativa de la funcion unescape que decodific a correctamente
+ * una cadena url-encoded, corrije el bug del + de la implementacion de Mozilla
+ */
+StringUtils.unescapePlus = function (str) {
+    if (str) {
+        while (true) {
+            var i = str.indexOf('+');
+            if (i < 0)
+                break;
+            str = str.substring(0,i) + '%20' + str.substring(i+1, str.length);
+        }
+        return unescape (str);
+    }
+    return str;
+}

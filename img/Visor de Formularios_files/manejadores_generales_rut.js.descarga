@@ -1,0 +1,1713 @@
+//aca quedan los manejadores QUE SE PUEDEN UTILZIAR EN CUALQUIER HOJA
+
+MANEJADORES.put('14101','DManejadorVerificarIdentificacionJS');
+MANEJADORES.put('14102','DManejeadorRangoIdentificacionJS');
+MANEJADORES.put('14103','DManejeadorRangoNitJS');
+MANEJADORES.put('14104','DManejadorEntradaIdentificacionJS');
+MANEJADORES.put('14105','DManejeadorRangoNitJuridicoJS');
+MANEJADORES.put('14106','DManejadorCovertirMayusculasJS');
+MANEJADORES.put('14107','DManejadorBorrarValoresJS');
+MANEJADORES.put('14108','DManejadorFechaMayorJS');
+MANEJADORES.put('14109','DManejadorCargarRazonSocialJS');
+MANEJADORES.put('14110','DManejadorMoverValoresJS');
+MANEJADORES.put('14111','DManejadorValorRepetidoJS');
+MANEJADORES.put('14112','DManejadorBorrarValoresRangoJS');
+MANEJADORES.put('14113','DManejadorCargarAdministracionJS');
+MANEJADORES.put('14114','DManejadorValCaracEspecialJS');
+MANEJADORES.put('14115','DConsultarHomonimiatercerosJS');
+MANEJADORES.put('14116','DManejadorVerificarTipoContribuyenteNitJS');
+MANEJADORES.put('14117','DManejadorValSoloNumeroJS');
+MANEJADORES.put('14118','DManejadorBorrarEspaciosEnBlancoJS');
+MANEJADORES.put('14119','DValEnteroPositivoJS');
+MANEJADORES.put('14120','DManejadorValCaracEspecialNombresJS');
+MANEJADORES.put('14121','DManejadorNoCerosIzquierdaJS');
+MANEJADORES.put('14122','DManejadorPorcentajesJS');
+MANEJADORES.put('14123','DManejadorAyudaMultiPadresJS');
+MANEJADORES.put('14124','DManejadorBorrarCasillasCeroJS');
+MANEJADORES.put('14125','DManejadorValSoloLetrasTempJS');
+MANEJADORES.put('14126','DManejadorCompletarValoresDecimalesJS');
+MANEJADORES.put('14127','DManejadorValMatriculaMercantilJS');
+
+
+///prueba
+
+
+/**
+ * verifica que solo se seleccione determinados tipo de documento - 14101
+ */
+
+DManejadorVerificarIdentificacionJS.prototype = new DManejadorJS();
+DManejadorVerificarIdentificacionJS.prototype.constructor = DManejadorVerificarIdentificacionJS;
+function DManejadorVerificarIdentificacionJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      var valCas100 = objCas.value;
+
+      if(valCas100 != "" && valCas100 != null){
+         if (valCas100 != 13 && valCas100 != 22 && valCas100 != 41 && valCas100 != 42 ){
+            mensaje= "Solo puede  seleccionar en  Tipo de Documento las opciones 13 Cédula de Ciudadanía, Cédula de Extranjería,  Pasaporte, Documento de identificación extranjero";
+            parent.DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+            limpiarCasilla();
+
+         }
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * valida rango para documentos naturales -14102
+ */
+
+DManejeadorRangoIdentificacionJS.prototype = new DManejadorJS();
+DManejeadorRangoIdentificacionJS.prototype.constructor = DManejeadorRangoIdentificacionJS;
+function DManejeadorRangoIdentificacionJS(manejador) {
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas) {
+      var item = getItem(objCas);
+      var numIden = objCas.value;
+      var idcas = getNumber(objCas)-1;
+      var tipoIdentificacion;
+      var id = getNumber(objCas);
+
+      if(item == -1){
+         tipoIdentificacion  = document.getElementById('cas'+idcas).value*1;
+      }else{
+         tipoIdentificacion  = document.getElementById('cas'+idcas+'_'+item).value*1;
+      }
+
+      if(tipoIdentificacion == 13){
+         if (numIden != ""){
+            if ( (numIden >=1 && numIden<=999999999) || (numIden >1000000000)  || ( numIden  == 113605131) ){
+
+            }else {
+               mostrarError("Los números de cedulas de ciudadanias estan comprendidas dentro del rango 1 a 99.999.999, por favor verifique") ;
+               objCas.value = "";
+               DVisor.controladorDescripciones.setValorCasilla(id, item, "");
+            }
+         }
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+/**
+ * valida el rango del nit cuando la persona es juridica - 14103
+ */
+
+DManejeadorRangoNitJS.prototype = new DManejadorJS();
+DManejeadorRangoNitJS.prototype.constructor = DManejeadorRangoNitJS;
+function DManejeadorRangoNitJS(manejador) {
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas) {
+      if (objCas){
+         var nit = objCas.value;
+         var item = getItem(objCas)*1;
+         var idcas = getNumber(objCas)-1;
+         var tipoIdentificacion;
+
+         if(item == -1){
+            tipoIdentificacion  = document.getElementById('cas'+idcas).value*1;
+         }else{
+            tipoIdentificacion  = document.getElementById('cas'+idcas+'_'+item).value*1;
+         }
+         if(tipoIdentificacion == 31){
+            if (nit != "" && (nit < 800000000 || nit > 999999999 )){
+               var mensaje = "El nit no es valido para personas Juridicas. " ;
+               DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+               objCas.value = "";
+               DVisor.controlador.setValorCasilla(getNumber(objCas),item,'');
+               //evaluate(objCas);
+               return;
+            }
+         }
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+/**
+ *  VERIFICA EL TIPO DE DATO DE LA IDENT DEPENDIENDO DEL TIPO DE DOCUMENTO - 14104
+ */
+DManejadorEntradaIdentificacionJS.prototype = new DManejadorJS();
+DManejadorEntradaIdentificacionJS.prototype.constructor = DManejadorEntradaIdentificacionJS;
+function DManejadorEntradaIdentificacionJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+      var item = getItem(objCas)*1;
+      var idcas = getNumber(objCas)-1;
+      var valCas;
+      var numCasilla = getNumber(objCas);
+
+      if(item == -1){
+         valCas  = document.getElementById('cas'+idcas).value*1;
+      }else{
+         valCas  = document.getElementById('cas'+idcas+'_'+item).value*1;
+      }
+      if(valCas == 41 || valCas == 42 || valCas == 44 ){
+         var valAlfanumerico =  new DValAlfanumericoJS(null);
+         valAlfanumerico.manejar(objCas);
+
+
+      }else{
+         if (!isNaN(objCas.value)) {
+            if (objCas.value*1 < 0 || getAsString(objCas.value).indexOf('-') != -1) {
+               mostrarError('NO DILIGENCIE VALORES NEGATIVOS');
+               objCas.value = "";
+               DVisor.controlador.setValorCasilla(numCasilla,item,'');
+            }
+         }else{
+
+            mostrarError('EL VALOR TIENE QUE SER NUMERICO!!!');
+            objCas.value = "";
+            DVisor.controlador.setValorCasilla(numCasilla,item,'');
+         }
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * VALIDA RANGO DE NIT JURIDICO -14105
+ */
+
+DManejeadorRangoNitJuridicoJS.prototype = new DManejadorJS();
+DManejeadorRangoNitJuridicoJS.prototype.constructor = DManejeadorRangoNitJuridicoJS;
+function DManejeadorRangoNitJuridicoJS(manejador) {
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas) {
+      if (objCas){
+         var nit = objCas.value;
+         if (nit != ""){
+            if(nit < 800000000 || nit > 999999999) {
+               var mensaje = "El nit no es valido para personas Juridicas. " ;
+               mostrarError(mensaje);
+               objCas.value = "";
+               DVisor.controlador.setValorCasilla(getNumber(objCas),getItem(objCas),'');
+               //return;
+            }
+         }
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * manejador que convirte valores a mayusculas - 14106
+ */
+
+DManejadorCovertirMayusculasJS.prototype = new DManejadorJS();
+DManejadorCovertirMayusculasJS.prototype.constructor = DManejadorCovertirMayusculasJS;
+function DManejadorCovertirMayusculasJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas){
+      var item = getItem(objCas)*1;
+      var idcas = getNumber(objCas);
+      var valCas;
+
+      var valor;
+
+      if(item == -1){
+         valCas  = document.getElementById('cas'+idcas);
+      }else{
+         valCas  = document.getElementById('cas'+idcas+'_'+item);
+      }
+      var valCasilla = valCas.value;
+      valor  =  valCasilla.toUpperCase();
+      valCas.value = valor;
+      DVisor.controlador.setValorCasilla(idcas,item, valor);
+
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * BORRA EL VALOR DE LA SGUIENTE CASILLA CUANDO EL VALOR CAMBIA - 14107
+ **/
+
+DManejadorBorrarValoresJS.prototype = new DManejadorJS();
+DManejadorBorrarValoresJS.prototype.constructor = DManejadorBorrarValoresJS;
+function DManejadorBorrarValoresJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas){
+      var item = getItem(objCas)*1;
+      var idcas = (getNumber(objCas)*1)+1;
+      var valCas;
+      var casDes;
+
+      if(item == -1){
+         valCas  = document.getElementById('cas'+idcas);
+         casDes = document.getElementById('des'+idcas);
+      }else{
+         valCas  = document.getElementById('cas'+idcas+'_'+item);
+         casDes = document.getElementById('des'+idcas+'_'+item);
+      }
+      if(casDes != null )DVisor.controladorDescripciones.setValorCasilla(idcas, item, "");;
+      if(valCas.value != ""){
+         valCas.value  = "";
+         DVisor.controlador.setValorCasilla(idcas,item,'');
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * COMPARA QUE LA FECHA UNO NO SEA MAYOR A  LA FECHA DOS - 14108
+ **/
+
+DManejadorFechaMayorJS.prototype = new DManejadorJS();
+DManejadorFechaMayorJS.prototype.constructor = DManejadorFechaMayorJS;
+function DManejadorFechaMayorJS(manejador,casFechas){
+   this.manejador = manejador;
+   this.casFechas = casFechas;
+
+   this.manejar = function(objCas){
+      var longitud;
+      var item = getItem(objCas)*1;
+      var fechaEntra1;
+      var fechaEntra2;
+      var arregloFechas = this.casFechas.split(';');
+
+      var numCasFec1 = arregloFechas[0].substring(arregloFechas[0].indexOf('#')+1);
+      var numCasFec2 = arregloFechas[1].substring(arregloFechas[1].indexOf('#')+1);
+
+      fechaEntra1  = document.getElementById('cas'+numCasFec1);
+      fechaEntra2  = document.getElementById('cas'+numCasFec2);
+      comparaFechas(fechaEntra1, fechaEntra2, "La Fecha de la casilla "+ numCasFec2 ,"  a la fecha de la casilla " +numCasFec1);
+      if(manejador)manejador.manejar(objCas);
+   }
+
+}
+
+
+/**
+ * CARGAR RAZON SOCIAL - 14109
+ */
+
+DManejadorCargarRazonSocialJS.prototype = new DManejadorJS();
+DManejadorCargarRazonSocialJS.prototype.constructor = DManejadorCargarRazonSocialJS;
+function DManejadorCargarRazonSocialJS(manejador) {
+   this.manejador = manejador;
+   this.objCas = null;
+   var DVisor = parent.DVisor;
+   var valRazonSocial;
+   var item;
+   var casRazonSocial;
+   var casDv;
+   var casillaActual;
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var nit;
+      item = getItem(objCas)*1;
+      var casNIT = getNumber(objCas)*1;
+      casDv = getNumber(objCas)*1+1;
+      casRazonSocial = getNumber(objCas)*1+2;
+      casillaActual = objCas;
+
+      if(item != -1){
+         nit = document.getElementById('cas'+casNIT+'_'+item).value;
+      }else{
+         nit = document.getElementById('cas'+casNIT).value;
+
+      }
+      if(nit != ""){
+
+         var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+
+         var metodoInicializar ="inicializarConsultarPorNIT";
+         var arrGetters = new Array("getRazonSocial","getDigitoVerificacion","getIdeEstadoRegistro");
+         var arrTipParamsIni = new Array("long");
+         var arrValParamsIni = new Array(nit);
+
+         msjInvAcc.addInvocacion("rut.DCmdAccConsRegistroRut",
+               metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+         var msjResp = DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+      }
+
+      if(this.manejador)manejador.manejar(objCas);
+   }
+
+   this.manejarRespuesta = function(msjRespuesta) {
+
+      var DMensajeJS = parent.DMensajeJS;
+      var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+      if (execState) {
+         var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+         var razonSocial = respuestas[0];
+         var dv = respuestas[1];
+         var estado = respuestas[2];
+
+         if(estado == 12310324){
+            casillaActual.value ="";
+            DVisor.controlador.setValorCasilla(getNumber(casillaActual),getItem(casillaActual),"");
+            mostrarError("El NIT esta cancelado");
+         }else if(razonSocial != null){
+            if(item == -1){
+               document.getElementById("cas"+casDv).value = dv;
+               document.getElementById("cas"+casRazonSocial).value = razonSocial;
+            }else{
+               document.getElementById("cas"+casDv+"_"+item).value = dv;
+               document.getElementById("cas"+casRazonSocial+"_"+item).value = razonSocial;
+            }
+            DVisor.controlador.setValorCasilla(casDv,item,dv);
+            DVisor.controlador.setValorCasilla(casRazonSocial,item,razonSocial);
+
+         }else{
+            mostrarError('El NIT digitado No existe.');
+         }
+      }else{
+         mostrarError('Error Obteniendo Razón Social.');
+      }
+   }
+}
+
+/**
+ * Elimina espacios en blanco en un arreglo y mueve los valores en el mismo-manejador 14110
+ */
+
+DManejadorMoverValoresJS.prototype = new DManejadorJS();
+DManejadorMoverValoresJS.prototype.constructor = DManejadorMoverValoresJS;
+function DManejadorMoverValoresJS(manejador){
+   this.manejador = manejador;
+   var j;
+   var i;
+   var descripcion;
+   this.manejar = function(objCas){
+      if (objCas) {
+         var casillas = getArregloCasiilaColumna(getNumber(objCas));
+         for(i=1; i< casillas.length; i++){
+            var valorFin = casillas[i];
+            for(j = 0; j< i; j++){
+               var valorIni = casillas[j];
+               if(valorIni.value == "" ){
+                  valorIni.value = valorFin.value;
+                  valorFin.value = "";
+                  break;
+               }
+            }
+            var maneGuardar = new DActDocumentoJS(null);
+            maneGuardar.manejar(valorIni);
+         }
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * evalua que no se presenten valores repetidos en una casilla columna - 14111
+ */
+
+DManejadorValorRepetidoJS.prototype = new DManejadorJS();
+DManejadorValorRepetidoJS.prototype.constructor = DManejadorValorRepetidoJS;
+function DManejadorValorRepetidoJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+      var numRepeticiones = 0;
+      var numCasilla = null;
+      //    activarDesactivar();
+      var casillas = getArregloCasiilaColumna(getNumber(objCas));
+      if(objCas && objCas.value != ""){
+         for (var i=0; i<casillas.length;i++) {
+            if (objCas.value == casillas[i].value){
+               numRepeticiones++;
+            }
+         }
+      }
+      if(numRepeticiones > 1){
+         parent.DVisor.dialogomensaje.showModal('Error', 'No puede seleccionar el mismo valor mas de una vez', 3);
+         objCas.value = "";
+         DVisor.controlador.setValorCasilla(getNumber(objCas),getItem(objCas),'');
+         //evaluate(objCas);
+         var maneGuardar = new DActDocumentoJS(null);
+         maneGuardar.manejar(objCas);
+         var maneMover = new DManejadorMoverValoresJS(null);
+         maneMover.manejar(objCas);
+         return false;
+      }
+      if(manejador)manejador.manejar(objCas);
+
+   }
+}
+
+
+/**
+ * BORRA VALORES ESPECIFICOS - 14112
+ **/
+
+DManejadorBorrarValoresRangoJS.prototype = new DManejadorJS();
+DManejadorBorrarValoresRangoJS.prototype.constructor = DManejadorBorrarValoresRangoJS;
+function DManejadorBorrarValoresRangoJS(manejador,casillas){
+   this.manejador = manejador;
+   this.casillas = casillas;
+
+   this.manejar = function(objCas){
+      var longitud;
+      var DVisor = parent.DVisor;
+      var item = getItem(objCas)*1;
+      var numCasilla;
+      var valCasilla;
+      var valDescripcion;
+      var arregloCasillas = this.casillas.split(';');
+      /* var arregloCasillas = this.casillas.split(';');
+        arregloCasillas = null?new Array("#" + numCasilla):arregloCasillas;
+        //ar idcas = (getNumber(objCas)*1)+1;*/
+
+      for(i=0;i<arregloCasillas.length;i++){
+         numCasilla = arregloCasillas[i].substring(arregloCasillas[i].indexOf('#')+1);
+
+         if(item != -1){
+            valCasilla = document.getElementById('cas'+numCasilla+'_'+item);
+            valDescripcion = document.getElementById('des'+numCasilla+'_'+item);
+         }else{
+            valCasilla = document.getElementById('cas'+numCasilla);
+            valDescripcion = document.getElementById('des'+numCasilla);
+         }
+         if(valCasilla != ""){
+            valCasilla.value = "";
+            DVisor.controlador.setValorCasilla(numCasilla,item,'');
+         }
+         if(valDescripcion != null)
+            DVisor.controladorDescripciones.setValorCasilla(numCasilla, item, "");
+
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+
+}
+
+
+/**
+ * carga administración dependiendo del municipio - 14113
+ */
+
+DManejadorCargarAdministracionJS.prototype = new DManejadorJS();
+DManejadorCargarAdministracionJS.prototype.constructor = DManejadorCargarAdministracionJS;
+function DManejadorCargarAdministracionJS(manejador) {
+   this.manejador = manejador;
+   this.objCas = null;
+   var DVisor = parent.DVisor;
+
+   var numAdm = "";
+   var descripcion = "";
+   var isGranContribuyente = parent.DVisor.contexto.getParametro('CTX_GRAN_CONTRIBUYENTE');
+   var rol = DVisor.contexto.getParametro("CTX_SEG_ROL");
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var arreglo = getArregloCasiilaColumna(53);
+      var numObjCas = getNumber(objCas);
+
+      //parent.DVisor.controladorDescripciones.setValorCasilla(getNumber(objCas), getItem(objCas), "");
+      var tipoContribuyente = document.getElementById('cas24').value;
+      var pais =   document.getElementById('cas38').value;
+      var departamento =   document.getElementById('cas39').value;
+      var municipio =   document.getElementById('cas40').value;
+      var isResoluciones = parent.DVisor.contexto.getParametro('ES_RESOLUCION');
+      var encontroGra = contieneUnValor("13", arreglo);
+
+      // if(rol == 434){
+      if(isResoluciones == "true" || isResoluciones){
+         if(encontroGra.resultado){
+            if(isGranContribuyente == "false" || isGranContribuyente == false){
+               isGranContribuyente = true;
+            }
+         }else{
+            isGranContribuyente = false;
+         }
+      }
+      if(pais == 169 && municipio == ""){
+         numAdm = "";
+         descripcion = "";
+
+      }
+
+      if(pais != 169){
+         numAdm = 32;
+         descripcion = "Impuestos de Bogotá";
+      }
+
+      if(pais == 169 && municipio != ""){
+         var municipioConcatenado = departamento+municipio;
+
+         var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+         var metodoInicializar ="inicializarParamSimples";
+         var arrGetters = new Array("getIdAdmonExterno","getNombreDescripcion");
+         var arrTipParamsIni = new Array("String","int","boolean");
+         var arrValParamsIni = new Array(municipioConcatenado,tipoContribuyente,isGranContribuyente);
+
+         msjInvAcc.addInvocacion("rut.DCmdAccObtenerAdmonRut",
+               metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+         var msjResp = DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+
+      }
+      for(var i=1;i<8;i++){
+         DVisor.controlador.setCasilla(i, 1, 12, -1, numAdm);
+         DVisor.controladorDescripciones.setCasilla(i, 1, 12, -1, descripcion);
+      }
+
+
+      if(this.manejador)manejador.manejar(objCas);
+   }
+   this.manejarRespuesta = function(msjRespuesta) {
+
+      var DMensajeJS = parent.DMensajeJS;
+      var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+      if (execState) {
+         var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+         numAdm = respuestas[0];
+         descripcion = respuestas[1];
+
+      }else{
+         mostrarError('Error Obteniendo Administración.');
+         document.getElementById('cas40').value = "";
+         DVisor.controladorDescripciones.setValorCasilla(40, -1, "");
+      }
+   }
+}
+
+
+//valida que no contenga caracteres especiales - 14114
+
+DManejadorValCaracEspecialJS.prototype = new DManejadorJS();
+DManejadorValCaracEspecialJS.prototype.constructor = DManejadorValCaracEspecialJS;
+function DManejadorValCaracEspecialJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      var valCas = objCas.value;
+      var invalidos =  new Array('#','$','&','*','%','/','.',';','-','_','"','+','|',')','(','=','?','¿','¡','!','º');
+      var salida = "";
+      var remplace = "";
+
+      for (i = 0; i<valCas.length ; i++) {
+         if (contieneValor(valCas.substr(i,1),invalidos)){
+            salida += remplace;
+         }else {
+            salida += valCas.substr(i,1);
+         }
+      }
+      objCas.value = salida;
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * Consulta homonimia terceros - 14115
+ */
+
+DConsultarHomonimiatercerosJS.prototype = new DManejadorJS();
+DConsultarHomonimiatercerosJS.prototype.constructor = DConsultarHomonimiatercerosJS;
+function DConsultarHomonimiatercerosJS(manejador,casillas) {
+   this.manejador = manejador;
+   this.objCas = null;
+   this.casillas = casillas;
+   var homonimia = false;
+   var homonimiaNat = false;
+   var DVisor = parent.DVisor;
+   var item;
+
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var id = objCas.id;
+      item = getItem(objCas)*1;
+      var mostrarError = true;
+      var numCasilla;
+      var numIdentVigente ;
+      var ideTipoDocumento ;
+      var nomPrimerNombre ;
+      var nomOtrosNombres;
+      var nomPrimerApellido;
+      var nomSegundoApellido;
+      var razonSocial;
+      var arregloCasillasHomo = this.casillas.split(';');//se recibe ejemplo #21;#28......
+
+      //var prueba = document.getElementById('cas100_1');
+      //  for(i=0;i<arregloCasillasHomo.length;i++){
+      //numCasilla = arregloCasillasHomo[i].substring(arregloCasillasHomo[i].indexOf('#')+1);
+      if(item != -1){
+         ideTipoDocumento = document.getElementById('cas'+arregloCasillasHomo[0].substring(arregloCasillasHomo[0].indexOf('#')+1)+'_'+item).value;
+         numIdentVigente = document.getElementById('cas'+arregloCasillasHomo[1].substring(arregloCasillasHomo[1].indexOf('#')+1)+'_'+item).value;
+         nomPrimerApellido = document.getElementById('cas'+arregloCasillasHomo[2].substring(arregloCasillasHomo[2].indexOf('#')+1)+'_'+item).value;
+         nomSegundoApellido = document.getElementById('cas'+arregloCasillasHomo[3].substring(arregloCasillasHomo[3].indexOf('#')+1)+'_'+item).value;
+         nomPrimerNombre = document.getElementById('cas'+arregloCasillasHomo[4].substring(arregloCasillasHomo[4].indexOf('#')+1)+'_'+item).value;
+         nomOtrosNombres = document.getElementById('cas'+arregloCasillasHomo[5].substring(arregloCasillasHomo[5].indexOf('#')+1)+'_'+item).value;
+         razonSocial = (arregloCasillasHomo.length > 6)?document.getElementById('cas'+arregloCasillasHomo[6].substring(arregloCasillasHomo[6].indexOf('#')+1)+'_'+item).value:razonSocial="";
+      }else{
+         ideTipoDocumento = document.getElementById('cas'+arregloCasillasHomo[0].substring(arregloCasillasHomo[0].indexOf('#')+1)).value;
+         numIdentVigente = document.getElementById('cas'+arregloCasillasHomo[1].substring(arregloCasillasHomo[1].indexOf('#')+1)).value;
+         nomPrimerApellido = document.getElementById('cas'+arregloCasillasHomo[2].substring(arregloCasillasHomo[2].indexOf('#')+1)).value;
+         nomSegundoApellido = document.getElementById('cas'+arregloCasillasHomo[3].substring(arregloCasillasHomo[3].indexOf('#')+1)).value;
+         nomPrimerNombre = document.getElementById('cas'+arregloCasillasHomo[4].substring(arregloCasillasHomo[4].indexOf('#')+1)).value;
+         nomOtrosNombres = document.getElementById('cas'+arregloCasillasHomo[5].substring(arregloCasillasHomo[5].indexOf('#')+1)).value;
+         razonSocial = (arregloCasillasHomo.length > 6)?document.getElementById('cas'+arregloCasillasHomo[6].substring(arregloCasillasHomo[6].indexOf('#')+1)).value:razonSocial="";
+
+      }
+      //  mostrarError = true
+      // }
+      if(numIdentVigente != "" && ideTipoDocumento != "" && nomPrimerNombre != "" && nomPrimerApellido  != ""){
+         var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+
+         var metodoInicializar ="inicializarTercero";
+         var arrGetters = new Array("getCodMarcaHomonimia");//"getIdEstado"
+         var arrTipParamsIni = new Array("String","String","String","String","String","String","String");
+         var arrValParamsIni = new Array(numIdentVigente, ideTipoDocumento, nomPrimerNombre, nomOtrosNombres, nomPrimerApellido,nomSegundoApellido,razonSocial);
+
+         msjInvAcc.addInvocacion("rut.inscripcion.DCmdAccCalcHomonimiaPersona",
+               metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+         var msjResp = DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+      }
+      if(this.manejador)manejador.manejar(objCas);
+   }
+   this.manejarRespuesta = function(msjRespuesta) {
+
+      var DMensajeJS = parent.DMensajeJS;
+      var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+      if (execState) {
+         var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+         var marcaHomonimia = respuestas[0]*1;
+         obtenerMarcaHomonimia(marcaHomonimia);
+      }else {
+         mostrarError('Error calculando la Homonimia.');
+      }
+   }
+
+}
+
+
+
+
+/**
+ * funcion generica para evaluar homonimia en terceros
+ */
+
+obtenerMarcaHomonimia = function(marca){
+   var msj = "";
+   var marcaHomonimia = marca;
+   if(marcaHomonimia > 0){
+      if(marcaHomonimia != 1 || marcaHomonimia != 3){
+         if(marcaHomonimia == 2){
+            msj = "Existe el NIT  item (duplicado) con diferentes nombres o razones sociales o el reinscrito presenta cambio de nombre. en  el histórico.";
+         }else if(marcaHomonimia == 24){
+            msj = "Persona consistente con nombres, pero el nit digitado no le corresponde";
+         }else if(marcaHomonimia == 22){
+            msj = "Persona consistente con nombres y nit pero no digito el NIT.";
+         }else if(marcaHomonimia == 23){
+            msj = "Persona con NIT cancelado.";
+         }else if(marcaHomonimia == 4 || marcaHomonimia == 5) {
+            msj = "Persona existe con cambio de nombre.";
+         }
+      }
+   }
+   if(msj != ""){
+      mostrarError(msj);
+      // mostrarError("pruebas");
+   }
+}
+
+
+/**
+ * VERIFICA TIPO DE CONTR DEPENDIENDO DEL N. DE NIT - 14116
+ */
+
+DManejadorVerificarTipoContribuyenteNitJS.prototype = new DManejadorJS();
+DManejadorVerificarTipoContribuyenteNitJS.prototype.constructor = DManejadorVerificarTipoContribuyenteNitJS;
+function DManejadorVerificarTipoContribuyenteNitJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas){
+
+      this.objCas = objCas;
+      var msj= "";
+      var nit = document.getElementById('cas5').value;
+
+      if(nit != ""){
+         var tipoContribuyente = document.getElementById('cas24').value;
+         if(tipoContribuyente != ""){
+            if((nit >1 &&  nit <=99999999) || (nit >= 600000000 && nit <= 799999999)){
+               if(tipoContribuyente == 1)msj = "El NIT no corresponde a una persona Juridica";
+            }else if((nit >800000000 &&  nit <=899999999) || (nit >= 900000000 && nit <= 999999999)){
+               if(tipoContribuyente == 2)msj = "El NIT no corresponde a una persona Natural";
+            }
+         }
+      }
+      if(msj != ""){
+         mostrarError(msj);
+         limpiarCasilla();
+         /*       var DVisor = parent.DVisor;
+       var fachadaVisor = parent.fachadaVisor;
+       busqueda.objCas.value = '';
+       DVisor.controladorDescripciones.removeCasilla(ID_GRUPO,fachadaVisor.getHojaActual(),fachadaVisor.getCopiaActual());
+
+       var item = parent.getItem(busqueda.objCas);
+       var cadItem = (item != -1)? "_" + item : "";
+
+       var desCas = document.getElementById('des' + getNumber(busqueda.objCas) + cadItem);
+       if (desCas) {
+         desCas.value = '';
+       }*/
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+//valida que no contenga solo numeros  - 14117
+
+DManejadorValSoloNumeroJS.prototype = new DManejadorJS();
+DManejadorValSoloNumeroJS.prototype.constructor = DManejadorValSoloNumeroJS;
+function DManejadorValSoloNumeroJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      var valCas = objCas.value;
+      var invalidos =  new Array(1,2,3,4,5,6,7,8,9,0);
+      var j = 0;
+
+      for (var i = 0; i<valCas.length ; i++) {
+         if (contieneValor(valCas.substr(i,1),invalidos)){
+            j++;
+         }
+      }
+      if (valCas != "" && valCas.length == j){
+         mostrarError('No se aceptan solo Números.');
+         objCas.value="";
+
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * borra espacios en blanco - 14118
+ */
+
+
+DManejadorBorrarEspaciosEnBlancoJS.prototype = new DManejadorJS();
+DManejadorBorrarEspaciosEnBlancoJS.prototype.constructor = DManejadorBorrarEspaciosEnBlancoJS;
+function DManejadorBorrarEspaciosEnBlancoJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      var valCas = objCas.value;
+      var invalidos =  new Array(' ');
+      var salida = "";
+      var remplace = "";
+
+      for (i = 0; i<valCas.length ; i++) {
+         if (contieneValor(valCas.substr(i,1),invalidos)){
+            salida += remplace;
+         }else {
+            salida += valCas.substr(i,1);
+         }
+      }
+      objCas.value = salida;
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/*
+ * verifica qeu el valor sea entero y positivo - 14119
+ */
+
+DValEnteroPositivoJS.prototype=new DManejadorJS();
+DValEnteroPositivoJS.prototype.constructor=DValEnteroPositivoJS;
+function DValEnteroPositivoJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+      var id= getNumber(objCas);
+      var item = getItem(objCas)*1;
+      var valor = deleteLeftCerous(objCas.value) + "";
+      if(valor != ""){
+         if(!esEntero(valor)){
+            mostrarError('El valor no es entero!!!');
+            objCas.value = "";
+            DVisor.controlador.setValorCasilla(id,item,"");
+            return;
+         } else {
+            if (objCas.value*1 < 0 || getAsString(objCas.value).indexOf('-') != -1) {
+               mostrarError('NO DILIGENCIE VALORES NEGATIVOS');
+               objCas.value = "";
+               DVisor.controlador.setValorCasilla(id,item,"");
+               return;
+            }else{
+               objCas.value = valor;
+               DVisor.controlador.setValorCasilla(id,item,valor);
+            }
+         }
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+//valida que no contenga caracteres especiales - 14120
+
+DManejadorValCaracEspecialNombresJS.prototype = new DManejadorJS();
+DManejadorValCaracEspecialNombresJS.prototype.constructor = DManejadorValCaracEspecialNombresJS;
+function DManejadorValCaracEspecialNombresJS(manejador){
+   this.manejador = manejador;
+
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      var valCas = objCas.value;
+      var invalidos =  new Array('#','$','&','*','%','/',';','-','_','"','+','|','=','?','¿','¡','!','º');
+      var salida = "";
+      var remplace = "";
+
+      for (i = 0; i<valCas.length ; i++) {
+         if (contieneValor(valCas.substr(i,1),invalidos)){
+            salida += remplace;
+         }else {
+            salida += valCas.substr(i,1);
+         }
+      }
+      objCas.value = salida;
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * evalua que no se presenten valores repetidos en una casilla columna - 14121
+ */
+DManejadorNoCerosIzquierdaJS.prototype = new DManejadorJS();
+DManejadorNoCerosIzquierdaJS.prototype.constructor = DManejadorNoCerosIzquierdaJS;
+function DManejadorNoCerosIzquierdaJS(manejador){
+   this.manejador = manejador;
+   this.manejar = function(objCas){
+
+      var numRepeticiones = 0;
+      var numCasilla = null;
+      var digito = "0";
+      var texto = objCas.value;
+      var item = getItem(objCas)*1;
+      var id = getNumber(objCas);
+      var idcas = getNumber(objCas)-1;
+      var tipoIdentificacion;
+
+      if(item == -1){
+         tipoIdentificacion  = document.getElementById('cas'+idcas).value*1;
+      }else{
+         tipoIdentificacion  = document.getElementById('cas'+idcas+'_'+item).value*1;
+      }
+      if(tipoIdentificacion != 41 && tipoIdentificacion != 42 && tipoIdentificacion != 44 ){
+         if (texto.substr(0,1) == digito){
+            mostrarError("El número de documento no puede empezar en cero");
+            objCas.value = "";
+            DVisor.controlador.setValorCasilla(id,item,'');
+         }
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ *  VALIDA QUE NO SEA MAYOR DE 100 - 14122
+ */
+DManejadorPorcentajesJS.prototype = new DManejadorJS();
+DManejadorPorcentajesJS.prototype.constructor = DManejadorPorcentajesJS;
+function DManejadorPorcentajesJS(manejador,casillas){
+   this.manejador = manejador;
+   this.casillas = casillas;
+
+   this.manejar = function(objCas){
+      var item = getItem(objCas)*1;
+      var mensaje = manejarPorcentajes(casillas,item)
+      if(mensaje != ""){
+         mostrarError(mensaje);
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+
+/**
+ * Muestra el tooltip de ayuda y prepara la busqueda especificada.
+ * Tiene la capacida de recibir distintas casillas padres  - 14123
+ */
+DManejadorAyudaMultiPadresJS.prototype = new DManejadorJS();
+DManejadorAyudaMultiPadresJS.prototype.constructor = DManejadorAyudaMultiPadresJS;
+function DManejadorAyudaMultiPadresJS(manejador, opcionesBusqueda) {
+   this.manejador = manejador;
+   this.opcionesBusqueda = opcionesBusqueda;
+   this.idComandoBusqueda = null;
+   this.parametrosBusqueda = new Hashtable();
+   this.tipoBusqueda = null;
+   this.aliasBusqueda = null;
+   this.layout = null;
+   this.ejecutor = null;
+
+
+   this.manejar = function(objCas) {
+      var casilla = getNumber(objCas);
+      if(casilla == 35){
+         this.iniciarBusqueda(objCas);
+      }else{
+         if(objCas.value && objCas.value != ""){
+            this.iniciarBusqueda(objCas);
+         }
+      }
+
+      if(manejador) manejador.manejar(objCas);
+   }
+
+   this.iniciarBusqueda = function(objCas){
+      var mostrarAyuda = ((objCas.ayuda == null)?true:objCas.ayuda);
+      if (mostrarAyuda) {
+         this.objCas = objCas;
+         this.inicializar();
+
+         // Crea el objeto de bsqueda y se muestra
+         // Ver visor/js/busqueda/busqueda.js#DBusquedaJS
+         var busqueda = new DBusquedaJS();
+         busqueda.inicializar(objCas, this.tipoBusqueda, this.idComandoBusqueda, this.aliasBusqueda, this.parametrosBusqueda, this.layout, this.ejecutor);
+         busqueda.mostrarTooltip();
+      }
+
+
+
+   }
+
+   // Hace un parsing de las opciones de búsqueda para cargar el idComandoBusqueda, tipo de búsqueda y los parámetros de la misma
+   this.inicializar = function() {
+      var arregloParametros = this.opcionesBusqueda.split(';');
+      if (arregloParametros.length == 5 || arregloParametros.length == 6) {
+         this.idComandoBusqueda = arregloParametros[0];
+         this.aliasBusqueda = arregloParametros[1];
+         this.tipoBusqueda = arregloParametros[2];
+         //El valor puede ser 1 (acordión),  2 (páneles fijos), D3 (solo ayuda) únicamente.
+         this.layout = arregloParametros[4];
+
+         if (arregloParametros[3] && arregloParametros[3] != '') {
+            //Es una referencia a una casilla
+            if (arregloParametros[3].indexOf('#') != -1) {
+               var cadCas = arregloParametros[3];
+               // Puede tener varios padres específicados de la siguiente manera:
+               // #5^#6^#7
+               if (cadCas.indexOf('^') != -1) {
+                  var valorConcatenado = "";
+                  var arrCasilla = cadCas.split(/[/^]/);
+                  if (arrCasilla != null && arrCasilla.length > 0) {
+                     for (var i = 0; i < arrCasilla.length; i++) {
+                        var cadenaCasilla = arrCasilla[i];
+                        var cadenaCasilla = cadenaCasilla.replace(/#/i,'cas');
+                        if(cadenaCasilla.indexOf('_item') != -1) {
+                           var item = getItem(this.objCas);
+                           cadenaCasilla = cadenaCasilla.replace(/item/,item);
+                        }
+                        var unaCasillaPadre = document.getElementById(cadenaCasilla);
+                        if (unaCasillaPadre && !isNaN(unaCasillaPadre.value)) {
+                           if (i == 0) {
+                              valorConcatenado = unaCasillaPadre.value;
+                           }
+                           else {
+                              valorConcatenado = valorConcatenado + "^" + unaCasillaPadre.value;
+                           }
+                        }
+                        else if(valorConcatenado == 41 || valorConcatenado == 42){
+                           valorConcatenado = valorConcatenado + "^" + unaCasillaPadre.value;
+                        }
+                     }
+                     if(valorConcatenado != ""){
+                        this.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_PADRE, valorConcatenado);
+                     }
+                  }
+               }
+               else {
+                  var numCasilla = arregloParametros[3].substring(arregloParametros[3].indexOf('#') + 1);
+                  cadCas = arregloParametros[3].replace(/#/i,'cas');
+                  var numItems = parent.DVisor.controlador.getNumItemsFromCas(numCasilla*1);
+                  if (numItems > 0) {
+                     var item = getItem(this.objCas);
+                     if (item > -1) {
+                        cadCas += "_" + item;
+                     }
+                  }
+                  var casillaPadre = document.getElementById(cadCas);
+                  if (casillaPadre && !isNaN(casillaPadre.value)) {
+                     this.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_PADRE, casillaPadre.value);
+                  }
+               }
+
+            }
+            //Es un valor escalar que se debe pasar directamente como parámetro
+            else {
+               if (!isNaN(arregloParametros[3]))
+                  this.parametrosBusqueda.put(DBusquedaJS.PARAM_BUSQUEDA_PADRE, arregloParametros[3]);
+            }
+         }
+
+         if (arregloParametros[5] && arregloParametros[5] != '') {
+            this.ejecutor = arregloParametros[5];
+         } else {
+            this.ejecutor = "";
+         }
+      }
+   }
+}
+
+/**
+ *  DEJA LA CASILLA VACIA CUANDO TIENE CERO - 14124
+ */
+DManejadorBorrarCasillasCeroJS.prototype = new DManejadorJS();
+DManejadorBorrarCasillasCeroJS.prototype.constructor=DManejadorBorrarCasillasCeroJS;
+function DManejadorBorrarCasillasCeroJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas) {
+      var id = getNumber(objCas);
+      var item = getItem(objCas);
+
+
+      if (objCas.value == 0) {
+         objCas.value = "";
+         DVisor.controlador.setValorCasilla(id,item,"");
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/**
+ * NO PERMITE SOLO LETRAS - 14125
+ */
+
+DManejadorValSoloLetrasTempJS.prototype = new DManejadorJS();
+DManejadorValSoloLetrasTempJS.prototype.constructor = DManejadorValSoloLetrasTempJS;
+function DManejadorValSoloLetrasTempJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+      if(objCas){
+         this.objCas = objCas;
+         var valCas = objCas.value;
+         if(valCas != null && valCas != ""){
+            var encontro = isAlpha(valCas);
+
+            if (encontro){
+               mostrarError('No se aceptan solo Letras.');
+               objCas.value="";
+               DVisor.controlador.setValorCasilla(getNumber(objCas),getItem(objCas),"");
+            }
+         }
+      }
+
+      if(manejador)manejador.manejar(objCas);
+
+   }
+}
+
+
+/**
+ * 14126
+ */
+DManejadorCompletarValoresDecimalesJS.prototype = new DManejadorJS();
+DManejadorCompletarValoresDecimalesJS.prototype.constructor = DManejadorCompletarValoresDecimalesJS;
+function DManejadorCompletarValoresDecimalesJS(manejador,cantidad){
+   this.manejador = manejador;
+   this.cantidad = cantidad;
+
+   this.manejar = function(objCas){
+
+      CompletaValoresDecimales(objCas,cantidad)
+
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+
+/**
+ * consulta número de matricula - 14126
+ *
+ */
+DManejadorValMatriculaMercantilJS.prototype = new DManejadorJS();
+DManejadorValMatriculaMercantilJS.prototype.constructor = DManejadorValMatriculaMercantilJS;
+function DManejadorValMatriculaMercantilJS(manejador) {
+   this.manejador = manejador;
+   this.objCas = null;
+   var DVisor = parent.DVisor;
+   var item;
+   var id;
+   var isEncontro = true;
+   var nitCas5;
+
+   this.manejar = function(objCas) {
+      isEncontro = true;
+      this.objCas = objCas;
+      var nit;
+      item = getItem(objCas)*1;
+      nitCas5 = parent.DVisor.getValorCasillaAbsoluto(1, 1, 5,-1);
+      var numMatricula = objCas.value;
+      id = getNumber(objCas);
+      if(numMatricula != ""){
+
+         var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+
+         var metodoInicializar ="inicializarConsultaPorNumMatricula";
+         var arrGetters = new Array("getNitAsociado");
+         var arrTipParamsIni = new Array("String");
+         var arrValParamsIni = new Array(numMatricula);
+
+         msjInvAcc.addInvocacion("rut.DCmdAccConsRegistroMercantil",
+               metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+         var msjResp = DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+      }
+
+      if(this.manejador)manejador.manejar(objCas);
+   }
+
+   this.manejarRespuesta = function(msjRespuesta) {
+
+      var DMensajeJS = parent.DMensajeJS;
+      var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+      if (execState) {
+         var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+         var nitMatricula = respuestas[0];
+
+         if(nitCas5 != "" && (nitMatricula != null && nitMatricula != "")){
+            if(nitMatricula == nitCas5)isEncontro = true;
+            if(nitMatricula != nitCas5)isEncontro = false;
+         }else if(nitCas5 == "" && (nitMatricula != null && nitMatricula != "")){
+            isEncontro = false;
+         }
+         if(!isEncontro){
+            mostrarError("El número de matricula registrado tiene un NIT diferente asociado");
+            document.getElementById('cas'+id+'_'+item).value = "";
+            DVisor.controlador.setValorCasilla(id,item,"");
+
+
+         }
+      }else{
+         mostrarError('Error Obteniendo Registro .');
+      }
+   }
+}
+
+
+
+/**
+ * Manejador que ejecuta un comando de busqueda en el servidor y recibe varias columnas de resultado
+ */
+DEjecutarBusquedaTercerosPersonasConfiablesJS.prototype = new DEjecutarBusquedaAbstractoJS();
+DEjecutarBusquedaTercerosPersonasConfiablesJS.prototype.constructor = DEjecutarBusquedaTercerosPersonasConfiablesJS;
+function DEjecutarBusquedaTercerosPersonasConfiablesJS(manejador, busqueda, tablaHTML) {
+
+   this.manejador = manejador;
+   this.busqueda = busqueda;
+   this.tablaHTML = tablaHTML;
+   this.mapaResultados = new Hashtable();
+
+
+   this.crearCabeceraTabla = function(tablaHTML) {
+      tablaHTML.deleteTHead();
+
+      var cabecera = tablaHTML.createTHead();
+      var numCasilla =getNumber(this.busqueda.objCas)*1+3;
+      var item = getItem(this.busqueda.objCas)*1;
+
+      var casDes = (item !=-1)?'#'+numCasilla+'_'+item:'#'+numCasilla;
+
+
+      // Crut-17
+      var activarHtml = "<label style=\"font-size: 3 pt;\">Si no hay resultados o no esta de acuerdo con la información por favor seleccione </label><a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.activarValores('"+casDes+"'); \" > Nuevo Cliente </a>";
+      // var activarHtml = "<label style=\"font-size: 3 pt;\">Si no hay resultados o no esta de acuerdo por favor revise la información ingresada. </label>";
+      //Fin Crut-17
+
+
+      var filaLink = cabecera.insertRow(-1);
+      var cellLink = filaLink.insertCell(-1);
+      cellLink.innerHTML = activarHtml;
+
+      var filaCabecera = cabecera.insertRow(-1);
+      var cabeceraIdentificacion = filaCabecera.insertCell(-1);
+      cabeceraIdentificacion.innerHTML = "<b>Identificación</b>";
+      var cabeceraNombre = filaCabecera.insertCell(-1);
+      cabeceraNombre.innerHTML = "<b>Nombre</b>";
+   }
+
+   this.getCasillas = function(identificacion,primerApellido,segundoApellido,primerNombre,otrosNombres){
+      var id = (getNumber(this.busqueda.objCas)*1);
+      var idPrimerApellido = id+3;
+      var idSegundoApellido =id+4;
+      var idPrimerNombre = id+5;
+      var idSegundoNombre = id+6;
+      var item = getItem(this.busqueda.objCas);
+      var casillas = "";
+
+      if(segundoApellido == "null")segundoApellido = "";
+
+      if(item != -1){
+         casillas += "cas"+idPrimerApellido+"_"+item+":" + primerApellido + "|cas"+idSegundoApellido+"_"+item+":"+ segundoApellido + "|cas"+idPrimerNombre+"_"+item+":" +primerNombre;
+      }else{
+         casillas += "cas"+idPrimerApellido+":" + primerApellido + "|cas"+idSegundoApellido+":"+ segundoApellido + "|cas"+idPrimerNombre+":" +primerNombre;
+      }
+      if(otrosNombres != null && otrosNombres != "" && otrosNombres != "null"){
+         if(item != -1){
+            casillas += "|cas"+idSegundoNombre+"_"+item+":" +otrosNombres;
+         }else{
+            casillas += "|cas"+idSegundoNombre+":" +otrosNombres;
+         }
+      }
+      /*  if(segundoApellido != null && segundoApellido != "" && segundoApellido != "null"){
+       if(item != -1){
+         casillas += "|cas"+idSegundoApellido+"_"+item+":" +segundoApellido;
+       }else{
+          casillas += "|cas"+idSegundoApellido+":" +segundoApellido;
+        }
+    }*/
+      return casillas;
+   }
+
+   this.aumentarCaracteres = function(cadena){
+      if(cadena.length < 70){
+         var caracteres = "";
+         for(var i = cadena.length;i < 50;i++){
+            caracteres += "                ";
+         }
+         cadena += caracteres;
+      }
+      return cadena;
+   }
+
+   this.adicionarFila = function(tbody, codigo, resultado) {
+
+      var row = tbody.insertRow(-1);
+      var celdaIdentificacion = row.insertCell(-1);
+      var celdaNombre = row.insertCell(-1);
+
+      var origen = "";
+      var identificacion = "";
+      var numNit = "";
+      var nombre = "";
+      var primerApellido = "";
+      var segundoApellido = "";
+      var primerNombre = "";
+      var otrosNombres = "";
+
+      var descripcion = "";
+
+      var resultadoArrayCodigo = codigo.split("_");
+      if(resultadoArrayCodigo[0]){
+         origen = resultadoArrayCodigo[0];
+      }
+      if(resultadoArrayCodigo[1]){
+         identificacion = resultadoArrayCodigo[1];
+      }
+      var resultadoArray = resultado.split("_");
+      if(resultadoArray[0]){
+         numNit = resultadoArray[0];
+      }
+      if(resultadoArray[1]){
+         nombre = resultadoArray[1];
+      }
+      if(resultadoArray[2]){
+         primerApellido = resultadoArray[2];
+      }
+      if(resultadoArray[3]){
+         segundoApellido = resultadoArray[3];
+      }
+      if(resultadoArray[4]){
+         primerNombre = resultadoArray[4];
+      }
+      if(resultadoArray[5]){
+         otrosNombres = resultadoArray[5];
+      }
+
+      // Obtenemos la descripción
+
+      var caracteres = "";
+
+      var fila1 = "ORIGEN:          " + origen;
+      fila1 = this.aumentarCaracteres(fila1);
+      var fila2 = "NIT:              " + numNit;
+      fila2 = this.aumentarCaracteres(fila2);
+      var fila3 = "NOMBRE:           " + nombre;
+      fila3 = this.aumentarCaracteres(fila3);
+      var fila4 = "PRIMER APELLIDO:  " + primerApellido;
+      fila4 = this.aumentarCaracteres(fila4);
+      var fila5 = "SEGUNDO APELLIDO: " + segundoApellido;
+      fila5 = this.aumentarCaracteres(fila5);
+      var fila6 = "PRIMER NOMBRE:    " + primerNombre;
+      fila6 = this.aumentarCaracteres(fila6);
+      var fila7 = "OTROS NOMBRES:    " + otrosNombres;
+      fila7 = this.aumentarCaracteres(fila7);
+
+      descripcion = fila1 + fila2 + fila3 + fila4 + fila5 + fila6 + fila7;
+
+      nombre = cambiarCaracteresAXml(nombre);
+      //descripcion = cambiarCaracteresAXml(descripcion);
+
+      // Al dar click sobre la celda se actualiza el resultado de la casilla.
+      // Ver busqueda.js#actualizarCasillasBusqueda
+      var codigoHtml = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\"";
+      codigoHtml += " onclick=\"parent.actualizarCasillasBusqueda('" + this.getCasillas(identificacion,primerApellido,segundoApellido,primerNombre,otrosNombres) + "');\">" + identificacion + "</a>";
+      var nombreHtml = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\"";
+      nombreHtml += " onclick=\"parent.actualizarCasillasBusqueda('" + this.getCasillas(identificacion,primerApellido,segundoApellido,primerNombre,otrosNombres) + "');parent.mostrarDescripcion();\""
+      // Colocamos un tooltip cuando el mouse se encuentre sobre el enlace con la descripción del resultado
+      nombreHtml += " onmouseover=\"parent.mostrarDescripcion('" + descripcion + "');\">" + nombre + "</a>";
+
+      celdaIdentificacion.innerHTML = codigoHtml;
+      celdaNombre.innerHTML = nombreHtml;
+
+
+
+   }
+}
+
+
+
+
+
+////////////////*********************************generales********************************\\
+
+
+function isAlpha(c) {
+   var letters="abcdefghijklmnopqrstuvwxyz";
+   var LETTERS="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+   // is c a String or a character?
+   if(c.length>1) {
+      for(j=0;j<c.length;j++) {
+         // call isAlpha recursively for each character
+         alpha=isAlpha(c.substring(j,j+1));
+         if(!alpha) return alpha;
+      }
+      return alpha;
+   }
+   else {
+      // if c is alpha return true
+      if(letters.indexOf(c)>=0 || LETTERS.indexOf(c)>=0) return true;
+      return false;
+   }
+}
+
+
+///
+function getArregloDescripcionesCasiilaColumna(numCasilla) {
+   var arreglo = new Array();
+   var i=1;
+   while (document.getElementById('des' + numCasilla + '_' + i)) {
+      arreglo.push(document.getElementById('des' + numCasilla + '_' + i));
+      i++;
+   }
+   return arreglo;
+}
+
+
+function comparaFechas(objetoFecha1, objetoFecha2, mensaje1, mensaje2) {
+   fechaEntra1 = objetoFecha1.value;
+   fechaEntra2 = objetoFecha2.value;
+   longitud = fechaEntra1.length;
+   if (longitud < 6 || longitud > 11)
+      return false;
+   longitud = fechaEntra2.length;
+   if (longitud < 6 || longitud > 11)
+      return false;
+   stringFecha1 = "";
+   stringFecha2 = "";
+   for (var i = 0; i < fechaEntra1.length; i++) {
+      var caracter = fechaEntra1.charAt(i)
+      if (caracter != '-' ) {
+         stringFecha1 += caracter;
+      }
+   }
+   for (var i = 0; i < fechaEntra2.length; i++) {
+      var caracter = fechaEntra2.charAt(i)
+      if (caracter != '-' ) {
+         stringFecha2 += caracter;
+      }
+   }
+   if (parseInt(stringFecha1) > parseInt(stringFecha2)){
+      var mensaje = mensaje1 + " debe ser mayor o igual  " + mensaje2;
+      mostrarError(mensaje);
+
+      objetoFecha2.value ="";
+      evaluate(objetoFecha2);
+      // return false;
+   }
+   //return true;
+}
+
+
+function contieneDosValores(valor1,valor2, arreglo) {
+   var encontro1 = false;
+   var encontro2 = false;
+   var esta = false;
+   var resultado = false;
+   var numCasilla = null;
+
+   var objeto = new retornaObjeto(resultado,numCasilla);
+
+   for (var i=0; i<arreglo.length && !esta; i++) {
+      if(arreglo[i].value != ""){
+         if(valor1 == arreglo[i].value) encontro1 = true
+      }
+      if(arreglo[i].value != ""){
+         if(valor2 == arreglo[i].value) encontro2 = true
+      }
+      if(encontro1 || encontro2)esta = true;
+   }
+   objeto.resultado = esta;
+   objeto.numCasilla = arreglo[i-1];
+   return objeto;
+}
+
+function validaValObligatorio (valor1,valor2,arreglo) {
+   var esta = true;
+   var encontro1 = contieneUnValor(valor1, arreglo);
+   var encontro2 = contieneUnValor(valor2, arreglo);
+   if(encontro1.resultado){
+      if(encontro2.resultado)esta = false;
+   }else{
+      esta = false
+   }
+   return esta;
+}
+
+function contieneUnValor(valor, arreglo) {
+   var esta = false;
+   var resultado = false;
+   var numCasilla = null;
+   var objeto = new retornaObjeto(resultado,numCasilla);
+   for (var i=0; i<arreglo.length && !esta; i++) {
+      if (valor == arreglo[i].value) esta = true;
+      //  if(esta)break;
+   }
+   objeto.resultado = esta;
+   objeto.numCasilla = arreglo[i-1];
+   return objeto;
+}
+
+//valor es un arreglo de valores
+function contieneValorArreglo(valor, arreglo) {
+   var esta = false;
+   var c = 0;
+   var resultado = new retornaObjeto();
+   for (var i=0; i<arreglo.length && !esta; i++) {
+      for(var j= 0; j<valor.length; j++ ){
+         if (valor[j] == arreglo[i].value)c++;
+         if(c >1){
+            esta = true;
+         }
+      }
+   }
+   resultado.encontro = esta;
+   resultado.casilla = arreglo[i-1];
+
+   return resultado;
+
+}
+function contieneValoresArreglo(arreglo1, arreglo2) {
+   var esta = false;
+   var c = 0;
+   var j;
+   var resultado = new retornaObjeto();
+   if(arreglo1.length > 0){
+      for(j=0; j<=arreglo1.length; j++ ){
+         for (var i=0; i<arreglo2.length; i++) {
+            if (arreglo1[j] == parseInt(arreglo2[i].value))c++;
+            if(c == arreglo1.length ){
+               esta= true;
+               break;
+            }
+         }
+      }
+   }else{
+      esta = true;
+   }
+   return esta;
+}
+
+function contieneUnValorArreglo(arreglo1, arreglo2) {
+   var esta = false;
+   var c = 0;
+   var resultado = new retornaObjeto();
+   for (var i=0; i<arreglo2.length && !esta; i++) {
+      for(var j= 0; j<arreglo1.length; j++ ){
+         if (arreglo1[j] == arreglo2[i].value)esta =  true;
+      }
+   }
+   resultado.encontro = esta;
+   resultado.casilla = arreglo2[i-1];
+   return resultado;
+}
+
+function valorObligatorioPrueba(cas1,cas2,mensaje1,mensaje2){
+   var DVisor = parent.DVisor;
+   var valido =true;
+   var mensaje ="";
+   var resultado = new retornaObjeto();
+   var val1 = DVisor.getValorCasilla(cas1,-1);
+   var val2 = DVisor.getValorCasilla(cas2,-1);
+
+   if(val1 != "" && val1 != null ){
+      if(val2 == null || val2 == "")valido = false;
+      mensaje = "Si diligencio la "+mensaje1 + " es obligatorio diligenciar la " + mensaje2;
+   }else{
+      if(val2 == "" ){
+         valido = true;
+      }else{
+         DVisor.controlador.setValorCasilla(cas2,-1,"");
+
+      }
+   }
+
+   resultado.encontro = valido;
+   resultado.casilla = mensaje;
+   return resultado;
+}
+
+function valorObligatorio(cas1,cas2,mensaje1,mensaje2){
+   var valido =true;
+   var mensaje ="";
+   var resultado = new retornaObjeto();
+   if(cas1 != "" && cas1 != null){
+      if(cas2 == "" || cas2 == null)valido = false;
+      mensaje = "Si diligencio la "+mensaje1 + " es obligatorio diligenciar la " + mensaje2;
+   }else{
+      if(cas2 =="" || cas2 == null ){
+         valido = true;
+      }else{
+
+         document.getElementById(cas2).value = "";
+         evaluate(cas2);
+      }
+   }
+
+   resultado.encontro = valido;
+   resultado.casilla = mensaje;
+   return resultado;
+}
+
+
+function valorDiferenteAValor(valor1, valor2, mensaje1, mensaje2) {
+   var mensaje ="";
+   var valido = true;
+   var resultado = new retornaObjeto();
+   if((valor1 != null && valor1 !="") && (valor2 != null && valor2 != "")){
+      if (valor1 == valor2){
+         valido = false;
+         var mensaje = mensaje2 + " debe ser diferente a " + mensaje1;
+      }
+   }
+   resultado.encontro = valido;
+   resultado.casilla = mensaje;
+
+   return resultado;
+}
+
+
+///funcion basica para hoja 2  enviamos la casilla en la que debe buscar y el conjunto de valores en un arreglo
+
+function contieneUnValorEnCasilla(valCasilla, arreglo) {
+   var esta = false;
+   // var arreglo = arreglo;
+   for (var i=0; i<arreglo.length && !esta; i++) {
+      if (valCasilla == arreglo[i]) esta = true;
+      if(esta)break;
+   }
+
+   return esta;
+}
+
+
+function contieneValorCombinacion(arreglo1, arreglo2) {
+   var esta = true;
+   var c = 0;
+   var m = 0;
+   for(var i=0; i<arreglo1.length; i++) {
+      if(arreglo1[i].value != ""){
+         m++;
+         for(var j= 0; j<arreglo2.length; j++ ){
+            if (arreglo1[i].value == arreglo2[j])c++;
+         }
+      }
+   }
+   if(c<2 && m>1)esta = false;
+   if(c>=2)esta = true;
+
+   return esta;
+}
+/**
+ * retorna un objeto
+ */
+function retornaObjeto(resultado,numCasilla){
+   this.resultado = resultado;
+   this.numCasilla = numCasilla;
+}
+
+
+/**
+ *
+ */
+
+function campoDigitos(campo,texto) {
+   var validos1  = new Array("1", "2", "3", "4", "5", "6", "7", "8", "9", "0");
+   var digito = 0;
+   var j = 0;
+   var salida = "";
+   for (i = 0; i < texto.length ; i++) {
+      for (k=0; k<10;k++) {
+         if (texto.substr(i,1) == validos1[k])
+            salida += texto.substr(i,1);
+      }
+   }
+   campo.value = salida;
+   eval(campo);
+}
+
+
+//nueva versión
+function contieneUnValorW(valor, arreglo) {
+   var esta = false;
+   var numero = 0;
+   var resultado = false;
+   var numCasilla;
+   var objeto = new retornaObjeto(resultado,numCasilla);
+   for (var zi=0; zi<arreglo.length && !esta; zi++) {
+      if (valor == arreglo[zi]){
+         esta = true;
+         numero = zi;
+      }
+      // if(esta)break;
+   }
+   objeto.resultado = esta;
+   objeto.numCasilla = numero;
+   return objeto;
+}
+
+

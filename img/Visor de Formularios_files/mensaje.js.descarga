@@ -1,0 +1,114 @@
+Import ("general.Hashtable");
+
+DMensajeJS = function DMensajeJS(idMensaje){
+    this.id;
+    this.parametros = new Hashtable();
+
+    if (idMensaje)
+        this.id = idMensaje;
+
+    this.getId = function(){
+        return this.id;
+    }
+
+    this.setId = function(idMensaje){
+        if (idMensaje) {
+            this.id = idMensaje;
+        }
+    }
+
+    this.addParametro = function(parametro, valor){
+        this.parametros.put(parametro,valor);
+    }
+
+    this.getParametro = function(parametro){
+        return this.parametros.get(parametro);
+    }
+
+    this.getListaParametros = function(){
+        return this.parametros.keys();
+    }
+}
+
+/** Constante que indica el nombre del par?metro donde va el Xml del Documento */
+DMensajeJS.DOCUMENTO = "documento_xml";
+/** Constante para enviar el documento_mensaje */
+DMensajeJS.DOCUMENTO_MENSAJE = "documento_mensaje";
+/** */
+DMensajeJS.NOMBRE_ELEMENTOS_ELIMINADOS = "elementos_eliminados";
+/** Constante que indica el nombre del par?metro del Id del Mensaje */
+DMensajeJS.NOMBRE_PARAMETRO_ID = "id";
+
+
+// Los Siguientes Parametros son Usados para el caso de los mensajes de invocacion
+/** Nombre de la accion a invocar */
+DMensajeJS.NOMBRE_ACCION = "NOMBRE_ACCION";
+/** Nombre del metodo inicializar a invocar */
+DMensajeJS.NOMBRE_INICIALIZAR = "NOMBRE_INICIALIZAR";
+/** Nombre de los tipos de dato de los parametros del inicializar */
+DMensajeJS.NOMBRE_TIPO_PARAMETROS = "NOMBRE_TIPO_PARAMETROS";
+/** Valores de los parametros del inicializar */
+DMensajeJS.NOMBRE_VALORES_PARAMETROS = "NOMBRE_VALORES_PARAMETROS";
+/** Fue valido o no el resultado (boolean) */
+DMensajeJS.NOMBRE_RESULTADO = "NOMBRE_RESULTADO";
+/** Nombre de los getters a invocar tras la ejecucion de la accion (arreglo) */
+DMensajeJS.NOMBRE_GETTERS = "NOMBRE_GETTERS";
+/** Valores obtenidos tras la invocacion de los getters */
+DMensajeJS.NOMBRE_VALORES_RESULTADO = "NOMBRE_VALORES_RESULTADO";
+/** Mensaje de error en la ejecuci?n de la acci?n */
+DMensajeJS.MENSAJE_ERROR = "MENSAJE_ERROR";
+/** Mensaje de error detallado en la ejecuci?n de la acci?n */
+DMensajeJS.MENSAJE_DETALLADO = "MENSAJE_DETALLADO";
+/** Nombre del comando emisor */
+DMensajeJS.COMANDO_EMISOR = "COMANDO_EMISOR";
+
+
+DMensajeInvocarAccJS.prototype=new DMensajeJS();
+DMensajeInvocarAccJS.prototype.constructor=DMensajeInvocarAccJS;
+function DMensajeInvocarAccJS() {
+    this.id = "EjecAccionGenerico";
+    this.parametros = new Hashtable();
+    /**
+     *
+     */
+    this.addInvocacion = function(nomAcc, nomIni, tipoParam, valParam, nomGets) {
+        this.parametros.put(DMensajeJS.NOMBRE_ACCION, nomAcc);
+        this.parametros.put(DMensajeJS.NOMBRE_INICIALIZAR, nomIni);
+        this.parametros.put(DMensajeJS.NOMBRE_TIPO_PARAMETROS, tipoParam);
+        this.parametros.put(DMensajeJS.NOMBRE_VALORES_PARAMETROS, valParam);
+        this.parametros.put(DMensajeJS.NOMBRE_GETTERS, nomGets);
+		this.parametros.put(DMensajeJS.COMANDO_EMISOR, DVisor.contexto.getParametro('COMANDO_EMISOR'));
+    }
+
+    this.validarMensaje = function() {
+      this.valido = true;
+      this.mensaje = '';
+
+      if (this.parametros.get(DMensajeJS.NOMBRE_ACCION) == '' ||
+          this.parametros.get(DMensajeJS.NOMBRE_INICIALIZAR) == ''){
+        this.mensaje += 'El nombre ? el inicializar de la acci?n a invocar no son v?lidos.';
+        this.valido = false;
+      }
+
+      if (this.parametros.get(DMensajeJS.NOMBRE_TIPO_PARAMETROS).length !=
+          this.parametros.get(DMensajeJS.NOMBRE_VALORES_PARAMETROS).length) {
+        this.mensaje += 'La cantidad de param?tros no coincide con los tipos de datos.';
+        this.valido = false;
+      }
+
+      var arrParamIni = this.parametros.get(DMensajeJS.NOMBRE_VALORES_PARAMETROS);
+      var completos = true;
+      for (var i=0;i<arrParamIni.length && completos;i++) {
+        if (!arrParamIni[i] && arrParamIni[i] == '') {
+          this.mensaje += 'Uno ? m?s de los param?tros del inicializar no se han definido.';
+          this.valido = false;
+        }
+      }
+
+      if (!this.valido) {
+          mostrarError(this.mensaje);
+      }
+
+      return this.valido;
+    }
+}

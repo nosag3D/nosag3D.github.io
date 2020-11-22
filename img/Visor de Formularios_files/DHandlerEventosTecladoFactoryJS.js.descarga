@@ -1,0 +1,21 @@
+var DHandlerEventosTecladoFactoryJS = new Object();
+
+
+DHandlerEventosTecladoFactoryJS.MANEJADORES = new Hashtable();
+
+DHandlerEventosTecladoFactoryJS.MANEJADORES.put('CTRL+ALT+S','DGuardarJS');
+DHandlerEventosTecladoFactoryJS.MANEJADORES.put('CTRL+ALT+N','DNuevaCopiaJS');
+DHandlerEventosTecladoFactoryJS.MANEJADORES.put('CTRL+ALT+%','DSiguienteHojaJS');
+
+
+DHandlerEventosTecladoFactoryJS.getHandler = function(teclas){
+   var manejador = null;
+   
+   var nombremanejador = this.MANEJADORES.get(teclas);
+     
+   var cadenamanejador = 'manejador = new '+ nombremanejador + '();'
+   eval(cadenamanejador);
+   
+   return manejador;
+}
+

@@ -1,0 +1,3081 @@
+///Formato, version,hoja,si es manejador(1) y si es validador(2),y numero de validación
+//ejemplo 141101 = indica formato 1 versión 4 de la hoja 1 es un manejador y es el número 01
+//manejador hoja 1 camara de comercio
+
+MANEJADORES.put('141101','DConsultarHomonimiaJS');
+MANEJADORES.put('141102','DManejadorResponsabilidadesJS');
+MANEJADORES.put('141103','DManejadorCodMunicipioJS');
+MANEJADORES.put('141104','DManejadorBorrarDireccionJS');
+MANEJADORES.put('141105','DManejadorTelefonoJS');
+MANEJADORES.put('141106','DManejeadorValNumIdentificacionNatJS');
+MANEJADORES.put('141107','DManejeadorValFijoPaisJS');
+MANEJADORES.put('141108','DManejeadorValFijoDeptoJS');
+MANEJADORES.put('141109','DManejeadorValFijoPaisExpJS');
+MANEJADORES.put('141110','DManejadorActividadEconomicaJS');
+//MANEJADORES.put('141111','DManejadorAyudaMultiPadresJS');
+MANEJADORES.put('141112','DManejeadorValPaisJS');
+MANEJADORES.put('141113','DManejedorCasilla46JS');
+MANEJADORES.put('141114','DManejadorDireccionesJS');
+MANEJADORES.put('141115','DManejadorConsultaGranContribuyenteJS');
+MANEJADORES.put('141116','DManejadorValoresExcluyentesResponsabilidadesJS');
+MANEJADORES.put('141117','DManejadorValoresExcluyentesAduanerosJS');
+MANEJADORES.put('141118','DManejedorCasilla46JS');
+MANEJADORES.put('141119','DManejadorCasillasServicioJS');
+MANEJADORES.put('141121','DBusquedaDinamicaConsuladoJS');
+MANEJADORES.put('141122','DBusquedaDinamicaFuenteConfiableJS');
+MANEJADORES.put('141123','DManejadorResponsabilidadesRolEspecialJS');
+MANEJADORES.put('141124','DManejadorGuardarValoresJS');
+MANEJADORES.put('141125','DManejadorCargarAdministracionConResponJS');
+MANEJADORES.put('141126','DManejadorGranContribuyenteResponJS');
+MANEJADORES.put('141127','DManejadorCargaMunicipioCas30JS');
+MANEJADORES.put('141128','DManejadorValidaRCorreoJS');
+MANEJADORES.put('141131','DManejadorResponsabilidadesActJS'); //
+MANEJADORES.put('141132','DManejadorResponsabilidadestipoContribuyenteJS');
+MANEJADORES.put('141133','DManejadorbloqCasillExpJS');
+MANEJADORES.put('141134','DManejadorbloqCasillaUbicacionJS');
+
+function obtenerMatrizEventos() {
+   //var miCas52= '#60>#59?mostrarError("El valor digitado no puede ser superior al valor de la casilla 59!!!"):null';
+   //var miCas52 = '#24==2 && #52>1 ? mostrarError("Es responsable del impuesto sobre las ventas regimen común código 11"):mostrarError("otro")';
+   //  var miCas82 = '#82'
+
+   var defEventos = new Array('2:11{131->141205}2{10}',
+         '4:2{10}',
+         '5:11{141206}2{10}23{141122->10->34}',
+         '6:2{26->10}23{10->34}',
+         '12:23{10->34}',
+         '24:15{18[seleccionContribuyente;Tipo de contribuyente;1;;1;DEjecutarSeleccionContribuyenteJS]}23{14112[#12]->14116->141107->141101->10->34}22{141201}',
+         '25:15{18[dominio;Tipo De Documento;1;109;1]}23{10->14112[#26;#27;#28;#29;#30]->141101->141109->141133->10->34}',
+         '26:2{14121->14118->14104->14114->14102->14106->141106->141101->10->34}15{14123[personasFuenteConfiable;Personas Fuente Confiable;1;#25^#26;1;DEjecutarBusquedaPersonasConfiablesJS]}23{10}',
+         //'27:2{31->34->10}4{32->31->10}23{10->31->10->141101}23{10}',//fecha
+         '27:2{31->34->10}4{32->31->10}23{31->10}',//fecha
+         '28:15{18[pais;País;2;;1]}23{10->141133->141121->10->14112[#29;#30]->10->141112->34}',
+         '29:15{18[departamento;Departamento;1;#28;1]}23{14107->141127->10->34}',
+         '30:15{18[municipio;Municipio;1;#29;1]}23{10}',
+         '31:2{14117->14120->14106->141101->10->34}23{141124->14120->14106->10->141101->34}',
+         '32:2{14117->14120->14106->141101->10->34}23{141124->14120->14106->10->34}',
+         '33:2{14117->14120->14106->141101->10->34}23{141124->14120->14106->10->141101->34}',
+         '34:2{14117->14120->14106->141101->10->34}23{141124->14120->14106->10->34}',
+         '35:2{14117->14106->10->141101->34}15{14123[personasFuenteConfiable;Personas Fuente Confiable;1;#5;1;DEjecutarBusquedaPersonasConfiablesJS]}23{10->14120->14106->10->141101->34}',//141101->14120->14106->
+         '36:2{14117->14106->10}',
+         '37:2{14117->14106->10}',
+         '38:15{18[pais;País;2;;1]}23{10->141134->14112[#39;#40;#44;#45]->10->141104->14113->34}22{141202}',
+         '39:15{18[departamento;Departamento;1;#38;1]}23{14112[#40;#41]->141108->10->34}',
+         '40:15{18[municipio;Municipio;1;#39;1]}23{14107->10->14113->10->34}',
+         '41:4{141114->14106->10}2{14106->10}23{10}',//direccion pendiente
+         '42:2{141128->10}23{10}22{141209}', //correo
+         '43:2{14118->14125->14106->10->14114->10}23{10}',
+         '44:2{141105->10->34}23{10}',
+         '45:2{141105->10->141113->10->34}23{10}',
+         '46:15{18[actividadesEconomicas;Actividad Económica;2;;1;DEjecutarBusquedaDescripcionPopupJS]}23{14107->141110->10->34}2{10->34}',
+         '47:2{34->10}4{32->10}23{10->34}',//fecha
+         '48:15{18[actividadesEconomicas;Actividad Económica;2;;1;DEjecutarBusquedaDescripcionPopupJS]}23{10->14107->141110->10->34}',
+         '49:4{32->10}23{10}22{146}',//fecha
+         '50:15{18[actividadesEconomicas;Actividad Económica;2;;1;DEjecutarBusquedaDescripcionPopupJS]}2{10->34}23{10->141110->10->34}',
+         '51:15{18[ocupaciones;Ocupación;2;;1]}2{10->34}23{10->34}',
+         //'51:15{18[ocupaciones;Ocupación;2;;1;DEjecutarBusquedaCodigoRepetidoJS]}2{10->34}23{10->34}',
+         '52:2{10}',//2{12['+ miCas52 +']->10}'
+         '53:15{65[responsabilidades;Responsabilidades;1;;1]}23{14111->141132->141131->141116->14111->141123->141102->141125->14110->141126->10->34}22{138}',  //->135 143->se quito->142->141115
+         //'54:15{18[dominio;Usuario Aduanero;2;112;2]}23{10->14111->14110->141117->10->34}22{139}',//->153->->133->141->141117->
+         '54:15{65[dominio;Usuario Aduanero;1;112;1]}23{10->14111->141117->10->14110->10->34}22{139->141207}',
+         '55:15{18[dominio;Forma;1;125;1]}23{10->34}',
+         '56:15{18[dominio;Tipo;1;130;1]}23{141119->10->34}22{147->141204}',
+         '57:15{18[dominio;Modo Servicio;1;113;1]}23{141119->10->34}22{147}',
+         '58:15{18[dominio;CPC;1;114;1]}23{141119->10->34}',
+         '59:23{10}',
+         '60:2{0->4->10}',
+   '61:2{0->4->10}');
+   return defEventos;
+}
+
+
+function obtenerMatrizActivacion() {
+   var matActivacion = new Array('(true)?d(\'#12,#25-#34,#51,#55,#56\')',
+         '(true)?d(\'#57,#58\')',
+         '(true)?dr(\'#60\')',
+         '(true)?ar(\'#61\')',
+         '(#2!=2)?ar(\'#24\');',
+         '(#24==2)?dr(\'#35\');',
+         '(#24==1)?dr(\'#51\');',
+         '(#24!=1)?a(\'#51\');',
+         '(#24==2)?a(\'#26\');',
+         '(#24==2)?ar(\'#31\');',
+         '(#31!="")?a(\'#32,#33\');',
+         '(#33!="")?a(\'#34\');',
+         '(#31=="")?dr(\'#32-#34\');',
+         '(#24==2)?ar(\'#25,#27-#28,#51\');',
+         '(#24!=2)?dr(\'#25-#34,#51\');',
+         '(#24!=2)?ar(\'#35\');',
+         '(#24=="")?dr(\'#25-#35,#52\');',
+         '(#24!="")?a(\'#36-#37,#52\');',
+         '(#25!="")?a(\'#26\');',
+         '(#25=="")?dr(\'#26\');',
+         '(#28==169 && #25!=47)?ar(\'#29,#30\');',
+         '(#28==169 && #25==47)?dr(\'#29,#30\');',
+         '(#28!=169)?dr(\'#30\');',
+         '(#28!=169 && (#25 == 11 || #25==12 || #25==13)?ar(\'#29\');',
+         '(#28!=169 && (#25 != 11 && #25!=12 && #25!=13)?dr(\'#29\');',
+         '(#29=="")?dr(\'#30\');',
+         '(#31!="")?a(\'#31\');',
+         '(#35!="")?a(\'#35\');',
+         '(#38==169)?ar(\'#39-#41\');',
+         '(#38!=169)?dr(\'#39-#40\');',
+         '(#38!=169 )?a(\'#41\');',
+         '(#38=="")?dr(\'#39-#41\');',
+         '(#38=="")?dr(\'#12,#44\');',
+         '(#38!="")?ar(\'#12\');',
+         '(#38!="")?a(\'#44\');',
+         '(#44!="")?a(\'#45\');',
+         '(#44=="")?dr(\'#45\');',
+         '(#46!="")?ar(\'#47,#48\');',
+         '(#47!="")?ar(\'#48\');',
+         // '(#46=="")?dr(\'#47,#48\');',
+         '(#46=="")?dr(\'#47\');',
+         // '(#47=="")?dr(\'#48\');',
+         // '(#47=="")?dr(\'#48\');',
+         '(#48!="")?ar(\'#49,#50_1\');',
+         //  '(#48=="")?dr(\'#49,#50_1\');',
+         '(#48=="")?dr(\'#49,#50_1\');',
+         '(#50_1!="")?ar(\'#50_2\');',
+         '(#50_1=="")?dr(\'#50_2\');',
+         '(#53!=10)?dr(\'#54_1-#54_20\');',
+         '(#53==10)?ar(\'#54_1-#54_20\');',
+         '(#53==10)?ar(\'#54_1-#54_20\');',
+         '(#54 == "04" || #54 == "21" || #54 == "22" )?ar(\'#55,#56\');',
+         '(#54 != "04" &&  #54 != 21 &&  #54 != 22)?dr(\'#55,#56\');',
+         //se modificaron las casillas por activar (ar) y desactivar (dr) de los arreglos y casillas 55, 56,57 y 58 requerimiento del (27_05_09)
+         '(#55 == "" || #56 == "" )?dr(\'#57_1-#57_3,#58_1-#58_3\');',
+         '(#56 == 2 && #56 == 3 )?ar(\'#57_1-#57_3\');',
+         '(#56 != 2 && #56 != 3 )?dr(\'#57_1 -#57_3\');',
+         '(#57_1!= "")?ar(\'#58_1\');',
+         '(#57_1== "")?dr(\'#58_1\');',
+         '(#57_2!= "")?ar(\'#58_2\');',
+         '(#57_2== "")?dr(\'#58_2\');',
+         '(#57_3!= "")?ar(\'#58_3\');',
+   '(#57_3== "")?dr(\'#58_3\');');
+   return matActivacion;
+}
+/**
+ *
+ */
+
+
+
+/**
+ * borra los dos valores iniciales del municipio - manejador de prueba
+ *
+ */
+DManejadorCodMunicipioJS.prototype = new DManejadorJS();
+DManejadorCodMunicipioJS.prototype.constructor = DManejadorCodMunicipioJS;
+function DManejadorCodMunicipioJS(manejador){
+   this.manejador = manejador;
+   var cambio = false;
+   this.manejar = function(objCas){
+
+      var valCas = objCas.value;
+      if(!cambio){
+         if(valCas != "" ){
+            var valTemporal = valCas.substring(2, 5);
+            objCas.value = valTemporal;
+            // evaluate(objCas);
+            cambio = true;
+         }
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+DManejadorGuardarValoresJS.prototype = new DManejadorJS();
+DManejadorGuardarValoresJS.prototype.constructor = DManejadorGuardarValoresJS;
+function DManejadorGuardarValoresJS(manejador){
+   this.manejador = manejador;
+   var cambio = false;
+   this.manejar = function(objCas){
+
+      var valCas = objCas.value;
+      var cas31= document.getElementById('cas31');
+      var cas32= document.getElementById('cas32');
+      var cas33= document.getElementById('cas33');
+      var cas34= document.getElementById('cas34');
+      if(valCas!= ""){
+         var maneGuardar = new DActDocumentoJS(null);
+         maneGuardar.manejar(cas31);
+         maneGuardar.manejar(cas32);
+         maneGuardar.manejar(cas33);
+         maneGuardar.manejar(cas34);
+      }
+
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+/**
+ *
+ */
+DBusquedaDinamicaConsuladoJS.prototype = new DManejadorJS();
+DBusquedaDinamicaConsuladoJS.prototype.constructor = DBusquedaDinamicaConsuladoJS;
+function DBusquedaDinamicaConsuladoJS(manejador) {
+   this.manejador = manejador;
+   var objCas = null;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var mappEventos = new Array();
+      var item = getItem(objCas);
+      var pais = objCas.value;
+      var tipoDocumento = document.getElementById('cas25').value;
+      if (pais != ""){
+         if(pais == 169){
+            mappEventos[0] = '29:15{18[departamento;Departamento;1;#28;1]}';
+         }else{
+            mappEventos[0] = '29:15{18[consulado;Consulado;1;#28;1]}';
+         }
+      }
+      replaceEvents(mappEventos);
+
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+DBusquedaDinamicaFuenteConfiableJS.prototype = new DManejadorJS();
+DBusquedaDinamicaFuenteConfiableJS.prototype.constructor = DBusquedaDinamicaFuenteConfiableJS;
+function DBusquedaDinamicaFuenteConfiableJS(manejador) {
+   this.manejador = manejador;
+   var objCas = null;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var mappEventos = new Array();
+
+      var nit = document.getElementById('cas5').value;
+      if (nit != ""){
+
+         mappEventos[0] = '15{14123[personasFuenteConfiable;Personas Fuente Confiable;1;#5;1;DEjecutarBusquedaPersonasConfiablesJS]}';
+
+      }
+      replaceEvents(mappEventos);
+
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+
+/**
+ *
+ */
+
+
+/**
+ * Manejador que ejecuta un comando de busqueda en el servidor y recibe varias columnas de resultado
+ */
+DEjecutarBusquedaPersonasConfiablesJS.prototype = new DEjecutarBusquedaAbstractoJS();
+DEjecutarBusquedaPersonasConfiablesJS.prototype.constructor = DEjecutarBusquedaPersonasConfiablesJS;
+function DEjecutarBusquedaPersonasConfiablesJS(manejador, busqueda, tablaHTML) {
+
+   this.manejador = manejador;
+   this.busqueda = busqueda;
+   this.tablaHTML = tablaHTML;
+   this.mapaResultados = new Hashtable();
+
+   this.crearCabeceraTabla = function(tablaHTML) {
+      tablaHTML.deleteTHead();
+
+      var cabecera = tablaHTML.createTHead();
+      var casilla = this.busqueda.objCas.id;
+      if(casilla == "cas26" ){//style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;
+         var activarHtml = "<label style=\"font-size: 3 pt;\">Si no hay resultados o no esta de acuerdo con la información por favor seleccione </label><a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.activarValores( '#31' ); \" >Nuevo Cliente </a>";
+      }else{
+         var activarHtml = "<label style=\"font-size: 3 pt;\">Si no hay resultados o no esta de acuerdo con la información por favor seleccione </label><a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.activarValores( '#35' ); \" > Nuevo Cliente </a>";
+      }
+      var filaLink = cabecera.insertRow(-1);
+      var cellLink = filaLink.insertCell(-1);
+      cellLink.innerHTML = activarHtml;
+
+      var filaCabecera = cabecera.insertRow(-1);
+      var cabeceraIdentificacion = filaCabecera.insertCell(-1);
+      cabeceraIdentificacion.innerHTML = "<b>Identificación</b>";
+      var cabeceraNombre = filaCabecera.insertCell(-1);
+      cabeceraNombre.innerHTML = "<b>Nombre</b>";
+   }
+
+   this.getCasillas = function(identificacion,primerApellido,segundoApellido,primerNombre,otrosNombres){
+
+      if(segundoApellido == "null")segundoApellido = "";
+      if(otrosNombres == "null")otrosNombres = "";
+
+      var casillas = "" + this.busqueda.objCas.id + ":" + identificacion;
+      casillas += "|cas31:" + primerApellido + "|cas32:" + segundoApellido + "|cas33:" + primerNombre + "|cas34:" + otrosNombres;
+      return casillas;
+   }
+
+   this.aumentarCaracteres = function(cadena){
+      if(cadena.length < 70){
+         var caracteres = "";
+         for(var i = cadena.length;i < 50;i++){
+            caracteres += "                ";
+         }
+         cadena += caracteres;
+      }
+      return cadena;
+   }
+
+   this.adicionarFila = function(tbody, codigo, resultado) {
+
+      var row = tbody.insertRow(-1);
+      var celdaIdentificacion = row.insertCell(-1);
+      var celdaNombre = row.insertCell(-1);
+
+      var origen = "";
+      var identificacion = "";
+      var numNit = "";
+      var nombre = "";
+      var primerApellido = "";
+      var segundoApellido = "";
+      var primerNombre = "";
+      var otrosNombres = "";
+
+      var descripcion = "";
+
+      var resultadoArrayCodigo = codigo.split("_");
+      if(resultadoArrayCodigo[0]){
+         origen = resultadoArrayCodigo[0];
+      }
+      if(resultadoArrayCodigo[1]){
+         identificacion = resultadoArrayCodigo[1];
+      }
+      var resultadoArray = resultado.split("_");
+      if(resultadoArray[0]){
+         numNit = resultadoArray[0];
+      }
+      if(resultadoArray[1]){
+         nombre = resultadoArray[1];
+      }
+      if(resultadoArray[2]){
+         primerApellido = resultadoArray[2];
+      }
+      if(resultadoArray[3]){
+         segundoApellido = resultadoArray[3];
+      }
+      if(resultadoArray[4]){
+         primerNombre = resultadoArray[4];
+      }
+      if(resultadoArray[5]){
+         otrosNombres = resultadoArray[5];
+      }
+
+      // Obtenemos la descripción
+
+      var caracteres = "";
+
+      var fila1 = "ORIGEN:          " + origen;
+      fila1 = this.aumentarCaracteres(fila1);
+      var fila2 = "NIT:              " + numNit;
+      fila2 = this.aumentarCaracteres(fila2);
+      var fila3 = "NOMBRE:           " + nombre;
+      fila3 = this.aumentarCaracteres(fila3);
+      var fila4 = "PRIMER APELLIDO:  " + primerApellido;
+      fila4 = this.aumentarCaracteres(fila4);
+      var fila5 = "SEGUNDO APELLIDO: " + segundoApellido;
+      fila5 = this.aumentarCaracteres(fila5);
+      var fila6 = "PRIMER NOMBRE:    " + primerNombre;
+      fila6 = this.aumentarCaracteres(fila6);
+      var fila7 = "OTROS NOMBRES:    " + otrosNombres;
+      fila7 = this.aumentarCaracteres(fila7);
+
+      descripcion = fila1 + fila2 + fila3 + fila4 + fila5 + fila6 + fila7;
+
+      nombre = cambiarCaracteresAXml(nombre);
+      //descripcion = cambiarCaracteresAXml(descripcion);
+
+      // Al dar click sobre la celda se actualiza el resultado de la casilla.
+      // Ver busqueda.js#actualizarCasillasBusqueda
+      var codigoHtml = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\"";
+      codigoHtml += " onclick=\"parent.actualizarCasillasBusqueda('" + this.getCasillas(identificacion,primerApellido,segundoApellido,primerNombre,otrosNombres) + "');\">" + identificacion + "</a>";
+      var nombreHtml = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\"";
+      nombreHtml += " onclick=\"parent.actualizarCasillasBusqueda('" + this.getCasillas(identificacion,primerApellido,segundoApellido,primerNombre,otrosNombres) + "');parent.mostrarDescripcion();\""
+      // Colocamos un tooltip cuando el mouse se encuentre sobre el enlace con la descripción del resultado
+      nombreHtml += " onmouseover=\"parent.mostrarDescripcion('" + descripcion + "');\">" + nombre + "</a>";
+
+      celdaIdentificacion.innerHTML = codigoHtml;
+      celdaNombre.innerHTML = nombreHtml;
+
+
+
+   }
+}
+
+/**
+ * valida rangos de números telefónicos dependiendo del pais
+ */
+
+DManejadorTelefonoJS.prototype = new DManejadorJS();
+DManejadorTelefonoJS.prototype.constructor = DManejadorTelefonoJS;
+function DManejadorTelefonoJS(manejador){
+   this.manejador = manejador;
+   var cambio = false;
+   this.manejar = function(objCas){
+      var pais = document.getElementById('cas38').value;
+      var telefono = objCas.value;
+
+      campoDigitos(objCas,objCas.value);
+
+      if(pais != ""){
+         if(pais == 169 && telefono != ""){
+            if(telefono.length < 5 || telefono.length > 16){
+               mostrarError("El teléfono debe tener minimo 5 digitos y maximo 16 digitos para 169 Colombia");
+               objCas.value="";
+               evaluate(objCas);
+            }
+         }else if(telefono != "" && (telefono.length < 11 || telefono.length > 16) ){
+            mostrarError("El teléfono debe tener minimo 11 digitos y maximo 16 digitos para paises diferentes de 169 Colombia");
+            objCas.value="";
+            evaluate(objCas);
+         }
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * manejador que verifica responsabilidades contra el tipo de contribuyente
+ */
+
+
+DManejadorResponsabilidadestipoContribuyenteJS.prototype = new DManejadorJS();
+DManejadorResponsabilidadestipoContribuyenteJS.prototype.constructor = DManejadorResponsabilidadestipoContribuyenteJS;
+function DManejadorResponsabilidadestipoContribuyenteJS(manejador){
+	this.manejador = manejador;
+	this.casilla;
+	//var vectorR = vector;
+	var DVisor = parent.DVisor;
+	this.manejar = function(objCas){
+		this.objCas = objCas;
+		if (objCas) {
+			var mensaje ="";
+         var item = getItem(objCas);
+         var tipoContribuyente = document.getElementById("cas24").value*1;	 
+         			var arreglo = getArregloCasiilaColumna(getNumber(objCas)); 
+				if (tipoContribuyente != ""){
+					if (tipoContribuyente == 1){
+						var resNoJuridicos = new Array("1","22","49","50");
+						var encontroResNoJuridicos =  contieneUnValorArreglo(resNoJuridicos,arreglo);
+						if (encontroResNoJuridicos.encontro){
+							mensaje = mensaje + "Si usted es persona jurídica no puede seleccionar las responsabilidades 1-Aporte especial para la administración de justicia, 22- Obligados a cumplir deberes formales, 49 \"No responsable de IVA\", 50 \"No responsable de Consumo restaurantes y bares\". \n\n";
+							objCas.value= "";
+						}
+					}
+					 else {
+						var resNoNaturales = new Array("2","4","6","45","53");
+						var encontroResNoNaturales = contieneUnValorArreglo(resNoNaturales,arreglo);
+				
+					
+						if (encontroResNoNaturales.encontro){
+								mensaje =mensaje +"Si usted es persona natural no puede seleccionar las responsabilidades  02- Gravamen a los movimientos financieros , 04- Impto  renta y compl. régimen especial, 06- Ingresos y patrimonio ,	45- Autorretenedor de rendimientos financieros y 53 - Persona Jurídica No Responsable de IVA \n\n";
+						}
+					}
+				}else {
+					mensaje="Error en tipo de contribuyente ";
+				}
+
+                }
+                if(mensaje != ""){
+					mostrarError(mensaje);
+					objCas.value= "";
+					
+				}
+			
+			if(manejador){manejador.manejar(objCas);}
+		}
+	}
+
+
+
+/**
+ * manejador que verifica valores exluyentes en cas53
+ */
+DManejadorValoresExcluyentesResponsabilidadesJS.prototype = new DManejadorJS();
+DManejadorValoresExcluyentesResponsabilidadesJS.prototype.constructor = DManejadorValoresExcluyentesResponsabilidadesJS;
+function DManejadorValoresExcluyentesResponsabilidadesJS(manejador){
+
+	this.manejador = manejador;
+	this.casilla;
+	var DVisor = parent.DVisor;
+	this.manejar = function(objCas){
+		this.objCas = objCas;
+		if (objCas) {
+			var cas24 = document.getElementById('cas24');
+			var arreglo = getArregloCasiilaColumna(getNumber(objCas));
+			var excluyentes1 = new Array("11","12");
+			var excluyentes2 = new Array("4","5");
+			var excluyentes3 = new Array("33","50");
+			var excluyentes4 = new Array("4","6");
+			var excluyentes5 = new Array("5","6");
+			var excluyentes6 = new Array("4","47");
+			var excluyentes7 = new Array("5","47");
+			var excluyentes8 = new Array("6","47");
+         var excluyentes9 = new Array("37", "38", "52");
+         var excluyentes10 = new Array("48", "49", "53");
+			var granContribuyente = new Array("13");
+			var mensaje ="";
+			var excluyentesRegimen = contieneValorArreglo(excluyentes1,arreglo);
+			var excluyentesRenta = ( contieneValoresArreglo(excluyentes2,arreglo) || contieneValoresArreglo(excluyentes4,arreglo) || contieneValoresArreglo(excluyentes5,arreglo)  || contieneValoresArreglo(excluyentes6,arreglo) || contieneValoresArreglo(excluyentes7,arreglo) || contieneValoresArreglo(excluyentes8,arreglo)  );
+			var excluyentesConsumo = contieneValorArreglo(excluyentes3,arreglo);
+         var excluyentesFacturaElectronica = contieneValorArreglo(excluyentes9,arreglo);
+         var excluyentesIva = contieneValorArreglo(excluyentes10,arreglo);
+			var resp_36=contieneUnValorArreglo  ("36" ,arreglo); 
+			var resp_47= contieneUnValorArreglo ("47" ,arreglo);
+			var resp_49= contieneUnValorArreglo ("49" ,arreglo);
+			var resp_50= contieneUnValorArreglo ("50" ,arreglo);
+	     	var contador = 0;
+	     	var item = getItem(objCas)*1-1;
+	    	var resp_36=contieneUnValor ("36" ,arreglo); 
+			var resp_47= contieneUnValor ("47" ,arreglo);
+			var resp_48= contieneUnValor ("48" ,arreglo);
+			var resp_49= contieneUnValor ("49" ,arreglo);
+			var resp_50= contieneUnValor ("50" ,arreglo);
+			var respon = parent.DVisor.docOriginal.getGrupo(1).getOcurrencia(1).getCasilla(53) != null ? parent.DVisor.docOriginal.getGrupo(1).getOcurrencia(1).getCasilla(53).getValoresCasilla():new Array("");;
+	     	if (resp_36.resultado && resp_47.resultado ) {
+					var mensaje =	"Las responsabilidades 47 \"Régimen Simple de Tributación - SIMPLE\" y 36 \"Establecimiento Permanente\"  son excluyentes  "; 
+			}
+         if (excluyentesIva.encontro) {
+            var mensaje =	"Las responsabilidades 48 \"Impuesto sobre las ventas - IVA\" , 49  \"No responsable de IVA\"  y  53 \"Persona Jurídica No Responsable de IVA\"  son excluyentes   "; 
+	     	}
+			//verifica que no se digite regimen simplificado y comun al tiempo
+			if (excluyentesRegimen.encontro) {
+				var mensaje = "El Codigo 11 - Ventas Regimen Común y "
+					+ "Codigo 12 - Ventas Regimen Simplificado  "
+					+ ",son excluyentes (Casilla 53 - Hoja 1)."
+					document.getElementById(excluyentesRegimen.casilla.id).value = "";
+			}
+			if (excluyentesRenta) {
+				mensaje = "Las responsabilidades  04 Impuesto de Renta y Complementarios Régimen Especial,  "
+					+ " 05 Impuesto de Renta y Complementarios Régimen ordinario,  "
+					+ " 06 Ingresos y Patrimonio,  "
+					+ " 47 Régimen Simple de Tributación - SIMPLE, son excluyentes.  " 
+					+"  (Casilla 53 - Hoja 1). ";
+				DVisor.controlador.setValorCasilla(53,getItem(objCas),"");
+				// document.getElementById(excluyentesRenta.casilla.id).value = "";
+			}
+
+			if (excluyentesConsumo.encontro) {
+				mensaje = "Las responsabilidades 33 Impuesto Nacional al consumo y "
+					+ "50 No responsable de Consumo restaurantes y bares, son excluyentes.";
+				DVisor.controlador.setValorCasilla(53,getItem(objCas),"");
+			}
+			if (excluyentesFacturaElectronica.encontro) {
+				mensaje = "Las responsabilidades 37, 38 y 52 son excluyentes."
+				 DVisor.controlador.setValorCasilla(53,getItem(objCas),"");
+				}
+			var validarRespuesta = contieneUnValor("22", arreglo);
+			if (cas24.value== 1 && validarRespuesta.resultado){
+				mensaje="Si es persona jurídica no puede seleccionar la responsabilidad  22 - Obligado a Declarar a Nombre de Terceros";
+				document.getElementById(validarRespuesta.numCasilla.id).value = "";
+				DVisor.controlador.setValorCasilla(53,getItem(objCas),"");
+			}
+	
+			if (mensaje != ""){
+				parent.DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+				if (item < respon.length ){
+					objCas.value= respon[item];
+				}
+				else{ objCas.value="";
+				}
+				
+			}
+
+		}
+		if(manejador){manejador.manejar(objCas);}
+	}
+
+}
+/**
+ * 
+ */
+
+DManejadorResponsabilidadesJS.prototype = new DManejadorJS();
+DManejadorResponsabilidadesJS.prototype.constructor = DManejadorResponsabilidadesJS;
+function DManejadorResponsabilidadesJS(manejador){
+   this.manejador = manejador;
+   this.casilla;
+   this.valido = true;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      if (objCas) {
+         var mensaje ="";
+         if(objCas.value != "") {
+            var tipoContribuyente = document.getElementById("cas24").value*1;
+    		var actEconomica = document.getElementById("cas46").value;
+			var arregloCasilla = new Array(document.getElementById('cas46'),document.getElementById('cas48'), document.getElementById('cas50_1'), document.getElementById('cas50_2'));
+            var arreglo = getArregloCasiilaColumna(getNumber(objCas));
+            var cas65 = parent.DVisor.getValorCasillaAbsoluto(2, 1,65,1);
+            var cas67 = parent.DVisor.getValorCasillaAbsoluto(2, 1,67,1);
+            var cas69 = parent.DVisor.getValorCasillaAbsoluto(2, 1,69,1);
+            var cas68 = parent.DVisor.getValorCasillaAbsoluto(2, 1,68,1);
+            var cas38 = (parent.DVisor.getValorCasillaAbsoluto(1, 1,38,-1) != null ) ?  parent.DVisor.getValorCasillaAbsoluto(1, 1,38,-1) :'-1';
+            var cas89 = (parent.DVisor.docCopia.getGrupo(2) != null) ? parent.DVisor.docCopia.getGrupo(2).getOcurrencia(1).getCasilla(89) : null;
+            var valcas89 = (cas89 != null)?cas89.getValoresCasilla():new Array("");
+            var susIliquida= DVisor.contexto.getParametro("SUCESIONILIQUIDA");
+            var est18 = (DVisor.contexto.getParametro("SUCESIONILIQUIDA") == "true" && tipoContribuyente ==2 ) ? true:false;
+            var res20 =contieneUnValor("20",arreglo);
+            var res1 =contieneUnValor("1",arreglo);
+            var res4 =contieneUnValor("4",arreglo);
+            var res5 =contieneUnValor("5",arreglo);
+            var res7 = contieneUnValor("7",arreglo);
+            var res35 = contieneUnValor("35",arreglo);
+            var res32 = contieneUnValor("32",arreglo);
+            var res40= contieneUnValor("40",arreglo);
+            var res41= contieneUnValor("41",arreglo);
+            var res43= contieneUnValor("43",arreglo);
+            var res44= contieneUnValor("44",arreglo);
+        	var res46= contieneUnValor("46",arreglo);
+        	var res47= contieneUnValor("47",arreglo);
+           var res51= contieneUnValor("51",arreglo);
+           var res53= contieneUnValor("53",arreglo);
+            var excluyente5y20 = Array("5","20");
+            var res5y20 = contieneValoresArreglo(excluyente5y20,arreglo);
+            var contar20 = 0;
+            var resp10 = false;
+            var res3a26 =  Array("3","5","18","24","26","40");
+            var encontrores3a26 = contieneUnValorEnCasilla(objCas.value,res3a26);
+            var sociedadeExtSin5o20 =  Array("1","2","3","4","5","6","7");
+            var actEconomicaNoSimp= Array("0010","0081","0082");
+		    var actEconomicaImpoConsumo = Array("6910","6611","6630");
+            var encontrosociedadeExtSin5o20 = contieneUnValorEnCasilla(cas67,sociedadeExtSin5o20);
+           
+            for(zi=0;zi<arreglo.length;zi++){
+               if(arreglo[zi].value!=""){contar20++;}
+            }
+
+            if (res20.resultado) {
+               if (contar20 > 1) {
+                  mensaje = mensaje + " Si seleccionó: en la casilla 53 el concepto 20-Obtención de NIT, no debe incluir otras responsabilidades. \n\n";
+               }
+               if (res5y20) {
+                  mensaje = mensaje + " Las responsabilidades 5 y 20 son excluyentes. \n\n"
+               }	
+            }
+        	if(res46.resultado){ 
+				if( contar20 > 1){
+					mensaje = mensaje +	"El código 46- IVA Prestadores de Servicios desde el Exterior no es jurídicamente compatible con ninguna otra responsabilidad\n\n";
+				}
+				if(cas38 == "169"){
+					mensaje= mensaje + "Si seleccionó el código 46- \"IVA Prestadores de Servicios desde el Exterior\" no puede diligenciar una dirección en Colombia \n\n";
+				}
+				
+			}
+        	if (res47.resultado ){
+        		
+	
+				if(cas67 != null && cas67 != ""){
+					objCas.value= "";
+					mensaje = mensaje + "Si es persona jurídica y registra algún valor en la casilla 67 \"sociedades y organismos extranjeros\", no puede seleccionar la responsabilidad 47 \"Régimen simple de Tributación - SIMPLE\"\n\n";	
+				}
+				
+				if (contieneUnValorArreglo(actEconomicaNoSimp,arregloCasilla ).encontro){
+					objCas.value= "";
+					mensaje = mensaje + "Para registrar la responsabilidad 47 Régimen simple de tributación - SIMPLE, no debe tener registrada como actividad económica los códigos 0010, 0081, 0082\n\n";
+				}
+				if (res53.resultado ) {
+               var Mensaje4  = " Si selecciono la responsabilidad 53 \"Persona Jurídica No Responsable de IVA\" deberá seleccionar en la casilla 89, entre los códigos 100 al 103 únicamente el código 100. \"Simple Grupo 1\", corresponde a tiendas pequeñas, mini-mercados, micro-mercados y peluquerías.";
+               parent.DVisor.dialogomensaje.showModal('Error', Mensaje4, 2);
+            }
+
+
+         } else {
+            if (res53.resultado) {
+               objCas.value = "";
+               mensaje = mensaje + "Si selecciona el código 53 \"Persona Jurídica No Responsable de IVA\", debe registrar el código el código 47 \"Régimen simple de Tributación – SIMPLE\" \n\n";
+
+            }
+
+         }
+
+        	if (res51.resultado && !contieneUnValorArreglo(actEconomicaImpoConsumo,arregloCasilla ).encontro)  {
+				objCas.value= "";
+				mensaje = mensaje + "Para seleccionar el código 51 \"Agente retención impoconsumo de bienes inmuebles\", debe registrar alguna de las siguientes actividades: 6910, 6611 o 6630\n\n";
+				
+			}
+		 
+       
+            if (tipoContribuyente != ""){
+               if (tipoContribuyente == 1){
+            	   
+            		if(!res46.resultado && cas38 != '169'){
+					      DVisor.controlador.setValorCasilla(53, 1,"46");
+						  document.getElementById('cas53_1').setValue("46");
+						  Mensaje3 = "Si es persona jurídica y en la sección de ubicación seleccionó un país diferente a Colombia usted es un prestador de servicios desde el exterior responsable del impuesto sobre las ventas -IVA por tanto el sistema cargará en la casilla 53 la responsabilidad 46 \"IVA Prestadores de Servicios desde el Exterior\" y deberá registrar el código 14 \"Sociedad extranjera sin domicilio responsable de IVA\" en la casilla 67\n\n" ;
+						  parent.DVisor.dialogomensaje.showModal('Error',Mensaje3, 2);
+					   }
+            		
+                  var resNoJuridicos =  new Array("1","22","49","50");
+                  var encontroResNoJuridicos =  contieneUnValorArreglo(resNoJuridicos,arreglo);
+                  if (encontroResNoJuridicos.encontro){
+                	  mensaje = mensaje + "Si usted es persona jurídica no puede seleccionar las responsabilidades 1-Aporte especial para la administración de justicia, 22- Obligados a cumplir deberes formales, 49 \"No responsable de IVA\", 50 \"No responsable de Consumo restaurantes y bares\". \n\n";
+                	  objCas.value= "";
+                  }
+                  if (res20.resultado) {
+                     if (actEconomica != "9900" && actEconomica != "8421" && cas65 != "8"  && cas67 != "8" && cas69 != "33") {
+                        mensaje = mensaje + " Solo puede registrar en la casilla 53 el concepto 20-Obtención de NIT si, selecciono en la casilla 46 el código 9900-" +
+                        "Organizaciones y órganos extraterritoriales ó el código 8421-Relaciones Exteriores ó diligenció en la casilla 65 el código " +
+                        "08-Fondo de inversion de capital extranjero ó diligenció en la casilla 67 el código 08-Sociedad extranjera sin domicilio en Colombia ó " +
+                        "en la casilla 69 Otras organizaciones no clasificadas seleccionó el valor 33 Asociación de hogares comunitarios, presupuesto ICBF. \n\n ";
+                     }
+                  } else {
+                     if (cas69 == "33"  ){
+                        mensaje = mensaje + "Solo puede registrar en la casilla 53 el concepto 20 Obtención de NIT si, en la casilla 69 \"Otras organizaciones no clasificadas\" seleccionó el valor 33 \"Asociación de hogares comunitarios, presupuesto ICBF\"\n\n";
+                     } 
+                     if (actEconomica == "9900" || actEconomica == "8421" || cas65 == "8" || cas67 == "8" || cas67 == "9") {
+                        if (actEconomica == "9900") { 
+                           if (!encontrosociedadeExtSin5o20) {
+                              if (cas67 != "8" && cas67 != "9") {  
+                                 if (!res5.resultado) {
+                                    mensaje = mensaje + " Si, selecciono en la casilla 46 el código 9900-Organizaciones y órganos extraterritoriales unicamente puede registrar en la casilla 53 el " +
+                                    "concepto 20-Obtención de NIT ó 05-Renta régimen ordinario excepto si el la casilla 67 selecciona alguno de los valores 1, 2, 3, 4, 5, 6 ó 7 \n\n ";
+                                 } else {
+                                    if (contar20 > 1) {
+                                       mensaje = mensaje + " Unicamente puede registrar en la casilla 53 el concepto 20-Obtención de NIT ó 05-Renta régimen ordinario, si, selecciono en la " +
+                                       "casilla 46 el código 9900-Organizaciones y órganos extraterritoriales ó el código 8421-Relaciones Exteriores ó diligenció en la casilla 65 " +
+                                       "el código 08-Fondo de inversion de capital extranjero. \n\n ";
+                                    }
+                                 }
+
+                              }  
+                           }	   
+                        } 
+                        if (cas67 == "8" ||cas67 == "9") {
+                           if (!encontrores3a26)	{
+                              mensaje = mensaje + "Para sociedad extranjera sin domicilio en Colombia por actualización sólo puede seleccionar en responsabilidades: Solamente el código " +
+                              "20-Obtención de NIT ó alguna(s) de las siguientes 03 Impuesto al Patrimonio, 5 Renta régimen ordinario, 18 Precios de Transferencia, 24 Declaración " +
+                              "consolidada precios de transferencia, 26 Declaración individual precios de transferencia. \n\n";
+                           }	   
+
+                        } 
+                        if (actEconomica == "8421" || cas65 == "8" ) {
+                           if (!res5.resultado) {
+                              mensaje = mensaje + " Si, selecciono en la casilla 46 el código 8421-Relaciones Exteriores ó diligenció en la casilla 65 el código 08-Fondo de inversion de " +
+                              "capital extranjero, unicamente puede registrar en la casilla 53 el concepto 20-Obtención de NIT ó 05-Renta régimen ordinario. \n\n "; 	       
+                           } else {
+                              if (contar20 > 1) {
+                                 mensaje = mensaje + " Unicamente puede registrar en la casilla 53 el concepto 20-Obtención de NIT ó 05-Renta régimen ordinario, si, selecciono en la " +
+                                 "casilla 46 el código 9900-Organizaciones y órganos extraterritoriales ó el código 8421-Relaciones Exteriores ó diligenció en la casilla 65 " +
+                                 "el código 08-Fondo de inversion de capital extranjero. \n\n ";
+                              }
+                           }
+
+                        }
+                     }
+                  }     
+               } else {
+                  var resNoNaturales = new Array("2","4","6","45","53");
+                  var nit = document.getElementById("cas5").value;;
+                  var encontroResNoNaturales = contieneUnValorArreglo(resNoNaturales,arreglo);
+                  if (res1.resultado && !res51.resultado){
+                    	 mensaje =" Si registra el código 01 \"Aporte especial para la administración de justicia\", debe registrar el código 51 \"Agente retención impoconsumo de bienes inmuebles\"\n\n "
+                     }
+
+                  if (encontroResNoNaturales.encontro ){
+                     mensaje ="Si usted es persona natural no puede seleccionar las responsabilidades  02- Gravamen a los movimientos financieros , 04- Impto  renta y compl. régimen especial, 06- Ingresos y patrimonio ,	45- Autorretenedor de rendimientos financieros y 53 - Persona Jurídica No Responsable de IVA ";
+                  }
+               }
+
+            }
+       
+            if (res35.resultado && !res5.resultado){
+               mensaje = mensaje + "Para registrar la responsabilidad 35-Impuesto sobre la renta para la equidad – CREE " +
+               "es necesario tener registrada la responsabilidad 05-Impuesto de renta y complementarios régimen ordinario  \n\n";      	  
+            }
+           /* if (res40.resultado && !(res4.resultado  || res5.resultado )  &&  cas67 != "8" && cas67 != "9"){
+               mensaje = mensaje + "Si en la casilla 53 registra el código 40 -Impuesto a la Riqueza, debe tener registrado en la casilla 53 el código 04 o 05, excepto si en la casilla 67 registra los códigos 08 Sociedad extranjera sin domicilio en Colombia o 09 “Sociedad extranjera, sin domicilio, con inversión y sin representante legal (inversiones de portafolio)  \n\n";      	  
+            }*/
+            if (res41.resultado && !(res4.resultado  || res5.resultado )){
+               mensaje = mensaje + "Si en la casilla 53 registra el código 41 -Declaración anual de activos en el exterior, debe tener registrado en la casilla 53 el código 04 o 05.  \n\n";      	  
+            }       
+
+
+            var arregloCasillaAct = new Array(document.getElementById('cas46'),document.getElementById('cas48'), document.getElementById('cas50_1'), document.getElementById('cas50_2'));
+            var encontroActiEconJuegAzar = contieneUnValor("9200",arregloCasillaAct);
+            var responsaJuegAzar = Array("27","28",/*"29",*/"30","31");
+            var encontrorespJuegAzar = contieneUnValorArreglo(responsaJuegAzar,arreglo);
+
+            if (encontrorespJuegAzar.encontro ) {
+               mensaje = mensaje +  "Tiene informada en la casilla 53 del formulario alguno de los siguientes códigos de responsabilidades" +
+               " los cuales no se encuentran  vigentes 27, 28, 29, 30 y/o 31,  se elimina la responsabilidad de forma automática, " +
+               " la administración de los derechos de explotación y gastos de administración de los juegos de suerte y azar" +
+               " no son de competencia de la DIAN a partir del 1 de Agosto de 2012";
+            }
+
+            var ActiEconPetComb = Array("1921","4661");
+            var encontroActiEconPetComb =	contieneUnValorArreglo(ActiEconPetComb,arregloCasillaAct);
+
+            if (res32.resultado  && !encontroActiEconPetComb.encontro) {
+               mensaje = mensaje + "Para registrar la responsabilidad 32-Impuesto Nacional a la Gasolina y al ACPM es necesario tener registrado en las casillas 46, 48 ó 50 como actividad económica alguno de los siguientes códigos 1921 ó 4661\n\n";
+            }
+			var estadosH2 = DVisor.contexto.getParametro('ESTADOSH2');
+			var casilla_89_2 = (estadosH2 != null && estadosH2 != "")?estadosH2.split('_'):new Array("");
+			var estadosH7 = DVisor.contexto.getParametro('ESTADOSH7');
+			var casilla_89_7 = (estadosH2 != null && estadosH7 != "")?estadosH7.split('_'):new Array("");
+
+			var contieneValor74enCas89   =  (contieneUnValorEnCasilla("74",casilla_89_2)  ) || (contieneUnValorEnCasilla("74",casilla_89_7)  );
+			var res37y38y52 = new Array("37", "38","52");
+			var contieneRes37o38o52 = contieneUnValorArreglo(res37y38y52, arreglo);
+			if (contieneValor74enCas89 && !contieneRes37o38o52.encontro) {
+				mensaje = mensaje + "Como en la casilla 89 tiene el valor 74 Proveedor de Servicios Tecnológicos, debe tener alguna de las responsabilidades 37, 38 o 52\n\n";
+			}
+            if(mensaje != ""){
+               mostrarError(mensaje);
+               objCas.value= "";
+               /* evaluate(objCas);
+               var maneGuardar = new DActDocumentoJS(null);
+               maneGuardar.manejar(objCas);*/
+            }
+         }
+         if(manejador){manejador.manejar(objCas);}
+      }
+   }
+}
+
+/**
+ * responsabilidades que solo se pueden colocar cuando se tenga un rol especial
+ */
+
+DManejadorResponsabilidadesRolEspecialJS.prototype = new DManejadorJS();
+DManejadorResponsabilidadesRolEspecialJS.prototype.constructor = DManejadorResponsabilidadesRolEspecialJS;
+function DManejadorResponsabilidadesRolEspecialJS(manejador){
+   this.manejador = manejador;
+   this.casilla;
+  // var vectorR = vector;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      if (objCas) {
+         var item = getItem(objCas);
+         var cambio = false;
+         var elimina = false;
+         var responEspeciales = new Array("4","13","15","17","23","37","38","39","45", "52");
+         var arreglo =  getArregloCasiilaColumna(getNumber(objCas))
+         var rol = DVisor.contexto.getParametro("CTX_SEG_ROL");
+         var isGranContribuyente = parent.DVisor.contexto.getParametro('CTX_GRAN_CONTRIBUYENTE');
+         var formalizar = (DVisor.contexto.getParametro("FORMALIZACION") == 'true')?true:false;
+     	 var isFuncionario = (DVisor.contexto.getParametro("FUNCIONARIO") == 'true')?true:false;
+         var nit =   document.getElementById('cas5').value;
+         var respon = parent.DVisor.docOriginal.getGrupo(1).getOcurrencia(1).getCasilla(53) != null ? parent.DVisor.docOriginal.getGrupo(1).getOcurrencia(1).getCasilla(53).getValoresCasilla():new Array("");;
+         var isResoluciones = parent.DVisor.contexto.getParametro('ES_RESOLUCION');
+         var mensaje ="";
+
+         var arreglo1 =  new Array();
+         var cas2 = document.getElementById('cas2').value ;
+
+
+         var contenia04 = contieneUnValorVal ("4",arreglo1).resultado;
+         var contenia13 = contieneUnValorVal ("13",arreglo1).resultado;
+         var contenia15 = contieneUnValorVal ("15",arreglo1).resultado;
+         var contenia17 = contieneUnValorVal ("17",arreglo1).resultado;
+         var contenia23 = contieneUnValorVal ("23",arreglo1).resultado;
+         var contenia37 = contieneUnValorVal ("37",arreglo1).resultado;
+         var contenia38 = contieneUnValorVal ("38",arreglo1).resultado;
+         var contenia39 = contieneUnValorVal ("39",arreglo1).resultado;
+         var contenia45 = contieneUnValorVal ("45",arreglo1).resultado;
+         var contenia52 = contieneUnValorVal ("52",arreglo1).resultado;
+         var encontro04 = contieneUnValor ("4",arreglo).resultado;
+         var encontro05 = contieneUnValor ("5",arreglo).resultado;
+         var encontro13 = contieneUnValor ("13",arreglo).resultado;
+         var encontro15 = contieneUnValor ("15",arreglo).resultado;
+         var encontro17 = contieneUnValor ("17",arreglo).resultado;
+         var encontro23 = contieneUnValor ("23",arreglo).resultado;
+         var encontro37 = contieneUnValor ("37",arreglo).resultado;
+         var encontro38 = contieneUnValor ("38",arreglo).resultado;
+         var encontro39 = contieneUnValor ("39",arreglo).resultado;
+         var encontro45 = contieneUnValor ("45",arreglo).resultado;
+         var encontro52 = contieneUnValor ("52",arreglo).resultado;
+         
+			if ((cas2 == "01" || cas2 == "1")  && (encontro04 ||   encontro15 || encontro17 || encontro37 ||  encontro38 ||  encontro39 ||  encontro45 || encontro52)){
+				mensaje ="Las responsabilidades 04 Impuesto sobre la renta y complementarios régimen tributario especial, 15 -Autorretenedor,  17- Profesionales de compra y venta de divisas, 37 -Obligado a Facturar Electrónicamente, 38 -Facturación Electrónica Voluntaria, 39 -Proveedor de Servicios Tecnológicos PST, 45 -Autorretenedor de rendimientos financieros y 52 Facturador Electrónico no pueden ser adicionadas en el proceso de inscripción ";	
+			}
+
+			if (contenia04 && !encontro04)    elimina = true;
+			if (contenia13 && !encontro13)    elimina = true;
+			if (contenia15 && !encontro15)    elimina = true;
+			if (contenia17 && !encontro17)    elimina = true;
+			if (contenia23 && !encontro23)    elimina = true;
+			if (contenia37 && !encontro37)    elimina = true;
+			if (contenia38 && !encontro38)    elimina = true;
+			if (contenia39 && !encontro39)    elimina = true;
+			if (contenia45 && !encontro45)    elimina = true;
+			if (contenia52 && !encontro52)    elimina = true;
+         
+         if(isFuncionario ){
+        	 if ((contenia04 && !encontro04) ||(encontro04 && !contenia04))    cambio = true;}
+         else{
+        	 if ((contenia04 && !encontro04 &&  !encontro05 )   ||     (encontro04 && !contenia04)  )   cambio = true;
+         }
+         if ((contenia13 && !encontro13) ||(encontro13 && !contenia13))    cambio = true;
+         if ((contenia15 && !encontro15) ||(encontro15 && !contenia15))    cambio = true;
+         if ((contenia17 && !encontro17) ||(encontro17 && !contenia17))    cambio = true;
+         if ((contenia23 && !encontro23) ||(encontro23 && !contenia23))    cambio = true;
+         if ((contenia37 && !encontro37) ||(encontro37 && !contenia37))    cambio = true;
+         if ((contenia38 && !encontro38) ||(encontro38 && !contenia38))    cambio = true;
+         if ((contenia39 && !encontro39) ||(encontro39 && !contenia39))    cambio = true;
+         if ((contenia45 && !encontro45) ||(encontro45 && !contenia45))    cambio = true;
+         if ((contenia52 && !encontro52) ||(encontro52 && !contenia52))    cambio = true;
+         
+         
+         if(cambio){		  
+            if(isResoluciones == "false" || !isResoluciones){
+               var encontroGra = contieneUnValor("13",arreglo);
+               var encontroGranCon = encontroGra.resultado;
+               if(isGranContribuyente == "true" && !encontroGranCon){
+                  var auxBotCon = (formalizar?new parent.DAuxBotonContinuar("/WebRutMuisca/DefInscripcionRutSeg.faces"):new parent.DAuxBotonContinuar("/WebRutMuisca/DefInscripcionRut.faces"));
+                  mostrarError("Usted es Gran Contribuyente,debe ser inscrito por un usuario de la Dian con Rol Especial de Resoluciones");
+                  auxBotCon.ir();
+                  return false;
+               }else{
+
+                  mensaje ="Las responsabilidades 04 -Impuesto sobre la renta y complementarios régimen tributario especial, 13 -Gran Contribuyente, 15 -Autorretenedor,  17- Profesionales de compra y venta de divisas ,  23 -Agente de retención en ventas, 37 -Obligado a Facturar Electrónicamente, 38 -Facturación Electrónica Voluntaria, 39 -Proveedor de Servicios Tecnológicos PST, 45 -Autorretenedor de rendimientos financieros y 52 Facturador Electrónico solo pueden ser actualizadas por un Funcionario de la Dian con  rol especial ";
+
+
+               }
+               //arregloRespNoElim
+            }
+
+         }
+
+
+         if (mensaje != "") {
+            if (item < respon.length) {
+               objCas.value = respon[item];
+               DVisor.controlador.setValorCasilla(53, item, respon[item]);
+            } else {
+               objCas.value = "";
+            }
+            mostrarError(mensaje);
+            var maneGuardar = new DActDocumentoJS(null);
+            maneGuardar.manejar(objCas);
+            return false;
+         }
+
+      }
+      if(manejador){manejador.manejar(objCas);}
+   }
+}
+
+/**
+ * Verifica que un usuario que no es gran contribuyente no seleccione la responsabilidad 13
+ *
+ */
+
+DManejadorConsultaGranContribuyenteJS.prototype = new DManejadorJS();
+DManejadorConsultaGranContribuyenteJS.prototype.constructor = DManejadorConsultaGranContribuyenteJS;
+function DManejadorConsultaGranContribuyenteJS(manejador){
+   this.manejador = manejador;
+   this.respuesta = false;
+   this.casillas;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      if (objCas) {
+         var tipoDeclarante = DVisor.contexto.getParametro('ID_TIPO_DECLARANTE');
+         var casillas = getArregloCasiilaColumna(getNumber(objCas));
+         var validarRespuesta = contieneUnValor("13", casillas);
+         this.respuesta = validarRespuesta.resultado;
+         this.casillas = validarRespuesta.numCasilla.id;
+         if(tipoDeclarante != "3" && this.respuesta){
+            parent.DVisor.dialogomensaje.showModal('Error', 'No puede seleccionar la opcion 13 Gran Contribuyente', 3);
+            document.getElementById(this.casillas).value = "";
+            evaluate(this.casillas);
+         }
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+/**
+ *
+ */
+
+
+
+
+/**
+ * validación casilla teléfonos
+ */
+DManejedorCasilla46JS.prototype = new DManejadorJS();
+DManejedorCasilla46JS.prototype.constructor = DManejedorCasilla46JS;
+function DManejedorCasilla46JS(manejador) {
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var valTel1= document.getElementById("cas44").value*1;
+      if(objCas.value == valTel1  ){
+         var mensaje = 'Debe diligenciar un número de teléfono diferente del teléfono 1' ;
+         DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+         objCas.value = "";
+         evaluate(objCas);
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+/**
+ * manejador actividad economica
+ */
+
+DManejadorActividadEconomicaJS.prototype = new DManejadorJS();
+DManejadorActividadEconomicaJS.prototype.constructor = DManejadorActividadEconomicaJS;
+function DManejadorActividadEconomicaJS(manejador){
+   this.manejador = manejador;
+   this.respuesta = false;
+   this.casillas;
+   var DVisor = parent.DVisor;
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+
+      if (objCas) {
+         var id = getNumber(objCas);
+         var item = getItem(objCas)*1;
+         var valores = new Array(objCas.value);
+         var valoresNoPermitidosNatural = new Array("9499","9412");
+         var tipoContribuyente = document.getElementById('cas24').value;
+         var arregloCasilla = new Array(document.getElementById('cas46'),document.getElementById('cas48'), document.getElementById('cas50_1'), document.getElementById('cas50_2'));
+         if(objCas.value != ""){
+            var valorRepetido = contieneValorArreglo(valores, arregloCasilla);
+            if(valorRepetido.encontro){
+               mostrarError("No puede seleccionar dos Actividades iguales");
+               objCas.value ="";
+               DVisor.controlador.setValorCasilla(id,item,"");
+               //  return;
+            }
+         }
+         var encontroActividad0010 = valActividadEconomica();
+         if(encontroActividad0010){
+            mostrarError("Si es persona Jurídica no puede seleccionar Actividad Ecónomica 0010 - Asalariado, 0090 - Rentista Capital Solo para Personas Naturales, 0081 - Sin Actividad, 0082 - Persona  Natural Subsidiada por un Tercero.");
+            objCas.value = "";
+            DVisor.controlador.setValorCasilla(id,item,"");
+         }
+         if(tipoContribuyente == 2){
+            var encontroValor = contieneUnValorArreglo(valoresNoPermitidosNatural,arregloCasilla);
+            if (encontroValor.encontro){
+               mostrarError("Si es persona Natural no puede seleccionar  la Actividad Ecónomica 8411 - Actividades Legislativas de la Administración Publica en General, " +
+                     "8412 - Actividades Ejecutivas de la Administración Pública en General, 9499 - Actividades de Tras Organizaciones ó " +
+               "9412 -  Actividades de Organizaciones Profesionales.");
+               objCas.value = "";
+               DVisor.controlador.setValorCasilla(id,item,"");
+            }
+         }
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+valActividadEconomica = function(mostrarMensaje) {
+   var encontroActEco = false;
+   var tipoContribuyente = parent.DVisor.getValorCasillaAbsoluto(1, 1, 24,-1);
+   var cas46 = parent.DVisor.getValorCasillaAbsoluto(1, 1, 46,-1);
+   var cas48 = parent.DVisor.getValorCasillaAbsoluto(1, 1, 48,-1);
+   var cas50_1 = parent.DVisor.getValorCasillaAbsoluto(1, 1, 50,1);
+   var cas50_2 = parent.DVisor.getValorCasillaAbsoluto(1, 1, 50,2);
+   if(tipoContribuyente == 1){
+      if(cas46 == "0010" || cas48 =="0010"  || cas50_1 =="0010" || cas50_2 =="0010" || cas46 =="0090" || cas48 == "0090"  || cas50_1 =="0090" || cas50_2 =="0090" ||
+            cas46 == "0081" || cas48 =="0081"  || cas50_1 =="0081" || cas50_2 =="0081" || cas46 == "0082" || cas48 =="0082"  || cas50_1 =="0082" || cas50_2 =="0082"){
+         encontroActEco = true;
+      }
+   }
+   return encontroActEco;
+}
+
+
+
+
+/**
+ * VAlida identificación persona natural
+ */
+DValidaIdentificacionJS.prototype = new DManejadorJS();
+DValidaIdentificacionJS.prototype.constructor = DValidaIdentificacionJS;
+function DValidaIdentificacionJS(manejador) {
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas) {
+      var ident = document.getElementById("cas26").value*1;
+      var valCas25 = document.getElementById("cas25").value*1;
+      this.objCas = objCas;
+
+      if(valCas25 == '13'){
+         if(ident > 19999999999){
+            ident.value = "";
+            var mensaje = 'El número de identificación no es valido para personas naturales' ;
+            DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+         }
+
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+/* manejador direcciones */
+
+DManejadorDireccionesJS.prototype = new DManejadorJS();
+DManejadorDireccionesJS.prototype.constructor = DManejadorDireccionesJS;
+function DManejadorDireccionesJS(manejador){
+   this.manejador = manejador;
+   this.manejar = function(objCas){
+      var valCasPais = document.getElementById("cas38").value;
+      var valCasDirDes = document.getElementById("cas41");
+      if(valCasPais ==169){
+         var url = "./direcciones/direcciones.jsp?casilla=cas" + getNumber(objCas);
+         window.open(url,'',"toolbar=no, location=no, directories=no, status=no, " +
+               "menubar=no, scrollbars=yes, resizable=no, copyhistory=no, width=900, " +
+         "height=550, top=50, left=50");
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+/**
+ * Verifica que las personas naturales con c.c.  no digiten nit en tipo de documento
+ */
+DManejadorVerifcarNitNaturalJS.prototype = new DManejadorJS();
+DManejadorVerifcarNitNaturalJS.prototype.constructor = DManejadorVerifcarNitNaturalJS;
+function DManejadorVerifcarNitNaturalJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+
+      var valCas24 = document.getElementById("cas24").value *1;
+      var valCas25 = document.getElementById("cas25").value *1;
+      if (valCas24 == 2){
+         if (valCas25 == 31){
+            mensaje= "Tipo de Documento de Persona Natural debe ser diferente de NIT";
+            parent.DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+         }
+      }
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+/**
+ * consulta la homonimia cuando se estan digitndo la sección de identificación
+ */
+
+DConsultarHomonimiaJS.prototype = new DManejadorJS();
+DConsultarHomonimiaJS.prototype.constructor = DConsultarHomonimiaJS;
+function DConsultarHomonimiaJS(manejador) {
+   this.manejador = manejador;
+   this.objCas = null;
+   var homonimia = false;
+   var homonimiaNat = false;
+   var msj = "";
+   var DVisor = parent.DVisor;
+
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+
+      var cas24 = document.getElementById('cas24').value;
+      var cas25 = document.getElementById('cas25').value;
+      var cas26 = document.getElementById('cas26').value;
+      var cas31 = document.getElementById('cas31').value;
+      var cas32 = document.getElementById('cas32').value;
+      var cas33 = document.getElementById('cas33').value;
+      var cas34 = document.getElementById('cas34').value;
+      var cas35 = document.getElementById('cas35').value;
+
+      if(cas24 == 1){
+         homonimiaNat = false;
+         if(cas35 != null && cas35 != "")homonimia= true;
+      }else if(cas24 == 2 ){
+         homonimiaNat = true;
+         if(cas24 != null && cas24 != "" && cas25 != null && cas25 != "" && cas26 != null && cas26 != ""
+            && cas31 != null && cas31 != "" && cas33 != null && cas33 != "")
+            homonimia = true;
+
+      }
+
+
+      if(homonimia){
+         var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+         var cas5 = document.getElementById('cas5').value;
+
+
+
+         var metodoInicializar = homonimiaNat?"inicializarNatural":"inicializarJuridica";
+         var arrGetters = new Array("getCodMarcaHomonimia");//"getIdEstado"
+         var arrTipParamsIni = homonimiaNat?
+               new Array("String","String","String","String","String","String","String"):new Array("String","String");
+               var arrValParamsIni = homonimiaNat?
+                     new Array(cas5, cas26, cas25, cas33, cas34,cas31,cas32):new Array(cas5,cas35);
+
+                     msjInvAcc.addInvocacion("rut.inscripcion.DCmdAccCalcHomonimiaPersona",
+                           metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+                     var msjResp = DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+      }
+
+      if(this.manejador)manejador.manejar(objCas);
+   }
+
+   this.manejarRespuesta = function(msjRespuesta) {
+
+      var DMensajeJS = parent.DMensajeJS;
+      var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+      if (execState) {
+         var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+         var marcaHomonimia = respuestas[0]*1;
+         var auxBotCon = new parent.DAuxBotonContinuar("/WebRutMuisca/DefInscripcionRut.faces");
+
+         if(marcaHomonimia != 1 || marcaHomonimia != 3){
+            if(marcaHomonimia == 2){
+               msj = "Existe el NIT (duplicado) con diferentes nombres o razones sociales o el reinscrito presenta cambio de nombre. en  el histórico.";
+               mostrarError(msj);
+               //auxBotCon.ir();
+            }else if(marcaHomonimia == 4){
+               msj = "Persona existente en Registraduría y con NIT asignado, pero presenta cambio de nombre.";
+               mostrarError(msj);
+               //  auxBotCon.ir();}
+            }else if(marcaHomonimia == 5){
+               msj = "Persona existente en Registraduría y sin NIT asignado, pero presenta cambio de nombre.";
+               mostrarError(msj);
+               //  auxBotCon.ir();}
+            }else if(marcaHomonimia == 6){
+               msj = "NIT fisico pero no registrado en base de Datos de la Dian.";
+               mostrarError(msj);
+               //  auxBotCon.ir();}
+            }else  if(marcaHomonimia == 24){
+               msj = "Persona consistente con nombres, pero el nit digitado no le corresponde";
+               mostrarError(msj);
+               auxBotCon.ir();
+            }else if(marcaHomonimia == 22){
+               msj = "Persona que se esta inscribiendo ya tiene NIT.";
+               mostrarError(msj);
+               setTimeout("salirVisor()", 1000);
+            }else if(marcaHomonimia == 23){
+               msj = "Persona con NIT cancelado.";
+               mostrarError(msj);
+               auxBotCon.ir();
+            }
+            /*  if(msj != ""){
+           mostrarError(msj);
+         }*/
+         }
+         else {
+            mostrarError('Error calculando la Homonimia.');
+         }
+      }else{
+         mostrarError('Error calculando la Homonimia.');
+      }
+   }
+}
+
+function salirVisor(){
+   var auxBotCon = new parent.DAuxBotonContinuar("/WebRutMuisca/DefInscripcionRut.faces");
+   auxBotCon.ir();
+}
+
+
+/**
+ * valida casillas 56 y 57
+ */
+
+DManejadorCasillasServicioJS.prototype = new DManejadorJS();
+DManejadorCasillasServicioJS.prototype.constructor = DManejadorCasillasServicioJS;
+function DManejadorCasillasServicioJS(manejador) {
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas) {
+
+      if (!combinacionDiferente(document.getElementById('cas57_1'),document.getElementById('cas58_1'),
+            document.getElementById('cas57_2'),document.getElementById('cas58_2'),
+            'Casilla 57: Modo Servicio - item 1 y Casilla 58: CPC Servicio - item 1 ', 'Casilla 57: Modo Servicio - item 2 y Casilla 58: CPC Servicio - item 2 (Hoja 1).')) retorno = false;
+      if (!combinacionDiferente(document.getElementById('cas57_1'),document.getElementById('cas58_1'),
+            document.getElementById('cas57_3'),document.getElementById('cas58_3'),
+            'Casilla 57: Modo Servicio - item 1 y Casilla 58: CPC Servicio - item 1 ', 'Casilla 57: Modo Servicio - item 3 y Casilla 58: CPC Servicio - item 3 (Hoja 1).')) retorno = false;
+      if (!combinacionDiferente(document.getElementById('cas57_2'),document.getElementById('cas58_2'),
+            document.getElementById('cas57_3'),document.getElementById('cas58_3'),
+            'Casilla 57: Modo Servicio - item 2 y Casilla 58: CPC Servicio - item 2 ', 'Casilla 57: Modo Servicio - item 3 y Casilla 58: CPC Servicio - item 3 (Hoja 1).')) retorno = false;
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+
+/* Valor fijo para la casilla 38 pais */
+
+
+DManejeadorValFijoPaisJS.prototype = new DManejadorJS();
+DManejeadorValFijoPaisJS.prototype.constructor = DManejeadorValFijoPaisJS;
+function DManejeadorValFijoPaisJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+
+      var pais = document.getElementById("cas38").value;
+
+
+      this.objCas = objCas;
+
+      if(objCas.value == 1 ||  objCas.value == 2 ){
+         if(pais == ""){
+            parent.DVisor.controlador.setValorCasilla(38,-1,169);
+            parent.DVisor.controladorDescripciones.setValorCasilla(38, -1, "Colombia");
+         }
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/* Valor fijo para la casilla 28 pais */
+
+
+DManejeadorValFijoPaisExpJS.prototype = new DManejadorJS();
+DManejeadorValFijoPaisExpJS.prototype.constructor = DManejeadorValFijoPaisExpJS;
+function DManejeadorValFijoPaisExpJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+
+      var valCas24 = document.getElementById("cas24").value;
+      var pais = document.getElementById("cas28").value;
+
+      this.objCas = objCas;
+
+      if(valCas24 == 2 && objCas.value != "" ){
+         if(objCas.value != 41 && objCas.value != 42 && objCas.value != 31 ){
+            parent.DVisor.controlador.setValorCasilla(28,-1,169);
+            parent.DVisor.controladorDescripciones.setValorCasilla(28, -1, "Colombia");
+         }else{
+            parent.DVisor.controlador.setValorCasilla(28,-1,"");
+            parent.DVisor.controladorDescripciones.setValorCasilla(28, -1,"");
+         }
+         if(objCas.value == 31 || objCas.value == 33 || objCas.value == 44 || objCas.value == 46 || objCas.value == 90 || objCas.value == 32){
+            parent.DVisor.controlador.setValorCasilla(25,-1,"");
+            parent.DVisor.controladorDescripciones.setValorCasilla(25, -1,'');
+            mostrarError("No puede seleccionar  las opciones 31- \"NIT\", 32- \"Desconocido\", 33- \"Identificación de extranjeros diferente al NIT asignado DIAN\", 43 - \"Sin identificación del exterior o para uso definido por la DIAN\", 44 - \"Documento de identificación extranjero persona Jurídica\", 46 - \"Carné Diplomático\", 90 - \"Sistema\"");
+         }
+      }
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/* valida que no regsitre ciudad colombia en la casilla 28 */
+
+
+DManejeadorValPaisJS.prototype = new DManejadorJS();
+DManejeadorValPaisJS.prototype.constructor = DManejeadorValPaisJS;
+function DManejeadorValPaisJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      var pais = objCas.value;
+      var tipoDocumento = document.getElementById("cas25").value;
+
+      if(tipoDocumento != ""){
+         if( tipoDocumento == 41 || tipoDocumento == 42 ){
+            if(pais != "" && pais == 169){
+               mostrarError("Si selecciono tipo de documento 41-Pasaporte ó 42 -Documento de identificación extranjero no puede seleccionar en Lugar de expedición Colombia - casilla 28");
+               limpiarCasilla();
+            }
+         }
+      }
+
+      if(manejador)manejador.manejar(objCas);
+   }
+}
+
+/* valida la casilla 39 Departamento y 40 Municipio para tipo de contribuyente 1  -- 141108 */
+
+
+DManejeadorValFijoDeptoJS.prototype = new DManejadorJS();
+DManejeadorValFijoDeptoJS.prototype.constructor = DManejeadorValFijoDeptoJS;
+function DManejeadorValFijoDeptoJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+   var numAdm = "";
+   var descripcion = "";
+
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      var casId = getNumber(objCas);
+      var departamento = objCas.value;
+      var tipoContribuyente = DVisor.getValorCasilla(24,-1);
+      var isGranContribuyente =  DVisor.contexto.getParametro('CTX_GRAN_CONTRIBUYENTE');
+      var rol = DVisor.contexto.getParametro("CTX_SEG_ROL");
+      var arreglo = getArregloCasiilaColumna(53);
+      var encontroGra = contieneUnValor("13", arreglo);
+      var isResoluciones = parent.DVisor.contexto.getParametro('ES_RESOLUCION');
+
+      //if(rol == 434){
+      if(isResoluciones == "true" || isResoluciones){
+         if(encontroGra.resultado){
+            if(isGranContribuyente == "false" || isGranContribuyente == false){
+               isGranContribuyente = true;
+            }
+         }else{
+            isGranContribuyente = false;
+         }
+      }
+
+      if(departamento == 11){
+         parent.DVisor.controlador.setValorCasilla(parseInt(getNumber(objCas))+1,-1,"001");
+         parent.DVisor.controladorDescripciones.setValorCasilla(parseInt(getNumber(objCas))+1,-1,"Bogotá");
+         var pais =   document.getElementById('cas38').value;
+      }
+
+      if(casId == 39 && objCas.value != ""){
+         //mostrarAyuda("Tenga en cuenta que al modificar los datos de ubicación se puede estar cambiando de administración.");
+         if(departamento == 11){
+            var municipioConcatenado = departamento+"001";
+
+            var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+            var metodoInicializar ="inicializarParamSimples";
+            var arrGetters = new Array("getIdAdmonExterno","getNombreDescripcion");
+            var arrTipParamsIni = new Array("String","int","boolean");
+            var arrValParamsIni = new Array(municipioConcatenado,tipoContribuyente,isGranContribuyente);
+
+            msjInvAcc.addInvocacion("rut.DCmdAccObtenerAdmonRut",
+                  metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+            var msjResp = DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+         }else{
+            numAdm = "";
+            descripcion = "";
+         }
+
+      }else{
+         numAdm = "";
+         descripcion = "";
+      }
+
+      for(var i=1;i<8;i++){
+         DVisor.controlador.setCasilla(i, 1, 12, -1, numAdm);
+         DVisor.controladorDescripciones.setValorCasilla(12, -1, descripcion);
+      }
+
+      if(manejador)manejador.manejar(objCas);
+   }
+
+   this.manejarRespuesta = function(msjRespuesta) {
+
+      var DMensajeJS = parent.DMensajeJS;
+      var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+      if (execState) {
+         var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+         numAdm = respuestas[0];
+         descripcion = respuestas[1];
+
+      }else{
+         mostrarError('Error Obteniendo Administración.');
+         document.getElementById('cas39').value = "";
+         DVisor.controladorDescripciones.setValorCasilla(39, -1, "");
+      }
+   }
+
+}
+
+
+/* valida la casilla 53 asignar la Administración de Grandes Contribuyentes en Bogota -- 141126  */
+
+
+
+DManejadorGranContribuyenteResponJS.prototype = new DManejadorJS();
+DManejadorGranContribuyenteResponJS.prototype.constructor = DManejadorGranContribuyenteResponJS;
+function DManejadorGranContribuyenteResponJS(manejador){
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+   var numAdm =  DVisor.getValorCasilla(12,-1);
+   var descripcion = "";
+
+   this.manejar = function(objCas){
+      this.objCas = objCas;
+      var casId = getNumber(objCas);
+      var departamento = DVisor.getValorCasilla(39,-1);
+      var pais =   document.getElementById('cas38').value;
+      var tipoContribuyente = DVisor.getValorCasilla(24,-1);
+      var isGranContribuyente =  DVisor.contexto.getParametro('CTX_GRAN_CONTRIBUYENTE');
+      var rol = DVisor.contexto.getParametro("CTX_SEG_ROL");
+      var arreglo = getArregloCasiilaColumna(53);
+      var encontroGra = contieneUnValor("13",arreglo);
+      var isResoluciones = parent.DVisor.contexto.getParametro('ES_RESOLUCION');
+
+      //if(rol == 434){
+
+      if(isResoluciones == "true" || isResoluciones){
+         if(encontroGra.resultado){
+            if(isGranContribuyente == "false" || isGranContribuyente == false){
+               isGranContribuyente = true;
+            }
+         }else{
+            isGranContribuyente = false;
+         }
+      }
+
+
+      //if(isResoluciones == "true" || isResoluciones){
+      if(casId == 53){
+         // mostrarAyuda("Tenga en cuenta que al modificar los datos de ubicación se puede estar cambiando de administración.");
+         if(departamento == 11){
+            var municipioConcatenado = departamento+"001";
+
+            var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+            var metodoInicializar ="inicializarParamSimples";
+            var arrGetters = new Array("getIdAdmonExterno","getNombreDescripcion");
+            var arrTipParamsIni = new Array("String","int","boolean");
+            var arrValParamsIni = new Array(municipioConcatenado,tipoContribuyente,isGranContribuyente);
+
+            msjInvAcc.addInvocacion("rut.DCmdAccObtenerAdmonRut",
+                  metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+            var msjResp = DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+         }else{
+            numAdm = DVisor.controlador.getValorCasilla(12, -1);
+            descripcion = DVisor.controladorDescripciones.getValorCasilla(12, -1);
+
+         }
+         for(var i=1;i<8;i++){
+            DVisor.controlador.setCasilla(i, 1, 12, -1, numAdm);
+            DVisor.controladorDescripciones.setValorCasilla(12, -1, descripcion);
+         }
+      }
+
+      if(manejador)manejador.manejar(objCas);
+   }
+
+   this.manejarRespuesta = function(msjRespuesta) {
+
+      var DMensajeJS = parent.DMensajeJS;
+      var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+      if (execState) {
+         var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+         numAdm = respuestas[0];
+         descripcion = respuestas[1];
+
+      }else{
+         mostrarError('Error Obteniendo Administración.');
+      }
+   }
+
+}
+
+
+
+
+
+
+/**
+ * valida conceptos generales de usuarios aduaneros
+ * OJO - Igual en todos los manejadores hoja 1 de formularios inscripción y actualización
+ */
+
+DManejadorValoresExcluyentesAduanerosJS.prototype = new DManejadorJS();
+DManejadorValoresExcluyentesAduanerosJS.prototype.constructor = DManejadorValoresExcluyentesAduanerosJS;
+function DManejadorValoresExcluyentesAduanerosJS(manejador){
+	this.manejador = manejador;
+	var mensaje = "";
+	var casilla;
+	var DVisor = parent.DVisor;
+	this.harr = new Hashtable();
+	this.hmsg = new Hashtable();
+	this.harrMili = new Hashtable();
+	this.hmsgMili = new Hashtable();
+
+	this.manejar = function(objCas){
+		this.objCas = objCas;
+		this.valido = true;
+
+		if (objCas) {
+
+			var rol = DVisor.contexto.getParametro("CTX_SEG_ROL");
+			var arreglo = getArregloCasiilaColumna(getNumber(objCas));
+			var cas24 = document.getElementById('cas24');
+			var cas2 = document.getElementById('cas2');
+			var cas53 = getArregloCasiilaColumna(53);
+			var cas39 = document.getElementById('cas39');
+
+			if (cas2.value == "02") {
+				var cas67 = DVisor.contexto.getParametro("CAS67");
+				var cas66 = DVisor.contexto.getParametro("CAS66");
+			} else {
+				var cas66 = parent.DVisor.getValorCasillaAbsoluto(2, 1,66,-1);
+				var cas67 = parent.DVisor.getValorCasillaAbsoluto(2, 1,67,-1);
+			}
+
+			var siPermitido = true;
+			var noExcluyente = true;
+			var obligatorioCod17 = new Array("17");
+			var obligatorioCod24 = new Array("24");
+
+			// Dependiendo de si el codigo se pude asiganar a juridico y/o natural se escribe en el arreglo correspondiente.
+			/* Si el codigo solo se puede hacer con rol actualizacion, colocarlo en el arreglo rol correspondiente al tipo de contribuyente,
+       si no,se debe colocar en los dos arreglos correspondientes al tipo de contribuyente */
+
+
+			var reponValidasAduanerosNaturales    = new Array("02","05", "06", "07", "08", "09","13","18","21","22","23","28","29","43","44","46","47","49","58","60","61","70","71","73","79","81","82","83","84" );
+			var reponValidasAduanerosNaturalesRol = new Array("13","18","29","43","44","60","70","71","73","79","81","82","83","84");
+			var reponValidasAduanerosJuridicos    = new Array("01","02", "03", "04", "05", "06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","27","28","29","30","32","34","36","37","38","39","40","41","42","44","46","47","48","49","50","53","54","55","56","57","58","60","61","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84");
+			var reponValidasAduanerosJuridicosRol = new Array("01","02", "03" ,"04","10","11","12","13","14","15","16","17","18","19","20","24","25","27","29","36","37","38","39","40","41","42","44","48","50","53","54","55","56","57","60","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84");
+			
+			var reponValidasAduanerosNaturalesGranc= new Array("37","38");
+			
+
+
+
+
+
+			/* Definicion Arreglo  de Actividad Económica Fuerzas Militares 8422 ó 8423 */
+			var  actividadEconoMilitar = new Array("8422","8423");
+			var isResoluciones = parent.DVisor.contexto.getParametro('ES_RESOLUCION');
+
+			if(isResoluciones=="false"||isResoluciones==false){
+				isResoluciones="false";
+			}
+			if(isResoluciones=="true"||isResoluciones==true){
+				isResoluciones="true";
+			}
+		  
+		      var isGranContribuyente = parent.DVisor.contexto.getParametro('CTX_GRAN_CONTRIBUYENTE');
+
+		            if(isGranContribuyente == "true" || isGranContribuyente == true){
+		            	isGranContribuyente = true;
+		            } else{
+		        	 isGranContribuyente = false;
+		         }
+		      
+			if (objCas.value != ""){
+				// Validacion sin Rol
+				if (cas24.value=="" || cas24.value==null) {
+					siPermitido = false;
+					mensaje = "No se ha diligenciado la casilla 24 tipo de contribuyente"
+				}
+
+
+				if (cas24.value=="1" ) {
+					var encontroValidasAduanerosJuridicos = contieneUnValorEnCasilla(objCas.value,reponValidasAduanerosJuridicos);
+					if (!encontroValidasAduanerosJuridicos){
+						siPermitido = false;
+						mensaje = "En Usuarios Aduaneros: "
+							+ "Para personas Jurídicas, el código señalado"
+							+ " en la Casilla 54  (Hoja 1) no es permitido";
+					}
+				}
+
+				if (cas24.value=="2") {
+					var encontroValidasAduanerosNaturales = contieneUnValorEnCasilla(objCas.value,reponValidasAduanerosNaturales);
+					if (!encontroValidasAduanerosNaturales){
+						siPermitido = false;
+						mensaje = "En Usuarios Aduaneros: "
+							+ "Para personas Naturales, el código señalado"
+							+ " en la Casilla 54  (Hoja 1) no es permitido";
+
+					}
+
+				}
+
+			
+
+				if (siPermitido && isResoluciones=="false") {
+					// Validacion PN sin Rol por inscripcion y Actualizacion
+					if (cas24.value=="2") {
+						var encontroValidasAduanerosNaturalesRol = contieneUnValorEnCasilla(objCas.value,reponValidasAduanerosNaturalesRol);
+						if (encontroValidasAduanerosNaturalesRol) {
+							siPermitido = false;
+							mensaje = "La adición o exclusión de alguna de estas calidades es de facultad de la DIAN";
+						}
+					}
+
+					if (cas24.value=="1") {
+						var encontroValidasAduanerosJuridicosRol = contieneUnValorEnCasilla(objCas.value,reponValidasAduanerosJuridicosRol);
+						if (encontroValidasAduanerosJuridicosRol){
+							siPermitido = false;
+							mensaje = "La adición o exclusión de alguna de estas calidades es de facultad de la DIAN";
+						}
+					}
+				}
+
+				var encontroValidasAduanerosNaturalesGranC =  contieneUnValorEnCasilla(objCas.value, reponValidasAduanerosNaturalesGranc);
+				if(siPermitido && cas24.value=="2" && encontroValidasAduanerosNaturalesGranC  && !isGranContribuyente ){
+					siPermitido = false;
+					mensaje = "La adición o exclusión de alguna de estas calidades es de facultad de la DIAN";
+				
+				}
+			
+
+				
+				if (siPermitido ) {
+					//  Excluyentes sin condiciones o excluyentes sin Actividad Económica Fuerzas Militares
+
+					this.harr.put(1,new Array("03","04","10","11","12","13","14","15","16","17","18","19","20","24","40","42","53","55","56","57","68","69","70","71","72","76","78","79"));
+					this.harr.put(3,new Array("01","10","11","12","13","14","15","16","17","18","20","24","25","27","28","29","40","46","47","48","49","60","65","66","69","70","71","72","79","81","82","83","84"));
+					this.harr.put(4,new Array("01","22","32","34","36"));
+					this.harr.put(10,new Array("01","03","25","28","29","37","46","47","49","53","55","56","57","60","76","78","81","82","83","84"));
+					this.harr.put(11,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(11,new Array("28","29","46","47","49","60","81","82","83","84"));
+					this.harr.put(12,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(12,new Array("28","29","46","47","49","60","81","82","83","84"));
+					this.harr.put(13,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(13,new Array("28","29","46","47","49","60","81","82","83","84"));
+					this.harr.put(14,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(14,new Array("29","46","47","49","60","81","82","83","84"));
+					this.harr.put(15,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(15,new Array("28","29","46","47","49","60","81","82","83","84"));
+					this.harr.put(16,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(16,new Array("47","49"));
+					this.harr.put(17,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(17,new Array("29","46","47","49","60","81","82","83","84"));
+					this.harr.put(18,new Array("01","03","25","53","55","56","57","69","76","78"));
+					//this.harrMili.put(18,new Array("28","29","46","47","49")); en casilla 67 valor 3
+					this.harr.put(19,new Array("01","11","12","13","14","15","16","17","18","20","24","25","28","29","37","46","47","49","60" ,"68","69","70","71","72","76","81","82","83","84"));
+					this.harr.put(20,new Array("01","03","25","28","29","46","47","49","53","55","56","57","60","76","78","81","82","83","84"));
+					this.harr.put(22,new Array("04"));
+					this.harr.put(24,new Array("01","03","25","53","55","56","57","72","76","78"));
+					this.harrMili.put(24,new Array("29","46","47","49","60","81","82","83","84" ));
+					this.harr.put(25,new Array("03","10", "11", "12", "13", "14", "15", "16","17","18","19","20","24","53","55","56","57","68","69","70","71","72","76","78","79"));
+					//this.harr.put(26,new Array("01", "10", "11", "12", "13", "14", "15", "16","17","18","19","20","24","25","27","28","29","40","42","46","47","49","53","55","56","57","60"));
+					this.harr.put(27,new Array("03","53","55","56","57","78"));
+					this.harr.put(28,new Array("03","10","19","20","40","42","53","55","56","57","68","76","78"));
+					this.harrMili.put(28,new Array("11","12","13","15","69","79"));
+					this.harr.put(29,new Array("03","10","19","20","53","55","56","57","68","76","78"));
+					this.harrMili.put(29,new Array("11","12","13","14","15","17","24","69"));
+					this.harr.put(30,new Array(""));
+					this.harr.put(36,new Array("04","32","30","34","53","55","56","57","78"));
+					this.harr.put(37,new Array("10","19","53","55","56","57","68","78"));
+					this.harr.put(40,new Array("01","03","25","28","29","46","47","49","53","55","56","57","60",76,"78","81","82","83","84"));
+					this.harr.put(42,new Array("01","25","28","29","46","47","49","53","55","56","57","60",76,"78","81","82","83","84"));
+					this.harr.put(43,new Array("44","45","53","55","56","57","78"));
+					/* this.harr.put(44,new Array("22","23")); */
+					this.harr.put(46,new Array("03","10","19","20","40","42","53","55","56","57","68","76","78"));
+					this.harrMili.put(46,new Array("11","12","13","14","15","17","24","69"));
+					this.harr.put(47,new Array("03","10","19","20","40","42","53","55","56","57","68","76","78"));
+					this.harrMili.put(47,new Array("11","12","13","14","15","16","17","24","69"));
+					this.harr.put(48,new Array("03","53","55","56","57","78"));
+					this.harr.put(49,new Array("03","10","19","20","40","42","53","55","56","57","68","76","78"));
+					this.harrMili.put(49,new Array("11","12","13","14","15","16","17","24","69"));
+					this.harr.put(53,new Array("01","10","11","12","13","14","15","16","17","18","20","24","25","27","28","29","40","42","46","47","49","55","56","57","60","69","70","71","72","76","78","79","81","82","83","84"));
+					this.harr.put(54,new Array("30","32","34"));
+					this.harr.put(55,new Array("01","10","11","12","13","14","15","16","17","18","20","24","25","27","28","29","40","42","46","47","49","53","56","57","60","69","70","71","72","76","78","79","81","82","83","84"));
+					this.harr.put(56,new Array("01","10","11","12","13","14","15","16","17","18","20","24","25","27","28","29","40","42","46","47","49","53","55","57","60","69","70","71","72","76","78","79","81","82","83","84"));
+					this.harr.put(57,new Array("01","10","11","12","13","14","15","16","17","18","20","24","25","27","28","29","40","42","46","47","49","53","55","56","60","69","70","71","72","76","78","79","81","82","83","84"));
+					this.harr.put(60,new Array("03","10","19","20","53","55","56","57","68","76","78"));
+					this.harrMili.put(60,new Array("11", "12", "13", "14", "15","17","24","69"));
+					this.harr.put(65,new Array("03","10","19","20","53","55","56","57","68","78"));
+					this.harr.put(66,new Array("03","10","19","20","53","55","56","57","68","78"));
+					this.harr.put(68,new Array("60","69","70","71","72","76","79","81","82","83","84"));
+					this.harr.put(69,new Array("01","03","18","25","53","55","56","57","76","78","79"));
+					this.harr.put(70,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(70,new Array("28","29","46","47","49","60","81","82","83","84" ));
+					this.harr.put(71,new Array("01","03","25","53","55","56","57","76","78"));
+					this.harrMili.put(71,new Array("28","29","46","47","49","60","81","82","83","84" ));
+					this.harr.put(72,new Array("01", "03","24","25","53","55","56","57","78"));
+					this.harrMili.put(72,new Array("28","29","46","47","49","60","81","82","83","84" ));
+					this.harr.put(76,new Array("01","10","11","12","13","14","15","16","17","18","19","20","24","25","28","29","40","42","46","47","49","53","55","56","57","60","68","69","70","71","78","79","81","82","83","84"));
+					this.harr.put(78,new Array("40","42","46","47","49","53","55","56","57","60","69","70","71","72","76","79","81","82","83","84"));
+					this.harr.put(79,new Array("01","03","25","53","55","56","57","69","76","78"));
+					this.harr.put(81,new Array("03","10","19","20","40","42","53","55","56","57","68","76","78"));
+					this.harrMili.put(81,new Array("11","12","13","14","15","17","24","69")); 
+					this.harr.put(82,new Array("03","10","19","20","53","55","56","57","68","76","78"));
+					this.harrMili.put(82,new Array("11","12","13","14","15","17","24","69"));
+					this.harr.put(83,new Array("03","10","19","20","53","55","56","57","68","76","78"));
+					this.harrMili.put(83,new Array("11","12","13","14","15","17","24","69"));
+					this.harr.put(84,new Array("03","10","19","20","40","42","53","55","56","57","68","76","78"));
+					this.harrMili.put(84,new Array("11","12","13","14","15","17","24","69"));
+
+					this.hmsg.put(1,'El código 01 Agente de carga internacional, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(1));
+					this.hmsg.put(3, 'El código 03 Almacén general de depósito, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(3));
+					this.hmsg.put(4, 'El código 04 comercializadoras internacionales, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(4));
+
+					this.hmsg.put(10,'El código 10 Centro de Distribución logística internacional , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(10));
+
+					this.hmsg.put(11,'El código 11 Depósitos privados para procesamiento industrial, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(11));
+
+					this.hmsgMili.put(11,'El código 11 Depósitos privados para procesamiento industrial, no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(11) +' sino tiene registrado en actividad económica el valor 8422 ó 8423.' );
+
+					this.hmsg.put(12,'El código 12 Depósitos privados para transformación o ensamble, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(12));
+
+					this.hmsgMili.put(12,'El código 12 Depósitos privados para transformación o ensamble, no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(12) +' sino tiene registrado en actividad económica el valor 8422 ó 8423.' );
+
+					this.hmsg.put(13, 'El código 13 Depósito franco, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(13));
+
+					this.hmsgMili.put(13,'El código 13 Depósito franco, no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(13) +' sino tiene registrado en actividad económica el valor 8422 ó 8423.' );
+
+					this.hmsg.put(14,'El código 14 Depósito aduanero  aeronáutico, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(14));
+
+					this.hmsgMili.put(14, 'El código 14 Depósito aduanero  aeronáutico, no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(14) +' sino tiene registrado en actividad económica el valor 8422 ó 8423.' );
+
+					this.hmsg.put(15, 'El código 15 Depósito privado para distribución internacional, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(15));
+
+					this.hmsgMili.put(15, 'El código 15 Depósito privado para distribución internacional, no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(15) +' sino tiene registrado en actividad económica el valor 8422 ó 8423.' );
+
+					this.hmsg.put(16,'El código 16 Depósito privado de provisiones para consumo y para llevar, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(16));
+
+					this.hmsgMili.put(16,  'El código 16 Depósito privado de provisiones  para consumo y para llevar, no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(16) +' sino tiene registrado en actividad económica el valor 8422 ó 8423.' );
+
+					this.hmsg.put(17,'El código 17 Depósito operadores envíos entrega rápida/mensajería expresa, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(17));
+
+					this.hmsgMili.put(17, 'El código 17 Depósito operadores envíos entrega rápida/mensajería expresa, no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(17) +' sino tiene registrado en actividad económica el valor 8422 ó 8423.' );
+
+					this.hmsg.put(18,'El código 18 Depósito temporal  privado, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(18));
+
+
+					this.hmsg.put(19,'El código 19 Depósito temporal público, no es jurídicamente compatible con los códigos '
+							+ ' 01, 11, 12, 13, 14, 15, 16, 17, 18, 20, 24, 25, 28, 29, 37, 46, 47, 49, (53, 55, 56, 57, 78 '
+							+ ' siempre y cuando no tenga registrada la calidad 03 \" Almacén General de Deposito), '
+							+ ' 60, 68, 69, 70, 71, 72, 76, 81, 82, 83, 84 de usuario aduanero. ');
+
+
+					this.hmsg.put(20,'El código 20 Depósito público para distribución internacional, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(20));
+
+					this.hmsg.put(22,'El código 22 Exportador, no es jurídicamente compatible con el código '
+							+ this.harr.get(22));
+
+					this.hmsg.put(24,'El código 24 Operador régimen envíos entrega rápida o mensajería expresa , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(24));
+
+					this.hmsgMili.put(24, 'El código 24 Operador régimen envíos entrega rápida o mensajería expresa , no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(24) +' sino tiene registrado en actividad económica el valor 8422 ó 8423.' );
+
+					this.hmsg.put(25, 'El código 25 Operador de transporte multimodal, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(25));
+
+					/*this.hmsg.put(26,'   '
+                             + 'El código 26 Sociedad de intermediación aduanera, no es jurídicamente compatible con los códigos '
+                             + this.harr.get(26));
+					 */
+					this.hmsg.put(27, 'El código 27 Puerto y muelle de servicio público o privado, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(27));
+
+					this.hmsg.put(28, 'El código 28 Transportador internacional aéreo, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(28));
+
+					this.hmsgMili.put(28,'El código 28 Transportador internacional aéreo'
+							+  ', no es jurídicamente compatible con los códigos 11, 12, 13, 15, 18,  69, 79 de usuario aduanero, '
+							+  'debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03.'  );
+
+					this.hmsg.put(29,'El código 29 Transportador nacional terrestre, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(29));
+
+					this.hmsgMili.put(29,'El código 29 Transportista nacional de operaciones de tránsito aduanero Transportador nacional terrestre, ' 
+							 + ' no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03' );
+
+					this.hmsg.put(30, 'El código 30 Usuario Comercial de Zona Franca permanente, no es jurídicamente compatible con el código '
+							+ this.harr.get(30));
+
+					this.hmsg.put(36, 'El código 36 Usuario Operador de Zona Franca permanente, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(36));
+
+					this.hmsg.put(37,'El código 37 Usuario Aduanero Permanente, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(37));
+
+					this.hmsg.put(40,'El código 40 Depósito privado de instalaciones industriales, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(40));
+
+					this.hmsg.put(42,'El código 42 Depósito privados almacenamiento mercancías a otros puertos , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(42));
+
+					this.hmsg.put(43,'El código 43 Observadores de las operaciones de importación / exportación, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(43));
+
+					/*this.hmsg.put(44,'   '
+                               + '  El código 44 Usuario de sistemas especiales de importación y exportación, no es jurídicamente compatible los códigos '
+                               + this.harr.get(44));
+					 */
+
+					this.hmsg.put    (46,'El código 46 Transportador internacional marítimo, no es jurídicamente compatible con los  códigos 03, 10, 19, 20, 26, 40, 42, 53, 55, 56, 57, 68, 76, 78 ');
+					this.hmsgMili.put(46,'El código 46 Transportador internacional marítimo, no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03 ');
+					
+					this.hmsg.put(47,'El código 47 Transportador internacional terrestre,  no es jurídicamente compatible con los códigos '
+							+ this.harr.get(47));
+
+					this.hmsgMili.put(47,'El código 47 Transportador internacional terrestre, no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(47) +' sino tiene registrado en actividad económica el valor 8422 ó ó 8423' );
+
+					this.hmsg.put(48, 'El código 48 Aeropuerto de servicio público o privado, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(48));
+
+					this.hmsg.put(49,'El código 49 Transportador internacional fluvial '
+							+ ', no es jurídicamente compatible con los códigos '   + this.harr.get(49 ));
+
+
+					this.hmsgMili.put(49,'El código 49 Transportador fluvial régimen de importación y/o exportación Transportador internacional fluvial,' 
+							+ ' no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 16, 17, 18, 24, 69, 79 de usuario aduanero,' 
+							+ ' debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03 ' 
+							+ '   .  ');
+
+
+					this.hmsg.put(53, 'El Código 53 Agencia de aduanas 1,  no es jurídicamente compatible con los  códigos 01, 10, 11, 12, 13, 14, 15, 16, 17, 18, (19 siempre y cuando no tenga registrada la calidad 03,'
+							   +' 20, 24, 25, 26, 27, 28, 29, (30 siempre y cuando no tenga en la casilla 54 diligenciado el código 03), 40, 42, 46, 47, 49, 55,  56, 57, 60, 69,70,71 72, 76, 78, 79, 81, 82, 83, 84' );
+
+					this.hmsg.put(54,'  El código 54 Usuario Operador Zona Franca Especial'
+							+  ', no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, '
+							+  'debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03.' );
+
+
+					this.hmsg.put(55, 'El código 55 Agencias de Aduanas 2, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(55));
+
+					this.hmsg.put(56,'El código 56 Agencias de Aduanas 3, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(56));
+
+					this.hmsg.put(57, 'El Código 57 \"Agencia de aduanas 4\" no es jurídicamente compatible con los  códigos 01, 10, 11, 12, 13, 14, 15, 16, 17, 18, (19 siempre y cuando no tenga registrada la calidad 03), 20, 24, 25, 27, 28, 29, (30 siempre y cuando no tenga en la casilla 54 diligenciado el código 03), 40, 42, 46, 47, 49, 53,  55, 56, 60, 69, 72, 76, 78, 79, 81, 82, 83, 84');
+
+					this.hmsg.put(60,' El código 60 Transportador nacional aéreo'
+							+ '  11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03    .');
+
+					this.hmsgMili.put(60, 'El código 60 Transportador nacional aéreo no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, '
+							+  'debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03    .' );
+
+
+					this.hmsg.put(65,'El código 65 Agente terrestre, no es jurídicamente compatible con los códigos '
+							+ this.harr.get(65));
+
+					this.hmsg.put(66,'El código Agente aeroportuario, , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(66));
+
+					this.hmsg.put(68,'El código 68 Depósito aduanero público, no es jurídicamente compatible con los códigos 01, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 24, 25, 28, 29, 37, 46, 47, 49, (53, 55, 56, 57, 78 siempre y cuando no tenga registrada la calidad 03 Almacén General de Deposito), 60, 69, 70, 71, 72, 76, 79, 81, 82, 83, 84');
+
+					this.hmsg.put(69,'El código 69 Depósito aduanero privado , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(69));
+
+					this.hmsg.put(70,'El código 70 Sala de Exhibición  , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(70));
+
+
+					this.hmsgMili.put(70,'El código 70 Sala de Exhibición   , no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(70) + '   sino tiene registrado en actividad económica el valor 8422 ó  8423.' );
+
+					this.hmsg.put(71,'El código 71 Depósito cultural o artístico  , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(70));
+
+
+					this.hmsgMili.put(71,'El código 71 Depósito cultural o artístico  , no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(71) + '   sino tiene registrado en actividad económica el valor 8422 ó  8423.' );
+
+					this.hmsg.put(72,'El código 72 Operador postal oficial o concesionario de correos  , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(72));
+
+
+					this.hmsgMili.put(72,'El código 72 Operador postal oficial o concesionario de correos  , no es jurídicamente compatible con los códigos '
+							+ this.harrMili.get(72) + '   sino tiene registrado en actividad económica el valor 8422 ó  8423.' );
+
+					this.hmsg.put(76,'El código 76 Zona verificación entrega rápida y mensajería expres  , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(76) );
+
+
+
+					this.hmsg.put(78,' El Código 78 \"Agencia de aduanas \" no es jurídicamente compatible con los códigos 01, 10, 11, 12, 13, 14, 15, 16, 17, 18,'
+							+ '  (19 siempre y cuando no tenga registrada la calidad 03), 20, 24, 25, 27, 28, 29, (30 siempre y cuando '
+							+ ' no tenga en la casilla 54 diligenciado el código 03), 40, 42, 46, 47, 49, 53, 55, 56, 57, 60, 69,70,71 72, 76, '
+							+ ' 79, 81, 82, 83, 84');
+
+					this.hmsg.put(79,'El código 79 Deposito temporal privado transitorio , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(79)) + ' de usuario aduanero, revise y seleccione nuevamente';
+
+					this.hmsg.put(81,'El código 81 Transportador internacional ferroviario,    no es jurídicamente compatible con los códigos '
+							+ this.harr.get(81));
+						
+					
+					this.hmsgMili.put(81,'El código 81 Transportador internacional ferroviario  '
+							+  ', no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, '
+							+  ' debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03.' );
+
+
+					this.hmsg.put(82,'El código 82 Transportador nacional marítimo  , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(82));
+
+					this.hmsgMili.put(82,'El código 82 Transportador nacional marítimo   '
+							+  ', no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, '
+							+  'debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03.' );
+
+
+					this.hmsg.put(83,'El código 83 Transportador nacional fluvial   , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(83));
+
+					this.hmsgMili.put(83,'El código 83 Transportador nacional fluvial    '
+							+  ', no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, '
+							+  'debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03.' );
+
+
+					this.hmsg.put(84,'El código 84 Transportador nacional ferroviario    , no es jurídicamente compatible con los códigos '
+							+ this.harr.get(84));
+
+					this.hmsgMili.put(84,'El código 84 Transportador nacional ferroviario    '
+							+ '  , no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, '
+							+ '  debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03.' );
+
+
+
+					var reponEscluyAduaneros25 = new Array("10", "11", "12", "13", "14", "15", "16","17","18","19","20");
+					var transporte = new Array("25","29");
+					var obligaValores1 = new Array("17","24");
+					var casillas = getArregloCasiilaColumna(getNumber(objCas));
+					var numAduanero;
+					var arregloCasilla = new Array(document.getElementById('cas46'),document.getElementById('cas48'), document.getElementById('cas50_1'), document.getElementById('cas50_2'));
+					var encontroActividadEconoMili = contieneUnValorArreglo(actividadEconoMilitar,arregloCasilla );
+
+					if(casillas != null){
+						var valAd62;
+						var valAdOtro = "";
+						for (var i=0; i<casillas.length; i++) {
+							if (casillas[i].value != "" && casillas[i].value == "62"){
+								valAd62 = '62';
+							}
+							if (casillas[i].value != "" && casillas[i].value != "62"){
+								valAdOtro = casillas[i].value;
+							}
+						}
+						if(valAd62 != null && valAd62 == '62' && valAdOtro != "") {
+							mensaje ='El código 62 Importador Ocasional no es compatible con ninguna otra calidad aduanera\n\n';
+							DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+							this.valido = false;
+						}
+					}
+
+					if(casillas != null){
+						for (var i=0; i<casillas.length; i++) {
+							if (casillas[i].value != ""){
+								numAduanero = "";
+								if (casillas[i].value == "01")numAduanero = "1";
+								if (casillas[i].value == "03")numAduanero = "3";
+								if (casillas[i].value == "04")numAduanero = "4";
+								if (casillas[i].value == "10")numAduanero = "10";
+								if (casillas[i].value == "11")numAduanero = "11";
+								if (casillas[i].value == "12")numAduanero = "12";
+								if (casillas[i].value == "13")numAduanero = "13";
+								if (casillas[i].value == "14")numAduanero = "14";
+								if (casillas[i].value == "15")numAduanero = "15";
+								if (casillas[i].value == "16")numAduanero = "16";
+								if (casillas[i].value == "17")numAduanero = "17";
+								if (casillas[i].value == "18")numAduanero = "18";
+								if (casillas[i].value == "19")numAduanero = "19";
+								if (casillas[i].value == "20")numAduanero = "20";
+								if (casillas[i].value == "24")numAduanero = "24";
+								if (casillas[i].value == "25")numAduanero = "25";
+								if (casillas[i].value == "26")numAduanero = "26";
+								if (casillas[i].value == "27")numAduanero = "27";
+								if (casillas[i].value == "28")numAduanero = "28";
+								if (casillas[i].value == "29")numAduanero = "29";
+								if (casillas[i].value == "30")numAduanero = "30";
+								if (casillas[i].value == "36")numAduanero = "36";
+								if (casillas[i].value == "37")numAduanero = "37";
+								if (casillas[i].value == "40")numAduanero = "40";
+								if (casillas[i].value == "42")numAduanero = "42";
+								if (casillas[i].value == "43")numAduanero = "43";
+								/* if (casillas[i].value == "44")numAduanero = "44"; */
+								if (casillas[i].value == "46")numAduanero = "46";
+								if (casillas[i].value == "47")numAduanero = "47";
+								if (casillas[i].value == "48")numAduanero = "48";
+								if (casillas[i].value == "49")numAduanero = "49";
+								if (casillas[i].value == "53")numAduanero = "53";
+								if (casillas[i].value == "54")numAduanero = "54";
+								if (casillas[i].value == "55")numAduanero = "55";
+								if (casillas[i].value == "56")numAduanero = "56";
+								if (casillas[i].value == "57")numAduanero = "57";
+								if (casillas[i].value == "60")numAduanero = "60";
+								if (casillas[i].value == "65")numAduanero = "65";
+								if (casillas[i].value == "66")numAduanero = "66";
+								if (casillas[i].value == "68")numAduanero = "68";
+								if (casillas[i].value == "69")numAduanero = "69";
+								if (casillas[i].value == "70")numAduanero = "70";
+								if (casillas[i].value == "71")numAduanero = "71";
+								if (casillas[i].value == "72")numAduanero = "72";
+								if (casillas[i].value == "76")numAduanero = "76";
+								if (casillas[i].value == "77")numAduanero = "77";
+								if (casillas[i].value == "78")numAduanero = "78";
+								if (casillas[i].value == "79")numAduanero = "79";
+								if (casillas[i].value == "81")numAduanero = "81";
+								if (casillas[i].value == "82")numAduanero = "82";
+								if (casillas[i].value == "83")numAduanero = "83";
+								if (casillas[i].value == "84")numAduanero = "84";
+
+
+								if (casillas[i].value == "78")numAduanero = "78";
+								// var valorCasilla = casillas[iw].value*1;
+								// var vecArreglosAduanas = new Array("1","4","10","11","12","13","14","15","16","17","18","19","20","24","25","26","27","29","30","36","37","40","42","43","44","46","48","53","54","55","56","57");
+								var vecArreglosAduanas = new Array("1","3","4","10","11","12","13","14","15","16","17","18","19","20","24","25","26","27","28","29","30","36","37","40","42","43","46","47","48","49","53","54","55","56","57","60","65","66","68","69","70","71","72","76","78","79","81","82","83","84");
+								var valorArregloAduana = contieneUnValorW(numAduanero,vecArreglosAduanas);
+								if(valorArregloAduana.resultado){
+									var  encontroExcluyAduaneros = contieneUnValorW(objCas.value,this.harr.get(numAduanero));
+									if(encontroExcluyAduaneros.resultado){
+										noExcluyente = false;
+										mensaje = this.hmsg.get(numAduanero)
+										+ ' de usuario aduanero, revise y seleccione nuevamente,'
+										+ ' en Casilla 54 (Hoja 1). \n\n' ;
+										DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+										this.valido = false;
+									}else{
+										var vecArreglosAduanasMili = new Array("11","12","13","14","15","16","17","24","28","29","46","47","49","60","70","71","72","81","82","83","84");
+										var valorArregloAduanaMili = contieneUnValorW(numAduanero,vecArreglosAduanasMili);
+										if (valorArregloAduanaMili.resultado){
+											var  encontroExcluyAduanerosMili = contieneUnValorW(objCas.value,this.harrMili.get(numAduanero));
+											if (encontroExcluyAduanerosMili.resultado){
+												if(!encontroActividadEconoMili.encontro){
+													noExcluyente = false;
+													mensaje = this.hmsgMili.get(numAduanero) 
+													+ ' de usuario aduanero, revise y seleccione nuevamente,'
+													+ ' en Casilla 54 (Hoja 1). \n\n' ;
+													DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+													this.valido = false;
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+
+					/* Se comentario para que lo valide con lo anterior
+            var encontroExcluyAduanerosTransporte = contieneUnValorArreglo(transporte,casillas);
+            var encontro = encontroExcluyAduanerosTransporte.encontro;
+              if(encontro){
+                 var  encontroExcluyAduaneros = contieneUnValorArreglo(this.harr.get(25),casillas);
+                 var encontroExclu = encontroExcluyAduaneros.encontro;
+                  if(encontroExclu)mensaje = this.hmsg.get(25);
+              }
+					 */
+					if (noExcluyente) { // excluyentes con condiciones diferentes a Actividad Económica Fuerzas Militares o esta mas otras codiciones
+
+						// Cuando se escriba el código 10 es obligatorio el 27
+						/*    var Codigo10 = contieneUnValorArreglo(new Array("10"),casillas);
+                var Codigo27 = contieneUnValorArreglo(new Array("27"),casillas);
+                if(Codigo10.encontro && !Codigo27.encontro){
+                      mensaje =  "Para optar por este registro es pre-requisito ser usuario aduanero código 27 (Titular de puertos y muelles de servicio público o privado).    ..";
+                }*/
+
+						// Cuando se escriba el código 11 es obligatorio el 37 o 38
+						var Codigo11 = contieneUnValorArreglo(new Array("11"),casillas);
+						var Codigo18 = contieneUnValorArreglo(new Array("18"),casillas);
+						var Codigo37o38 = contieneUnValorArreglo(new Array("37","38"),casillas);
+						if(Codigo11.encontro && !Codigo37o38.encontro){
+							mensaje = "Debe inscribir igualmente el código 38 Usuario altamente exportador o 37 usuario aduanero permanente\n\n";
+						}
+
+						// Cuando se escriba el código 14 es obligatorio el 28
+						var Codigo14 =  contieneUnValorArreglo(new Array("14"),casillas);
+						var Codigo28 =  contieneUnValorArreglo(new Array("28"),casillas);
+						if(Codigo14.encontro && !Codigo28.encontro){
+							mensaje = "Debe inscribir igualmente el código 28 Transportador internacional aéreo\n\n";
+						}
+
+						// Cuando se escriba el código 15 es obligatorio el 37
+						var Codigo15 = contieneUnValorArreglo(new Array("15"),casillas);
+						var Codigo37 = contieneUnValorArreglo(new Array("37"),casillas);
+						if(Codigo15.encontro && !Codigo37.encontro){
+							mensaje = "Debe inscribir igualmente el código 37 Usuario aduanero permanente\n\n";
+						}
+
+						// Cuando se escriba el código 16 es obligatorio el 28 ó 46, si esta el 29 y no cumple lo anterior, lo debe permir si tiene en actividad económica el valor 8422 ó 8423
+						var Codigo16 = contieneUnValorArreglo(new Array("16"),casillas);
+						var Codigo28o46 = contieneUnValorArreglo(new Array("28","46"),casillas);
+						if (Codigo16.encontro) {
+							if (!Codigo28o46.encontro){
+								mensaje = "Para optar por este registro es pre-requisito ser usuario aduanero código 28 o 46.  Revise y seleccione nuevamente \n\n";
+							}
+						}
+
+						// Cuando se escriba el código 17 es obligatorio el 24
+						var Codigo17 = contieneUnValorArreglo(obligatorioCod17,casillas);
+						var Codigo24 = contieneUnValorArreglo(obligatorioCod24,casillas);
+						if(Codigo17.encontro && !Codigo24.encontro){
+							mensaje = "Debe inscribir igualmente el código 24 Operador régimen envíos entrega rápida o mensajería expresa. \n\n";
+						}
+
+						// validacion 52 Codigos excluyentes con codigo 18  sino tiene actividad económica el  valor 8422 ó 8423 o el codigo 3 diligenciado en casilla 67
+					
+						var Codigo79 = contieneUnValorArreglo(new Array("79"),casillas);
+						var CodExc18SinActMil3en67 = contieneUnValorArreglo(new Array("28","29","46","49","60","81","82","83","84" ),casillas);
+						if((!encontroActividadEconoMili.encontro && cas67 != "3") ){
+							if (CodExc18SinActMil3en67.encontro && Codigo18.encontro  ){
+								mensaje = "El código 18 Depósito privado, no es jurídicamente compatible con los códigos 28, 29, 46, 49, 60, 81, 82, 83, 84 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó en la casilla 67 el código 03 revise y seleccione nuevamente\n\n";
+							}
+							var Codigo28 = contieneUnValorArreglo(new Array("28"),casillas);
+							if(Codigo28.encontro  && ( Codigo79.encontro || Codigo18.encontro ) ){
+								mensaje = "El código 28 Transportador internacional aéreo, no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03 revise y seleccione nuevamente \n\n";
+							}
+							var Codigo29 = contieneUnValorArreglo(new Array("29"),casillas);
+							if(Codigo29.encontro  && ( Codigo79.encontro || Codigo18.encontro ) ){
+								mensaje = "El código 29 Transportador nacional terrestre, no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03 revise y seleccione nuevamente \n\n";
+							}
+						}
+						// Codigos excluyentes con casilla 19 sino tiene el codigo 3 diligenciado en casilla 54
+						var Codigo19 = contieneUnValorArreglo(new Array("19"),casillas);
+						var Codigo3 = contieneUnValorArreglo(new Array("03"),casillas);
+						var CodigosExc19Sin3 = contieneUnValorArreglo(new Array("53","55","56","57","78"),casillas);
+						if(Codigo19.encontro && CodigosExc19Sin3.encontro && !Codigo3.encontro) {
+							mensaje = " El código 19 Depósito temporal público, no es jurídicamente compatible con los códigos " 
+								+  " 01, 11, 12, 13, 14, 15, 16, 17, 18, 20, 24, 25, 28, 29, 37, 46, 47, 49, (53, 55, 56, 57, 78 " 
+								+ " siempre y cuando no tenga registrada la calidad 03 \" Almacén General de Deposito),"
+								+ "	60, 68, 69, 70, 71, 72, 76, 81, 82, 83, 84 de usuario aduanero";
+						}
+
+
+						// Cuando se escriba el código 29, si esta el 16 lo debe permir si tiene actividad económica el valor 8422 ó 8423 o el codigo el 28 ó el 46
+						/*var Codigo29 = contieneUnValorArreglo(new Array("29"),casillas);
+                var Codigo16 = contieneUnValorArreglo(new Array("16"),casillas);
+                var Codigo28o46 = contieneUnValorArreglo(new Array("28","46"),casillas);
+                if(Codigo29.encontro) {
+                   if (Codigo16.encontro) {
+                       if (!Codigo28o46.encontro && !encontroActividadEconoMili.encontro) {
+                          mensaje = "El código 29 Transportista nacional de operaciones de tránsito aduanero, no es jurídicamente compatible con el código 16 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 o en la casilla 54 el código 28 ó 46,    .."
+                       }
+                   }
+                }eliminada junio 1 de 2011*/
+
+						// Codigos excluyentes con casilla 30 sino tiene el codigo 3 diligenciado en casilla 54
+						var Codigo30 = contieneUnValorArreglo(new Array("30"),casillas);
+
+						var CodigosExc30Sin3 = contieneUnValorArreglo(new Array("53","55","56","57","78"),casillas);
+						if(Codigo30.encontro && CodigosExc30Sin3.encontro && !Codigo3.encontro) {
+							mensaje = "El código 30 (Usuario Comercial de Zona Franca), no es jurídicamente compatible con los codigos (53,55,56,57,78), si no tiene en la casilla 54 diligenciado el codigo 03.";
+						}
+
+						//  Valida si falta código 37 ó 38 teniendo la respon 13 para PN en actualizacion
+						var repon13 = contieneUnValorArreglo(new Array("13"),cas53);
+						if (cas2.value == "01") {
+							if (!repon13.encontro && (objCas.value == "37" || objCas.value == "38") && cas24.value == "2"){
+								mensaje = "Para incluir los códigos 37 y 38 debe ser por actualización";
+							}
+						} else {
+							if(!repon13.encontro && (objCas.value == "37" || objCas.value == "38") && cas24.value == "2"){
+								mensaje = "Para incluir los códigos 37 y 38 para una Persona Natural debe tener la responsabilidad 13 en la casilla 53.";
+							}
+						}
+
+						// Cuando se escriba el código 44 es obligatorio el 4, 22 y 23
+						var codigo44 = contieneUnValorArreglo(new Array("44"),casillas);
+						var codigo4y22y23 = contieneUnValorArreglo(new Array("04","22","23"),casillas);
+						if(codigo44.encontro && !codigo4y22y23.encontro){
+							mensaje = "Para optar por este codigo es pre-requisito ser usuario aduanero código 04 o 22 o 23.";
+						}
+
+						var codigo53exc = contieneUnValorArreglo(new Array("40","42","46","47","49","55","56","57","60","69","72","76","78","79","81","82","83","84"),casillas);
+
+						if(!Codigo3.encontro && (Codigo19.encontro ||  Codigo30.encontro ) ){
+
+							var codigo53 = contieneUnValorArreglo(new Array("53"),casillas);
+							if (codigo53.encontro)		  
+								mensaje = "El Código 53 \"Agencia de aduanas 1\" no es jurídicamente compatible con los  códigos 01, 10, 11, 12, 13, 14, 15, 16, 17, 18, (19 siempre y cuando no tenga registrada la calidad 03), 20, 24, 25,  27, 28, 29, (30 siempre y cuando no tenga en la casilla 54 diligenciado el código 03), 40, 42, 46, 47, 49, 55,  56, 57, 60, 69, 72, 76, 78, 79, 81, 82, 83, 84 de usuario aduanero , revise y seleccione nuevamente.\n\n";
+							var codigo55 = contieneUnValorArreglo(new Array("55"),casillas);
+							if (codigo55.encontro)		  
+								mensaje = "El Código 55 \"Agencia de aduanas 2\" no es jurídicamente compatible con los  códigos 01, 10, 11, 12, 13, 14, 15, 16, 17, 18, (19 siempre y cuando no tenga registrada la calidad 03), 20, 24, 25,  27, 28, 29, (30 siempre y cuando no tenga en la casilla 54 diligenciado el código 03), 40, 42, 46, 47, 49, 53,  56, 57, 60, 69, 72, 76, 78, 79, 81, 82, 83, 84 de usuario aduanero, revise y seleccione nuevamente.\n\n";
+							var codigo56 = contieneUnValorArreglo(new Array("56"),casillas);
+							if (codigo56.encontro)		  
+								mensaje = "El Código 56 \"Agencia de aduanas 3\" no es jurídicamente compatible con los  códigos 01, 10, 11, 12, 13, 14, 15, 16, 17, 18, (19 siempre y cuando no tenga registrada la calidad 03), 20, 24, 25,  27, 28, 29, (30 siempre y cuando no tenga en la casilla 54 diligenciado el código 03), 40, 42, 46, 47, 49, 53,  55, 57, 60, 69, 72, 76, 78, 79, 81, 82, 83, 84 de usuario aduanero, revise y seleccione nuevamente.\n\n";
+							var codigo57 = contieneUnValorArreglo(new Array("57"),casillas);
+							if (codigo57.encontro)		  
+								mensaje = "El Código 57 \"Agencia de aduanas 4\" no es jurídicamente compatible con los  códigos 01, 10, 11, 12, 13, 14, 15, 16, 17, 18, (19 siempre y cuando no tenga registrada la calidad 03), 20, 24, 25, 27, 28, 29, (30 siempre y cuando no tenga en la casilla 54 diligenciado el código 03), 40, 42, 46, 47, 49, 53,  55, 56, 60, 69, 72, 76, 78, 79, 81, 82, 83, 84 de usuario aduanero, revise y seleccione nuevamente.\n\n";
+						}
+
+
+
+						var codigo73 = contieneUnValorArreglo(new Array("73"),casillas);
+						if(codigo73.encontro && !codigo4y22y23.encontro){
+							mensaje = "Para optar por este codigo es pre-requisito ser usuario aduanero código 04 o 22 o 23.    .\n\n";
+						}
+						// Cuando se escriba el código 45 es obligatorio el 23
+						var codigo45 = contieneUnValorArreglo(new Array("45"),casillas);
+						var codigo23 = contieneUnValorArreglo(new Array("23"),casillas);
+						if(codigo45.encontro && !codigo23.encontro){
+							mensaje = "Para optar por este codigo es pre-requisito ser usuario aduanero código 23 - Importador\n\n";
+						}
+
+						// Cuando se escriba el código 59 es obligatorio el 23
+						var codigo59 = contieneUnValorArreglo(new Array("59"),casillas);
+						var codigo23 = contieneUnValorArreglo(new Array("23"),casillas);
+						if(codigo59.encontro && !codigo23.encontro){
+							mensaje = "Para optar por este codigo es pre-requisito ser usuario aduanero código 23 (Importador)\n\n";
+						}
+
+						// Cuando se escriba el código 77 es obligatorio el 23
+						var codigo77 = contieneUnValorArreglo(new Array("77"),casillas);
+						var codigo23 = contieneUnValorArreglo(new Array("23"),casillas);
+						if(codigo77.encontro && !codigo23.encontro){
+							mensaje = "Para optar por este registro es pre-requisito ser obligado aduanero código 23 \"Importador\"";
+						}
+
+						var Codigo78_exc= contieneUnValorArreglo(new Array(  "01","10","11","12","13","14","15","16","17","18","20","24","25","27","28","29"),casillas);
+						var Codigo78 = contieneUnValorArreglo(new Array("78"),casillas).encontro;
+						if (Codigo78 && !Codigo3.encontro  &&  Codigo78_exc.encontro ) {  
+							mensaje = "El Código 78 \“Agencia de aduanas\”  no es jurídicamente compatible con los códigos 01, 10, 11, 12, 13, 14, 15, 16, 17, 18, " +
+									    " (19 siempre y cuando no tenga registrada la calidad 03), 20, 24, 25, 27, 28, 29, (30 siempre y cuando no tenga en la casilla 54 diligenciado el código 03)" +
+									   		" , 40, 42, 46, 47, 49, 53, 55, 56, 57, 60, 69, 72, 76, 79, 81, 82, 83, 84 de usuario aduanero, revise y seleccione nuevamente.\n\n";
+						}
+
+
+
+						/* Cuando se escriba el código 61 es obligatorio tener uno de los siguientes deptos en la casilla 39 (44,91,94,97,99)
+                   Si es 44 debe ademas ser juridico y  tener un valor en la casilla 63
+						 */
+						var deptoContribuyente = cas39.value;
+						var codigo61 = contieneUnValorArreglo(new Array("61"),casillas);
+
+						if (codigo61.encontro) {
+							var mensaje61 = "";
+							if (deptoContribuyente == "44" || deptoContribuyente == "91" || deptoContribuyente == "94" ||
+									deptoContribuyente == "97" || deptoContribuyente == "99")  {
+								if (deptoContribuyente == "44") {
+									if (cas24.value != "1" || (cas66 == null || cas66 == "null" || cas66 == "")) {
+										mensaje61 = "Para registrar el usuario aduanero 61 Importador de alimentos de consumo humano y animal y tener como ubicación La Guajira, debe ser una cooperativa\n\n";
+									}
+								}
+							} else {
+								mensaje61 = "Para registrar el usuario aduanero 61 Importador de alimentos de consumo humano y animal debe tener como ubicación los departamentos de Amazonas, Guainía, Vaupés, Vichada ó las cooperativas del departamento de La Guajira.\n\n";
+							}
+							// Cuando se escriba el código 61 es obligatorio el 23
+							var codigo23 = contieneUnValorArreglo(new Array("23"),casillas);
+							if (codigo61.encontro && !codigo23.encontro){
+								mensaje61 = mensaje61 + "\nPara optar por este codigo es pre-requisito ser usuario aduanero código 23 (Importador)\n\n";
+							}
+							mensaje =  mensaje61;
+						}
+
+						// Cuando se escriba el código 63 es obligatorio el 23
+						var Codigo63 = contieneUnValorArreglo(new Array("63"),casillas);
+						var codigo23 = contieneUnValorArreglo(new Array("23"),casillas);
+						var mensaje63 = "";
+
+						if (Codigo63.encontro && !codigo23.encontro){
+							mensaje = "Para optar por este codigo es pre-requisito ser usuario aduanero 23 (Importador)\n\n";
+						}
+
+						// Cuando se escriba el código 64 es obligatorio el 23
+						var codigo64 = contieneUnValorArreglo(new Array("64"),casillas);
+						if (codigo64.encontro && !codigo23.encontro){
+							mensaje =  "Para optar por este codigo es pre-requisito ser usuario aduanero 23 (Importador) \n\n";
+						}
+
+						/* Cuando se escriba el código 63 es obligatorio tener una de los siguientes resposabilidades en la casilla 53 ( 4 o 5 o 6 y 11) si es juridico y si es natural
+                   es obligatorio tener una de los siguientes resposabilidades en la casilla 53 (5y 11)
+						 */
+
+						var repon11 = contieneUnValorArreglo(new Array("11"),cas53);
+						var respon5 = contieneUnValorArreglo(new Array("5"),cas53);
+						var respo456 = contieneUnValorArreglo(new Array("4","5","6"),cas53);
+
+
+						if (Codigo63.encontro) {
+							if (cas24.value == "1") {
+								if (!respo456.encontro || !repon11.encontro) {
+									mensaje = "Para registrar el usuario aduanero 63 Importador de maquinaría y sus partes Decreto 2261 de 2012 debe tener registradas como responsabilidades alguna " +
+									"de las siguientes: 4-Impuesto de renta y complementarios régimen especial, ó 5-Impuesto de renta y complementarios régimen ordinario ó 6-Ingresos y patrimonio y " +
+									"11-Ventas régimen común";
+								}
+							} else {
+								if (!respon5.encontro || !repon11.encontro) {
+									mensaje = "Para registrar el usuario aduanero 63 Importador de maquinaría y sus partes Decreto 2261 de 2012 debe tener registradas como responsabilidades las " +
+									"siguientes: 5-Impuesto de renta y complementarios régimen ordinario y 11-Ventas régimen común";
+								}
+							}
+					
+						}
+
+						var codigo67 = contieneUnValorArreglo(new Array("67"),casillas);
+						if (codigo67.encontro && !codigo18.encontro){
+							mensaje = "Para optar por este registro es pre-requisito ser usuario aduanero código 18 Deposito temporal privado. Revise y seleccione nuevamente";
+						}
+
+						var codigo68 = contieneUnValorArreglo(new Array("68"),casillas);
+						var codigo68_exc = contieneUnValorArreglo(new Array("01","11","12","13","14","15","16","17","18","19","20","24","25","28","29","37","46","47","49","53","55","56","57","78"),casillas);
+						if (codigo68.encontro && !Codigo3.encontro && codigo68_exc.encontro){
+							mensaje = "El código 68 Depósito aduanero público, no es jurídicamente compatible con los códigos 01, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 24, 25, 28, 29, 37, 46, 47, 49, (53, 55, 56, 57, 78 siempre y cuando no tenga registrada la calidad 03 Almacén General de Deposito), 60, 69, 70, 71, 72, 76, 79, 81, 82, 83, 84 de usuario aduanero, revise y seleccione nuevamente";
+						}
+						var codigo18_79 = contieneUnValorArreglo(new Array("18","79"),casillas);
+
+						if ( codigo18_79.encontro   && !encontroActividadEconoMili.encontro && cas67 != "3"){
+
+
+							var codigo49 = contieneUnValorArreglo(new Array("49"),casillas);
+							if (codigo49.encontro){
+								mensaje = " El código 49 Transportador fluvial régimen de importación y/o exportación Transportador internacional fluvial, no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 16, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03";
+							}
+							var codigo60 = contieneUnValorArreglo(new Array("60"),casillas);
+							if (codigo60.encontro){
+								mensaje ="El código 60 Transportador nacional aéreo, no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 16, 17, 18, 24, 69, 79  de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03";
+							}
+
+							var codigo81 = contieneUnValorArreglo(new Array("81"),casillas);
+							if (codigo81.encontro){
+								mensaje =  "El código 81 Transportador internacional ferroviario, no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03";
+							}
+
+							var codigo82 = contieneUnValorArreglo(new Array("82"),casillas);
+							if (codigo82.encontro){
+								mensaje = "El código  82 Transportador nacional marítimo, no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03  ";
+							}
+
+							var codigo83 = contieneUnValorArreglo(new Array("83"),casillas);
+							if (codigo83.encontro){
+								mensaje =  "El código  83 Transportador nacional fluvial , no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03. ";
+							}
+
+							var codigo84 = contieneUnValorArreglo(new Array("84"),casillas);
+							if (codigo84.encontro){
+								mensaje = "El código  84 Transportador nacional ferroviario  , no es jurídicamente compatible con los códigos 11, 12, 13, 14, 15, 17, 18, 24, 69, 79 de usuario aduanero, debe tener la actividad económica 8422 ó 8423 ó para el código 18 ó 79 en la casilla 67 debe registrar el código 03";
+							}
+						}
+					}
+				}
+			}
+			if (mensaje != ""){
+				mostrarError(mensaje);
+				objCas.value = "";
+				DVisor.controlador.setValorCasilla(getNumber(objCas),getItem(objCas),"");
+				mensaje="";
+
+			}
+		}
+		if(manejador){manejador.manejar(objCas);}
+	}
+}
+/**
+ * Manejador para desplegar en el tooltip la lista de tipos de contribuyentes
+ */
+
+
+
+DEjecutarSeleccionContribuyenteJS.prototype = new DEjecutarBusquedaAbstractoJS();
+DEjecutarSeleccionContribuyenteJS.prototype.constructor = DEjecutarSeleccionContribuyenteJS;
+function DEjecutarSeleccionContribuyenteJS(manejador, busqueda, tablaHTML) {
+   this.manejador = manejador;
+   this.busqueda = busqueda;
+   this.tablaHTML = tablaHTML;
+
+   // Ejecuta la busqueda utilizando AJAX
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var visor = parent.DVisor;
+
+      //Esta es la url de la acordeon de busquedas
+      //document.getElementById('frameAyuda').contentDocument.getElementById('lista').contentDocument.location.href
+      this.limpiarTBody(this.tablaHTML.tBodies[0]);
+      this.mostrarCargando(this.tablaHTML.tBodies[0]);
+      var msjInvAcc = visor.obtenerDMensajeEjecAccion();
+      this.manejarRespuesta(null);
+      if(manejador) manejador.manejar(objCas);
+   }
+
+
+   // Maneja la respuesta dada por el servidor despu\uFFFD de la ejecuci\uFFFD AJAX
+   this.manejarRespuesta = function(msjRespuesta) {
+      var tbody = this.tablaHTML.tBodies[0];
+      this.crearCabeceraTabla(this.tablaHTML);
+      this.limpiarTBody(tbody);
+
+      // Cargamos los resultados
+      this.cargarResultados(tbody);
+
+      // Cargamos la paginación cuando se encuentran muchos registros
+      var numPaginas = 0;
+      var paginaActual = 1;
+      this.crearPaginacion(this.tablaHTML, numPaginas, paginaActual);
+
+   }
+
+   this.cargarResultados = function (tbody) {
+      this.adicionarFila(tbody, "1", "Persona jurídica");
+      this.adicionarFila(tbody, "2", "Persona natural o sucesión ilíquida");
+   }
+
+
+   this.adicionarFila = function(tbody, codigo, resultado) {
+      var row = tbody.insertRow(-1);
+      var celda1 = row.insertCell(-1);
+      var celda2 = row.insertCell(-1);
+
+      // Mapa de resultados con las casillas a actualizar y el valor
+      // Las casillas a actualizar deben tener la forma: grupo_ocurrencia_casilla:valorCasilla|grupo_ocurrencia_casilla:valorCasillas
+      // Si la casilla esta sola se asume el grupo y ocurrencia actual
+      var casillas = "des" + parent.getNumber(this.busqueda.objCas) + ":" + resultado;
+      casillas += "|" + this.busqueda.objCas.id + ":" + codigo;
+      resultado = cambiarCaracteresAXml(resultado);
+
+      // Al dar click sobre la celda se actualiza el resultado de la casilla.
+      // Ver busqueda.js#actualizarCasillasBusqueda
+      celda1.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + codigo + "</a>";
+      celda2.innerHTML = "<a style=\"font-family: Arial, Helvetica, sans-serif; font-size: 8pt;\" href=\"\" onclick=\"parent.actualizarCasillasBusqueda('" + casillas + "');\">" + resultado + "</a>";
+   }
+}
+/*
+DManejadorValidaAduanerosJS.prototype = new DManejadorJS();
+DManejadorValidaAduanerosJS.prototype.constructor = DManejadorValidaAduanerosJS;
+function DManejadorValidaAduanerosJS(manejador){
+    this.manejador = manejador;
+    this.casilla;
+    this.manejar = function(objCas){
+    this.objCas = objCas;
+    var mensaje = "";
+
+    if (objCas) {
+       var casillasRes = getArregloCasiilaColumna(53);
+       var responsabilidad = new Array("10");
+
+       var encontroRespnsabilidad = contieneValorArreglo(responsabilidad,casillasRes);
+
+       if(encontroRespnsabilidad.encontro){
+          var casillasAduaneros = getArregloCasiilaColumna(getNumber(objCas));
+          var aduanerosNoValidos = new Array("01","10","11","12","13","14","15","16","17","18","19","20","24","25","26","27","29","30","37","38",);
+          var encontroAduaneroNoValido = contieneValorArreglo
+
+          mensaje =  "En Usuarios Aduaneros: "
+		   + " Para personas juridicas, los códigos 04 y 22 "
+		   +  " en la Casilla 54 ["+ encontroExcluyentesAduane1.casilla.id +"] (Hoja 1) no son permitidos simultaneamente.";
+           document.getElementById(encontroExcluyentesAduane1.casilla.id).value = "";
+           evaluate(encontroExcluyentesAduane1.casilla.id);
+      }
+
+      if(cas24.value == 2){
+      var encontroNoValidasAduanerosNaturales = contieneUnValorArreglo(reponNoValidasAduanerosNaturales,arreglo);
+          if(encontroNoValidasAduanerosNaturales.encontro){
+             var mensaje = "En Usuarios Aduaneros: "
+		    + " Para personas naturales, el código señalado "
+		    +  " en la Casilla 54  (Hoja 1) no es permitido.";
+           document.getElementById(encontroNoValidasAduanerosNaturales.casilla.id).value = "";
+          }
+      }
+      if (mensaje != "")
+        parent.DVisor.dialogomensaje.showModal('Error', mensaje, 3);
+       }
+      if(manejador){manejador.manejar(objCas);}
+    }
+}
+ */
+/**
+ * BORRA EL VALOR DE DIRECCION
+ **/
+
+DManejadorBorrarDireccionJS.prototype = new DManejadorJS();
+DManejadorBorrarDireccionJS.prototype.constructor = DManejadorBorrarDireccionJS;
+function DManejadorBorrarDireccionJS(manejador){
+	this.manejador = manejador;
+	var DVisor = parent.DVisor;
+	this.manejar = function(objCas){
+		var valCas;
+		valCas  = document.getElementById('cas41');
+		valCas53  = document.getElementById('cas53');
+		tipoContribuyente = document.getElementById('cas24').value;
+		
+		valCas.value  = "";
+		evaluate(valCas);
+		if(tipoContribuyente == 1 &&  objCas.value != ""   &&   objCas.value != 169   ) {
+			    DVisor.controlador.setValorCasilla(53, 1,"46");
+				document.getElementById('cas53_1').setValue("46");
+	
+			
+			Mensaje = "Si es persona jurídica y en la sección de ubicación seleccionó un país diferente a Colombia usted es un prestador de servicios desde el exterior responsable del impuesto sobre las ventas -IVA por tanto el sistema cargará en la casilla 53 la responsabilidad 46 \"IVA Prestadores de Servicios desde el Exterior\" y deberá registrar el código 14 \"Sociedad extranjera sin domicilio responsable de IVA\" en la casilla 67" ;
+			parent.DVisor.dialogomensaje.showModal('Error',Mensaje, 2);
+				}
+		if(manejador)manejador.manejar(objCas);
+	}
+}
+
+/**
+ *
+ * Valida numero de identificacion para naturales
+ */
+
+DManejeadorValNumIdentificacionNatJS.prototype = new DManejadorJS();
+DManejeadorValNumIdentificacionNatJS.prototype.constructor = DManejeadorValNumIdentificacionNatJS;
+function DManejeadorValNumIdentificacionNatJS(manejador) {
+   this.manejador = manejador;
+   var DVisor = parent.DVisor;
+   var item;
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      item = getItem(objCas)*1;
+
+      var numIden = objCas.value;
+      var valCas25 = document.getElementById('cas25').value;
+
+
+      if (valCas25 != 41 &&  valCas25 != 42) {
+         if (numIden != ""){
+            if ( (numIden <= 99999999) || (numIden >= 600000000 && numIden <= 600200000) || (numIden >= 700000001 && numIden <= 799999999)
+                  || numIden > 1000000000 ){
+               //   return true;
+            }else {
+               initializeView(objCas);
+               mostrarError("El número de identificación para personas naturales no es válido.") ;
+               objCas.value = "";
+               evaluate(objCas);
+               return;
+            }
+         }
+      } //else return;
+      if(manejador) manejador.manejar(objCas);
+   }
+
+}
+
+/**
+ * carga administración dependiendo del municipio en responsabilidad - 14125
+ */
+
+DManejadorCargarAdministracionConResponJS.prototype = new DManejadorJS();
+DManejadorCargarAdministracionConResponJS.prototype.constructor = DManejadorCargarAdministracionConResponJS;
+function DManejadorCargarAdministracionConResponJS(manejador) {
+   this.manejador = manejador;
+   this.objCas = null;
+   var DVisor = parent.DVisor;
+
+   var numAdm = DVisor.controlador.getValorCasilla(12, -1);
+   var descripcion = DVisor.controladorDescripciones.getValorCasilla(12, -1);
+   var isGranContribuyente = parent.DVisor.contexto.getParametro('CTX_GRAN_CONTRIBUYENTE');
+   var rol = DVisor.contexto.getParametro("CTX_SEG_ROL");
+   var formalizar = DVisor.contexto.getParametro("FORMALIZACION");
+
+   var municipio =   document.getElementById('cas40').value;
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var arreglo = getArregloCasiilaColumna(53);
+      var numObjCas = getNumber(objCas);
+
+      //parent.DVisor.controladorDescripciones.setValorCasilla(getNumber(objCas), getItem(objCas), "");
+      var tipoContribuyente = document.getElementById('cas24').value;
+      var pais =   document.getElementById('cas38').value;
+      var departamento =   document.getElementById('cas39').value;
+      var municipio =   document.getElementById('cas40').value;
+      var nit =   document.getElementById('cas5').value;
+      var encontroGra = contieneUnValor("13", arreglo);
+      var isResoluciones = parent.DVisor.contexto.getParametro('ES_RESOLUCION');
+
+
+      // if(rol == 434){
+      if(isResoluciones == "true" || isResoluciones){
+         if(encontroGra.resultado){
+            if(isGranContribuyente == "false" || isGranContribuyente == false){
+               isGranContribuyente = true;
+            }
+         }else{
+            isGranContribuyente = false;
+         }
+      }
+
+      if(pais == 169 && municipio == ""){
+         numAdm = "";
+         descripcion = "";
+
+      }
+
+      if(pais != 169){
+         numAdm = 32;
+         descripcion = "Impuestos de Bogotá";
+      }
+
+      if(pais == 169 && municipio != ""){
+         var municipioConcatenado = departamento+municipio;
+
+         var msjInvAcc = parent.DVisor.obtenerDMensajeEjecAccion();
+         var metodoInicializar ="inicializarParamSimples";
+         var arrGetters = new Array("getIdAdmonExterno","getNombreDescripcion");
+         var arrTipParamsIni = new Array("String","int","boolean");
+         var arrValParamsIni = new Array(municipioConcatenado,tipoContribuyente,isGranContribuyente);
+
+         msjInvAcc.addInvocacion("rut.DCmdAccObtenerAdmonRut",
+               metodoInicializar, arrTipParamsIni, arrValParamsIni, arrGetters);
+         var msjResp = DVisor.enviarMensajeConstruido(msjInvAcc, this, false);
+
+      }
+      for(var i=1;i<8;i++){
+         DVisor.controlador.setCasilla(i, 1, 12, -1, numAdm);
+         DVisor.controladorDescripciones.setCasilla(i, 1, 12, -1, descripcion);
+      }
+
+      if(this.manejador)manejador.manejar(objCas);
+   }
+
+   this.manejarRespuesta = function(msjRespuesta) {
+
+      var DMensajeJS = parent.DMensajeJS;
+      var execState = msjRespuesta.getParametro(DMensajeJS.NOMBRE_RESULTADO);
+
+      if (execState) {
+         var respuestas = msjRespuesta.getParametro(DMensajeJS.NOMBRE_VALORES_RESULTADO);
+         numAdm = respuestas[0];
+         descripcion = respuestas[1];
+
+      }else{
+         mostrarError('Error Obteniendo Administración.');
+         /*
+          document.getElementById('cas40').value = "";
+          DVisor.controladorDescripciones.setValorCasilla(40, -1, "");
+          */
+      }
+   }
+}
+
+
+
+/**
+ * carga Bogotá automatico si el Depto es Bogotá - 141127
+ */
+
+DManejadorCargaMunicipioCas30JS.prototype = new DManejadorJS();
+DManejadorCargaMunicipioCas30JS.prototype.constructor = DManejadorCargaMunicipioCas30JS;
+function DManejadorCargaMunicipioCas30JS(manejador) {
+   this.manejador = manejador;
+   var objCas = null;
+   var DVisor = parent.DVisor;
+   var numMunicipio = "001";
+   var descripcion = "Bogotá, D.C.";
+
+   this.manejar = function(objCas) {
+      this.objCas = objCas;
+      var item = getItem(objCas);
+      var pais = document.getElementById('cas28').value*1;
+      var departamento =   objCas.value*1;
+      if(pais == 169 && departamento == 11){
+         for(var i=1;i<8;i++){
+            DVisor.controlador.setCasilla(i, 1, 30, -1, numMunicipio);
+            DVisor.controladorDescripciones.setCasilla(i, 1, 30, -1, descripcion);
+         }
+      }
+
+      if(manejador) manejador.manejar(objCas);
+   }
+}
+
+
+
+/////////////////////// FUNCIONES GENERALES QUE UTILIZAN MANEJADOR Y VALIDADOR////////////////////////////////
+
+
+
+
+/**
+ * funciones temporales adicionales para validaciones
+ */
+function combinacionDiferente(objeto1, objeto2, objeto3, objeto4, mensaje1, mensaje2) {
+   valor1 = objeto1.value;
+   valor2 = objeto2.value;
+   valor3 = objeto3.value;
+   valor4 = objeto4.value;
+   if (valor1 != '' && valor2 != null && valor1 != '' && valor2 != null){
+      if (valor1 == valor3 && valor2 == valor4 ){
+         var id1 = getNumber(objeto1);
+         var id2 = getNumber(objeto2);
+         // var mensaje = "La combinación de los valores de casillas " + mensaje2 + " debe ser diferente la combinación de los valores de casillas " + mensaje1;
+         var mensaje = "Cuando marque mas de un item en la casilla "+ id1+" se puede marcar el mismo código en todos los items y en la casilla " + id2+" no debe permitir todos los items iguales";
+         parent.DVisor.dialogomensaje.showModal('Error',mensaje, 3);
+         objeto4.value = "";
+         evaluate(objeto4);
+         retorno = false;
+         //  return false;
+      }
+   }
+   //return true;
+}
+
+function validarForm(campo,requerido, texto){
+   mensaje="";
+   flag = new Boolean(true);
+   if(requerido=="S") {
+      if(campo.value=="" ){
+         mensaje= "El Campo "+texto+" es obligatorio, por favor diligéncielo.";
+         flag = false;
+         parent.DVisor.dialogomensaje.showModal('Error',mensaje, 3);
+      }
+   }
+   return flag;
+}
+
+
+
+
+///////////////////MANEJADORES ACTUALIZACION///////////////////
+
+
+
+
+
+/***
+ *
+ */
+
+/**
+ * Obtiene el documento correspondiente a la declaración anterior, presentada,
+ * sobre la que se efectuará la corrección.
+ */
+DObtenerDoumentoAnteriorJS.prototype = new DValidadorCasillaJS();
+DObtenerDoumentoAnteriorJS.prototype.constructor = DObtenerDoumentoAnteriorJS;
+function DObtenerDoumentoAnteriorJS(validador){
+   this.validador = validador;
+   this.valido = true;
+   var DVisor = parent.DVisor;
+
+   this.validar = function(objCasJS){
+      if (objCasJS) {
+
+         var grupo = DVisor.docResumen.getGrupo(1);
+
+         if(grupo && grupo.getOcurrencia(1)) {
+
+            var ocurrencia = grupo.getOcurrencia(1);
+
+            var sancion = document.getElementById('cas57');
+            var totalSaldoAPagar = document.getElementById('cas58');
+            var totalSaldoAFavor = document.getElementById('cas59');
+
+            sancion.valorOriginal = ocurrencia.getCasilla(57).getValor();
+            totalSaldoAPagar.valorOriginal = ocurrencia.getCasilla(58).getValor();
+            totalSaldoAFavor.valorOriginal = ocurrencia.getCasilla(59).getValor();
+         }
+         else {
+            this.valido = false;
+            this.mensaje = "Error obteniendo declaración anterior.";
+         }
+
+         if (!this.valido) {
+            this.manejadorVal.getLogErrores().addLogError(objCasJS, this.mensaje);
+         }
+
+         if(validador)validador.validar(objCasJS);
+      }
+   }
+
+   this.setManejadorVal = function(manejadorVal) {
+      this.manejadorVal = manejadorVal;
+      if(this.validador)this.validador.setManejadorVal(manejadorVal);
+   }
+
+   this.esValidado = function() {
+      return this.valido;
+   }
+   this.getMensajeError = function() {
+      return mensaje;
+   }
+}
+
+/**
+ * Valida que el valor de la casilla cumpla con la estructura de un e-mail
+ */
+DManejadorValidaRCorreoJS.prototype=new DManejadorJS();
+DManejadorValidaRCorreoJS.prototype.constructor=DValidaCorreoJS;
+function DManejadorValidaRCorreoJS(manejador){
+
+   this.iniciarVariables = function(){
+   }
+   this.manejador = manejador;
+   this.manejar = function(objCas)
+   {
+      var correo = objCas.getValor();
+      if(correo.length > 0){
+         /*if (correo.indexOf("@")<2){
+          parent.DVisor.dialogomensaje.showModal('error', ' La dirección e-mail no es válida. Por favor introduzca una direccón que contenga el simbolo @.', 3);
+          //initialize(objCas);
+          evaluate(objCas);
+          return false;
+        }
+        var i = 0;
+        var cont = 0;
+        for (i = 0; i < correo.length ; i++) {
+          if (correo.substr(i,1) == "@")
+            cont++;;
+        }
+        var n = correo.indexOf("@");
+        var cont1 = 0;
+        for (i = n; i < correo.length ; i++) {
+          if (correo.substr(i,1) == ".")
+            cont1++;
+        }
+          */
+         var expreg_mail = /^([0-9a-zA-Z_%+-]([-.\w]*[0-9a-zA-Z_%+-])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/
+            if (!expreg_mail.exec(correo)){
+               parent.DVisor.dialogomensaje.showModal('error', 'La dirección de correo (e-mail) ingresada no es valida. Revisela por favor', 3);
+               initialize(objCas);
+               evaluate(objCas);
+               return false;
+            }
+      }
+      if(manejador)
+         manejador.manejar(objCas);
+   }
+}
+
+
+
+
+DManejadorbloqCasillExpJS.prototype = new DManejadorJS();
+DManejadorbloqCasillExpJS.prototype.constructor = DManejadorbloqCasillExpJS;
+function DManejadorbloqCasillExpJS(manejador) {
+  this.manejador = manejador;
+  this.casilla;
+  var DVisor = parent.DVisor;
+  var borrar = true;
+  var mensaje = "";
+  this.manejar = function (objCas) {
+    this.objCas = objCas;
+    if (objCas) {
+      var tipoDoc = document.getElementById("cas25").value * 1;
+      let pais = document.getElementById("cas28").value;
+
+      if (tipoDoc == 47) {
+        if (pais == "") {
+          parent.DVisor.controlador.setValorCasilla(28, -1, 169);
+          parent.DVisor.controladorDescripciones.setValorCasilla(            28,            -1,            "Colombia"          );
+          document.getElementById("cas29").disabled = true;
+          document.getElementById("cas30").disabled = true;
+          parent.DVisor.controlador.setValorCasilla(38, -1, 169);
+          parent.DVisor.controladorDescripciones.setValorCasilla(            38,            -1,            "Colombia"          );
+        }
+
+        if (pais != "" && pais != 169) {
+          mensaje =
+            "Sólo puede registrar como país de expedición Colombia para el tipo de documento Permiso Especial de Permanencia - PEP";
+          parent.DVisor.controlador.setValorCasilla(28, -1, 169);
+          parent.DVisor.controladorDescripciones.setValorCasilla(            28,            -1,            "Colombia"          );
+          document.getElementById("cas29").disabled = true;
+          document.getElementById("cas30").disabled = true;
+          parent.DVisor.controlador.setValorCasilla(38, -1, 169);
+          parent.DVisor.controladorDescripciones.setValorCasilla(            38,            -1,            "Colombia"          );
+        }
+      }
+      if (mensaje != "") {
+        mostrarError(mensaje);
+        parent.DVisor.controlador.setValorCasilla(28, -1, 169);
+        parent.DVisor.controladorDescripciones.setValorCasilla(          28,          -1,          "Colombia"        );
+         parent.DVisor.controlador.setValorCasilla(38, -1, 169);
+        parent.DVisor.controladorDescripciones.setValorCasilla(          38,          -1,          "Colombia"        );
+        document.getElementById("cas29").disabled = true;
+        document.getElementById("cas30").disabled = true;
+        mensaje = "";
+      }
+    }
+
+    if (manejador) manejador.manejar(objCas);
+  };
+}
+
+DManejadorbloqCasillaUbicacionJS.prototype=new DManejadorJS();
+DManejadorbloqCasillaUbicacionJS.prototype.constructor=DManejadorbloqCasillaUbicacionJS;
+function DManejadorbloqCasillaUbicacionJS(manejador){
+   this.manejador = manejador;
+	this.casilla;
+	var DVisor = parent.DVisor;
+	var borrar = true;
+	this.manejar = function(objCas){
+		this.objCas = objCas;
+		if (objCas) {
+         var tipoDoc = document.getElementById("cas25").value*1;
+         let pais = document.getElementById("cas38").value*1;
+         if (tipoDoc == 47 && pais != 169){
+                parent.DVisor.controlador.setValorCasilla(38,-1,169);
+                parent.DVisor.controladorDescripciones.setValorCasilla(38, -1, "Colombia");
+               }
+
+      }
+
+      if(manejador)
+         manejador.manejar(objCas);
+   }
+}
+
+///////////////////MANEJADORES ACTUALIZACION///////////////////
+
+
+
+/**
+ * Verifica que si digito reesponsabilidad 20 no seleccione mas responsabildiades
+ */
+
+DManejadorResponsabilidadesActJS.prototype = new DManejadorJS();
+DManejadorResponsabilidadesActJS.prototype.constructor = DManejadorResponsabilidadesActJS;
+function DManejadorResponsabilidadesActJS(manejador){
+	this.manejador = manejador;
+	this.casilla;
+	var DVisor = parent.DVisor;
+	var borrar = true;
+	this.manejar = function(objCas){
+		this.objCas = objCas;
+		if (objCas) {
+			var arreglo = getArregloCasiilaColumna(getNumber(objCas));
+			var res20 =contieneUnValor("20",arreglo);
+			var encontroRes20 = res20.resultado;
+			var tipoContribuyente = document.getElementById("cas24").value*1;
+			var actEconomica = document.getElementById("cas46").value;
+			var arreglo = getArregloCasiilaColumna(getNumber(objCas));
+			var mensaje ="";
+			var res20 =contieneUnValor("20",arreglo);
+			if (res20.resultado){
+				if(objCas.value != "" && objCas.value != 20){
+					mensaje ="Si selecciono la responsabilidad 20 no debe  incluir otras responsabilidades";
+					objCas.value= "";
+				}
+				if(tipoContribuyente == 1){
+					if(actEconomica != "9900" ){
+						mensaje ="Si usted es persona Juridica no puede seleccionar la responsabilidad 20  excepto  si en la casilla 46 diligencio la actividad 9900";
+					}
+				}
+			}
+
+
+			if(tipoContribuyente != ""){
+				if(tipoContribuyente == 1){
+					var resNoJuridicos = new Array("1","34","43");
+					var encontroResNoJuridicos =  contieneUnValorArreglo(resNoJuridicos,arreglo);
+					if(encontroResNoJuridicos.encontro){
+						mensaje = mensaje + "Si usted es persona jurídica no puede seleccionar las responsabilidades 1-Aporte especial para la administración de justicia, 22- Obligados a cumplir deberes formales, 49 \"No responsable de IVA\", 50 \"No responsable de Consumo restaurantes y bares\". \n\n";
+					}
+				}else{
+					var resNoNaturales = new Array("2","4","6","45");
+					var encontroResNoNaturales =  contieneUnValorArreglo(resNoNaturales,arreglo);
+					if(encontroResNoNaturales.encontro){
+						mensaje ="Si usted es persona natural no puede seleccionar las responsabilidades 2,4,6 ó 45 ";
+
+					}
+				}
+
+			}
+			/*	if(objCas.value == 12 && mensaje == ""){
+				mensaje = respVentasHistorico();
+			}
+			 */
+
+			if(mensaje != ""){
+				mostrarError(mensaje);
+				if(borrar)
+					objCas.value= "";
+				//  evaluate(objCas);
+				var maneGuardar = new DActDocumentoJS(null);
+				maneGuardar.manejar(objCas);
+				return false;
+			}
+
+		}
+		if(manejador)	 {
+			manejador.manejar(objCas);
+		}
+	}
+}
+
