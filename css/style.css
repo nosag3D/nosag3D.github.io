@@ -68,8 +68,8 @@ display: block;
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
-	padding-top: 10px;
-	padding-bottom: 10px;
+	padding-top: 15px;
+	padding-bottom: 15px;
 	webkit-box-shadow: 1px 2px 9px -1px rgba(117,117,117,1);
 	moz-box-shadow: 1px 2px 9px -1px rgba(117,117,117,1);
 	box-shadow: 1px 2px 9px -1px rgba(117,117,117,1);
@@ -88,7 +88,7 @@ display: block;
 }
 
 .img-fluid08{
-	width: 50%;
+	width: 40%;
 	height: auto;
 	display: block;
 	margin-left: auto;
